@@ -7,6 +7,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .channel_selection import filter_programmes
+from .channel_mapping import resolved_selection, channel_labels
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -27,8 +28,10 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
         super().__init__(coordinator)
         self._selected_channels = selected_channels
 
-    @staticmethod
-    def _to_event(programme):
+    def _selected_feed_channels(self):
+        return resolved_selection(self._selected_channels, self.coordinator.canonical_channels)
+
+    def _to_event(self, programme):
         try:
             start = datetime.fromisoformat(programme["start"])
             end = datetime.fromisoformat(programme["stop"])
@@ -39,7 +42,9 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
                 end=end,
                 summary=programme["title"],
                 description=programme.get("description", ""),
-                location=programme["channel"],
+                location=channel_labels(
+                    self.coordinator.canonical_channels, self.coordinator.channels
+                ).get(programme["channel"], programme["channel"]),
             )
         except (KeyError, ValueError, TypeError):
             return None
@@ -50,7 +55,7 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
         now = datetime.now(timezone.utc)
         events = (
             event
-            for record in filter_programmes(self.coordinator.data or [], self._selected_channels)
+            for record in filter_programmes(self.coordinator.data or [], self._selected_feed_channels())
             if (event := self._to_event(record)) is not None and event.end > now
         )
         return min(events, key=lambda event: (max(event.start, now), event.start), default=None)
