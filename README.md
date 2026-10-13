@@ -47,4 +47,4 @@ During setup, leave the XMLTV URL blank to use only the add-on bridge. To test a
 
 This standalone source is independent of the add-on but does **not** yet reproduce TV Guide's country-specific provider fallback, local logos, bookmarks, reminders, or complete UI. The native bridge's other five sensors still depend on the add-on.
 
-Only use feeds you are authorized to access. The network restrictions and XML parser are experimental and need live integration testing before production use. The first download happens during setup.
+Only use feeds you are authorized to access. The network restrictions and XML parser are experimental and need live integration testing before production use. The first download happens during setup. If this fetch fails, Home Assistant reports the entry as not ready and retries rather than silently pretending the EPG is available.
