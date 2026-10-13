@@ -65,7 +65,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload after native settings change."""
+    """Avoid needless EPG redownloads when only the sender order changes."""
+    options = {**entry.data, **entry.options}
+    coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    expected_url = effective_feed(options)
+    if coordinator is not None and coordinator.url == expected_url and coordinator.country == options.get("country", ""):
+        return
+    if coordinator is None and not expected_url:
+        return
     await hass.config_entries.async_reload(entry.entry_id)
 
 
