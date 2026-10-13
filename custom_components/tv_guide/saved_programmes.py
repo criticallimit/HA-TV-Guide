@@ -72,6 +72,14 @@ class TVGuideSavedProgrammes:
         self._store = Store(hass, STORAGE_VERSION, f"tv_guide.{entry_id}.saved_programmes")
         self.bookmarks: list[dict] = []
         self.reminders: list[dict] = []
+        self._subscribers = set()
+
+    def subscribe(self, callback):
+        """Subscribe an entity to changes in native saved lists."""
+        self._subscribers.add(callback)
+
+    def unsubscribe(self, callback):
+        self._subscribers.discard(callback)
 
     async def async_load(self):
         """Load records without accessing old add-on files."""
@@ -89,3 +97,5 @@ class TVGuideSavedProgrammes:
             "bookmarks": self.bookmarks,
             "reminders": self.reminders,
         })
+        for callback in tuple(self._subscribers):
+            callback()
