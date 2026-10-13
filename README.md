@@ -2,7 +2,7 @@
 
 **Development preview.** This project adds a custom integration named **TV Guide** to Home Assistant. It is separate from the existing [TV Guide add-on](https://github.com/criticallimit/TV-Guide).
 
-> The integration currently supports installation and creation/removal of a configuration entry only. It does **not** connect to TV Guide's EPG backend. Five native registry-backed entities mirror optional state values published by the existing add-on. Supplying an HTTPS XMLTV URL also enables a separate EPG programme-count sensor. Continue using the existing add-on for television schedules, reminders and the dashboard card.
+> The integration provides a configurable experimental XMLTV downloader and a temporary add-on state bridge. It does **not** yet reproduce the full TV Guide experience. Five native registry-backed entities mirror optional state values published by the existing add-on. Supplying an HTTPS XMLTV URL also enables a separate EPG programme-count sensor. Continue using the existing add-on for television schedules, reminders and the dashboard card.
 
 ## Manual test installation (without HACS)
 
@@ -25,13 +25,18 @@ To install future test commits without HACS, copy the updated folder over the ol
 
 ## What is next?
 
-- Connect the standalone XMLTV parser to an asynchronous Home Assistant data coordinator and a properly configured programme provider (the add-on API is Ingress-oriented).
+- Replace the experimental single-feed test path with the supported country/source catalogue and reliable provider fallbacks.
 - Standalone native Home Assistant sensor and binary sensor data sources (the temporary native bridge is already implemented).
 - Safe migration from existing REST-published state-only sensors.
-- EPG update coordination and compatibility with the existing dashboard.
+- Expose programme schedules to a Home Assistant-native UI and restore card, saved shows and reminders.
+- Verify transport protection, Home Assistant startup/unload, updates, and CI on real instances.
 - Automated integration tests and a supported test-installation/update workflow.
 
 See [architecture and migration constraints](docs/ARCHITECTURE.md).
+
+## Change the feed after installation
+
+Open **Settings → Devices & services → TV Guide → Configure**. You may change the XMLTV feed URL or clear it to disable standalone feed downloads. Saving options reloads the integration. The existing five add-on-state mirrors remain available.
 
 ## CI
 
