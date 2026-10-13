@@ -6,9 +6,9 @@ This migration bridge does not contact EPG providers or the add-on HTTP API.
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, SENSORS, SOURCE
+from .state_values import owned_state, parse_count, parse_timestamp
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -46,15 +46,7 @@ class TVGuideSensor(SensorEntity):
         raw = self._state.state
         if raw in ("unknown", "unavailable", ""):
             return None
-        if self._timestamp:
-            parsed = dt_util.parse_datetime(raw)
-            if parsed is None or parsed.tzinfo is None:
-                return None
-            return parsed
-        try:
-            return int(raw)
-        except (ValueError, TypeError):
-            return None
+        return parse_timestamp(raw) if self._timestamp else parse_count(raw)
 
     @property
     def extra_state_attributes(self):
@@ -68,7 +60,7 @@ class TVGuideSensor(SensorEntity):
     def _update_from_source(self):
         """Ignore entities that are not owned by the TV Guide add-on."""
         candidate = self.hass.states.get(self._source_entity)
-        if candidate is not None and candidate.attributes.get("tv_guide_source") == SOURCE:
+        if candidate is not None and owned_state(candidate.attributes, SOURCE):
             self._state = candidate
         else:
             self._state = None
