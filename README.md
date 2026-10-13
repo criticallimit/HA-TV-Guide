@@ -63,3 +63,7 @@ The calendar is only created when a standalone feed URL is configured. The XMLTV
 ## Country baselines (experimental)
 
 The setup and options forms now offer DE, AT, CH, NL, BE, DK, NO, FR, SE and GB, mapped to the baseline Open-EPG feed identifiers used by the existing add-on. These country selections are **not** the complete source system: official broadcaster enrichment, alternative provider fallbacks, the original per-country channel catalogues and user-curated sender ordering are not yet migrated. No feed availability or redistribution rights are implied. The current 8 MiB decompressed data limit may reject large country files; this requires real feed tests before production use.
+
+## XMLTV channel catalogue groundwork
+
+The EPG coordinator now extracts each channel's stable XMLTV ID and human-readable display name from the **same downloaded feed**, with no additional network request. The channel metadata is retained in the coordinator and covered by offline unit tests. It is **not yet exposed as a channel-selection UI**, and the official country catalogues, logo assets, user-defined ordering and provider fallbacks still need migration.
