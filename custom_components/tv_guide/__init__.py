@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .coordinator import TVGuideEPGCoordinator
+from .epg_query import async_register_epg_query, async_remove_epg_query
 from .country_sources import effective_feed
 from .reminder_scheduler import TVGuideReminderScheduler
 from .saved_programmes import TVGuideSavedProgrammes
@@ -43,6 +44,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
         if not hass.services.has_service(DOMAIN, "save_bookmark"):
             await async_register_saved_services(hass)
+        if coordinator is not None and not hass.services.has_service(DOMAIN, "get_programmes"):
+            async_register_epg_query(hass)
         scheduler.reschedule()
     except Exception:
         if scheduler is not None:
@@ -52,6 +55,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if not hass.data.get(DOMAIN + "_saved"):
             async_remove_saved_services(hass)
+        if not hass.data.get(DOMAIN):
+            async_remove_epg_query(hass)
         _LOGGER.exception("TV Guide setup failed")
         raise
 
