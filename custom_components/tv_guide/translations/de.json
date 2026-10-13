@@ -6,7 +6,8 @@
         "description": "Optional Land für eine XMLTV-Basisquelle wählen oder eigene HTTPS-Adresse eingeben. Eine eigene Adresse hat Vorrang. Ohne beides erfolgen keine EPG-Downloads.",
         "data": {
           "country": "Land (optional)",
-          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)"
+          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)",
+          "channels": "Sender-IDs (durch Kommas getrennt, leer = alle)"
         }
       }
     },
@@ -15,7 +16,8 @@
     },
     "error": {
       "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben.",
-      "invalid_country": "Ungültiges Land"
+      "invalid_country": "Ungültiges Land",
+      "invalid_channels": "Ungültige Senderliste (maximal 200 Sender)"
     }
   },
   "options": {
@@ -25,13 +27,15 @@
         "description": "Optional Land für eine XMLTV-Basisquelle wählen oder eigene HTTPS-Adresse eingeben. Eine eigene Adresse hat Vorrang. Ohne beides erfolgen keine EPG-Downloads.",
         "data": {
           "country": "Land (optional)",
-          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)"
+          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)",
+          "channels": "Sender-IDs (durch Kommas getrennt, leer = alle)"
         }
       }
     },
     "error": {
       "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben.",
-      "invalid_country": "Ungültiges Land"
+      "invalid_country": "Ungültiges Land",
+      "invalid_channels": "Ungültige Senderliste (maximal 200 Sender)"
     }
   }
 }
