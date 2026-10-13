@@ -99,3 +99,9 @@ After loading TV Guide, Home Assistant offers three actions: `tv_guide.save_book
 ## Native reminder delivery (experimental)
 
 Reminders are scheduled with Home Assistant's time-event helper (no 20-second polling worker). Their original 5/10/15/30-minute advance offsets are preserved, and Home Assistant's configured time zone is used for the notification's displayed broadcast time. Reminders marked `sent` are not scheduled again after a restart, and the sent flag is stored after a successful service call. A persistent notification uses a stable notification ID derived from the reminder's ID. Delivery failures are logged without marking the reminder sent. This is not a replacement for the old add-on until verified in a running installation.
+
+## Native bookmark and reminder count entities
+
+Two additional registry-backed sensors now report the number of items stored natively in Home Assistant: **TV Guide saved bookmarks** and **TV Guide saved reminders**. They are independent of the original add-on's state-published bridge counters. They update through in-memory subscriptions whenever a saved-list change is committed, with no polling and no network request. An offline test verifies saving, notifications and unsubscription.
+
+The entity names deliberately distinguish native lists from the four bridge sensors. Existing original add-on bookmark and reminder data are **not** automatically migrated; the two sets of counters may differ until a controlled migration is implemented.
