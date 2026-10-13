@@ -1,0 +1,41 @@
+name: Validate integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check Python syntax
+        run: python -m compileall -q custom_components
+      - name: Check JSON validity
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for path in list(Path("custom_components").rglob("*.json")) + [Path("hacs.json")]:
+              json.loads(path.read_text(encoding="utf-8"))
+              print("OK", path)
+          PY
