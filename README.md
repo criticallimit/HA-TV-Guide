@@ -119,3 +119,7 @@ The native integration now initializes the optional EPG coordinator before insta
 ## Native last successful EPG update
 
 A new `TV Guide last native EPG update` timestamp entity reports the last successful download-and-parse cycle of the integration itself. The coordinator records the UTC completion timestamp only after both programmes and channel metadata have been processed; failed refresh attempts do not overwrite the previous timestamp. This entity does not depend on the add-on's state-published last-update sensor. The timestamp is in-memory and starts unknown after a restart until a successful initial download.
+
+## Independent native EPG refresh-running binary sensor
+
+`TV Guide native EPG refresh running` reports whether the integration itself is currently downloading and processing XMLTV. The coordinator notifies registered entity listeners when work starts and finishes, using a `finally` block to reset the value even when download or parsing fails. No additional polling or network traffic is introduced. This does not replace the separate legacy add-on bridge binary sensor. The first refresh occurs before platforms are forwarded, so an initial brief busy state may not be observable in the Home Assistant UI.
