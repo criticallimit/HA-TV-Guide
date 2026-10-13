@@ -17,7 +17,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = [TVGuideSensor(key, *definition) for key, definition in SENSORS.items()]
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
-        entities.append(TVGuideProgrammeCount(coordinator))
+        entities.extend([TVGuideProgrammeCount(coordinator), TVGuideChannelsCount(coordinator)])
     async_add_entities(entities)
 
 
@@ -105,3 +105,40 @@ class TVGuideProgrammeCount(CoordinatorEntity, SensorEntity):
         if self.coordinator.data is None:
             return None
         return len(self.coordinator.data)
+
+
+class TVGuideChannelsCount(CoordinatorEntity, SensorEntity):
+    """Expose catalogue coverage, including stations with missing feed data."""
+
+    _attr_name = "TV Guide EPG channels"
+    _attr_unique_id = "tv_guide_native_epg_channels_count"
+    _attr_icon = "mdi:television-classic"
+    _attr_native_unit_of_measurement = "channels"
+
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+
+    @property
+    def available(self):
+        return self.coordinator.last_update_success and self.coordinator.data is not None
+
+    @property
+    def native_value(self):
+        if self.coordinator.data is None:
+            return None
+        if self.coordinator.canonical_channels:
+            return sum(1 for station in self.coordinator.canonical_channels if station["available"])
+        return len(self.coordinator.channels)
+
+    @property
+    def extra_state_attributes(self):
+        catalogue = self.coordinator.canonical_channels
+        if catalogue:
+            return {
+                "country": self.coordinator.country,
+                "main_channels_total": len(catalogue),
+                "unmatched_main_channels": [
+                    channel["id"] for channel in catalogue if not channel["available"]
+                ][:100],
+            }
+        return {"country": self.coordinator.country}
