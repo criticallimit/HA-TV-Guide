@@ -10,6 +10,7 @@ from .channel_mapping import resolved_selection, channel_labels
 from .const import DOMAIN
 
 SERVICE_GET_PROGRAMMES = "get_programmes"
+SERVICE_GET_CHANNELS = "get_channels"
 QUERY_SCHEMA = vol.Schema({
     vol.Optional("channel_id", default=""): str,
     vol.Required("start"): str,
@@ -43,6 +44,27 @@ def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start,
     return result[:limit]
 
 
+def channel_payload(coordinator, selected: list[str]) -> dict:
+    """Expose main catalog and additional feed channels for future UI clients."""
+    main = coordinator.canonical_channels
+    listed = {item["xmltv_id"] for item in main if item.get("xmltv_id")}
+    extras = [
+        {"id": item["id"], "name": item["name"], "xmltv_id": item["id"], "available": True}
+        for item in coordinator.channels if item["id"] not in listed
+    ]
+    ordered = [dict(item) for item in main] + extras
+    priority = {value: index for index, value in enumerate(selected)}
+    for channel in ordered:
+        key = channel["id"] if channel["id"] in priority else channel.get("xmltv_id")
+        channel["selected"] = not selected or key in priority
+        channel["_sort"] = priority.get(key, len(priority))
+    if selected:
+        ordered.sort(key=lambda item: (item["_sort"], 0 if item["selected"] else 1))
+    for channel in ordered:
+        channel.pop("_sort")
+    return {"channels": ordered, "count": len(ordered), "country": coordinator.country}
+
+
 def async_register_epg_query(hass):
     """Expose the EPG snapshot through a response-capable Home Assistant action."""
     async def handle(call):
@@ -68,6 +90,20 @@ def async_register_epg_query(hass):
         )
         return {"programmes": records, "count": len(records)}
 
+    async def handle_channels(_call):
+        coordinators = hass.data.get(DOMAIN, {})
+        if len(coordinators) != 1:
+            raise HomeAssistantError("Exactly one TV Guide EPG feed must be configured")
+        entry_id, coordinator = next(iter(coordinators.items()))
+        config_entry = hass.config_entries.async_get_entry(entry_id)
+        options = {**config_entry.data, **config_entry.options} if config_entry else {}
+        return channel_payload(coordinator, options.get("channels", []))
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_GET_CHANNELS, handle_channels,
+        supports_response=SupportsResponse.ONLY,
+    )
+
     hass.services.async_register(
         DOMAIN, SERVICE_GET_PROGRAMMES, handle,
         schema=QUERY_SCHEMA, supports_response=SupportsResponse.ONLY,
@@ -76,3 +112,4 @@ def async_register_epg_query(hass):
 
 def async_remove_epg_query(hass):
     hass.services.async_remove(DOMAIN, SERVICE_GET_PROGRAMMES)
+    hass.services.async_remove(DOMAIN, SERVICE_GET_CHANNELS)
