@@ -20,6 +20,7 @@ class XMLTVTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["channel"], "channel.one")
         self.assertEqual(result[0]["title"], "Film")
+        self.assertEqual(result[0]["description"], "Beschreibung")
 
     def test_invalid(self):
         self.assertEqual(parse_xmltv(b'<tv><programme channel="a"/></tv>'), [])
