@@ -4,7 +4,6 @@ Network-layer DNS resolution must additionally reject private/reserved targets
 before this downloader is enabled in a config flow.
 """
 
-import ipaddress
 from urllib.parse import urlsplit
 
 
@@ -29,12 +28,10 @@ def validate_feed_url(url: str) -> str:
         or hostname.lower().endswith((".localhost", ".local", ".internal"))
     ):
         raise ValueError("Feed must be a public HTTPS URL on port 443")
-    try:
-        address = ipaddress.ip_address(hostname)
-    except ValueError:
-        if "." not in hostname or hostname.startswith(".") or hostname.endswith("."):
-            raise ValueError("Feed host must be a public domain name") from None
-    else:
-        if not address.is_global:
-            raise ValueError("Private and reserved addresses are not accepted")
+    # IP literals can bypass aiohttp's DNS resolver entirely.
+    # Require DNS hostnames until peer-address verification is implemented.
+    if "." not in hostname or hostname.startswith(".") or hostname.endswith("."):
+        raise ValueError("Feed host must be a public DNS hostname")
+    if ":" in hostname or all(part.isdecimal() for part in hostname.split(".")):
+        raise ValueError("Literal IP addresses are not permitted")
     return url
