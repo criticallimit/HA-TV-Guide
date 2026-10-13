@@ -70,7 +70,7 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
     async def async_get_events(self, hass, start_date, end_date):
         """Retrieve programmes overlapping the requested time window."""
         events = []
-        for record in filter_programmes(self.coordinator.data or [], self._selected_channels):
+        for record in self._selected_programmes():
             event = self._to_event(record)
             if event is not None and event.start < end_date and event.end > start_date:
                 events.append(event)
