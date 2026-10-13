@@ -46,8 +46,8 @@ class TVGuideReminderScheduler:
                 continue
             reminder_id = reminder["id"]
 
-            async def callback(_now, item_id=reminder_id):
-                await self._deliver(item_id)
+            def callback(_now, item_id=reminder_id):
+                self.hass.async_create_task(self._deliver(item_id))
 
             self._cancellations.append(
                 async_track_point_in_utc_time(self.hass, callback, when)
