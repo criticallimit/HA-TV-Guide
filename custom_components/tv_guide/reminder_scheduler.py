@@ -9,6 +9,7 @@ import re
 from zoneinfo import ZoneInfo
 
 from homeassistant.helpers.event import async_track_point_in_utc_time
+from .reminder_times import next_reminder_time, retry_time
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,26 +33,19 @@ class TVGuideReminderScheduler:
         self.stop()
         now = datetime.now(timezone.utc)
         for reminder in self.saved.reminders:
-            if reminder.get("sent"):
+            when = next_reminder_time(reminder, now)
+            if when is None:
                 continue
-            try:
-                start = datetime.fromisoformat(reminder["start"])
-                if start.tzinfo is None:
-                    continue
-                when = start - timedelta(minutes=int(reminder["minutes"]))
-                if now >= start + timedelta(minutes=5):
-                    continue
-                when = max(when.astimezone(timezone.utc), now)
-            except (KeyError, TypeError, ValueError, OverflowError):
-                continue
-            reminder_id = reminder["id"]
+            self._schedule(reminder["id"], when)
 
-            def callback(_now, item_id=reminder_id):
-                self.hass.async_create_task(self._deliver(item_id))
+    def _schedule(self, reminder_id: str, when: datetime):
+        """Schedule a single reminder (also used for bounded delivery retries)."""
+        def callback(_now):
+            self.hass.async_create_task(self._deliver(reminder_id))
 
-            self._cancellations.append(
-                async_track_point_in_utc_time(self.hass, callback, when)
-            )
+        self._cancellations.append(
+            async_track_point_in_utc_time(self.hass, callback, when)
+        )
 
     async def _deliver(self, reminder_id: str):
         """Persist sent state after a successful Home Assistant notification."""
@@ -79,6 +73,9 @@ class TVGuideReminderScheduler:
                 )
             except Exception:
                 _LOGGER.exception("TV Guide reminder notification failed")
+                when = retry_time(item, datetime.now(timezone.utc))
+                if when is not None:
+                    self._schedule(reminder_id, when)
                 return
             item["sent"] = True
             item["sent_at"] = now.isoformat()
