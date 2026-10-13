@@ -33,7 +33,7 @@ REMOVE_SCHEMA = vol.Schema({
 
 async def async_register_saved_services(hass):
     """Register one set of actions shared by the single TV Guide instance."""
-    lock = asyncio.Lock()
+    lock = hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock())
 
     async def handle(call):
         stores = hass.data.get(DOMAIN + "_saved", {})
@@ -71,6 +71,9 @@ async def async_register_saved_services(hass):
                     raise HomeAssistantError("Invalid programme")
                 setattr(saved, key, [old for old in getattr(saved, key) if old["id"] != item["id"]] + normalized)
             await saved.async_save()
+            scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(next(iter(stores)))
+            if scheduler is not None:
+                scheduler.reschedule()
 
     hass.services.async_register(DOMAIN, SERVICE_BOOKMARK, handle, schema=BOOKMARK_SCHEMA)
     hass.services.async_register(DOMAIN, SERVICE_REMINDER, handle, schema=REMINDER_SCHEMA)
