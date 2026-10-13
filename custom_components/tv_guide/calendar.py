@@ -28,8 +28,12 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
         super().__init__(coordinator)
         self._selected_channels = selected_channels
 
-    def _selected_feed_channels(self):
-        return resolved_selection(self._selected_channels, self.coordinator.canonical_channels)
+    def _selected_programmes(self):
+        records = self.coordinator.data or []
+        if not self._selected_channels:
+            return records
+        selected = resolved_selection(self._selected_channels, self.coordinator.canonical_channels)
+        return filter_programmes(records, selected) if selected else []
 
     def _to_event(self, programme):
         try:
@@ -55,7 +59,7 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
         now = datetime.now(timezone.utc)
         events = (
             event
-            for record in filter_programmes(self.coordinator.data or [], self._selected_feed_channels())
+            for record in self._selected_programmes()
             if (event := self._to_event(record)) is not None and event.end > now
         )
         return min(events, key=lambda event: (max(event.start, now), event.start), default=None)
