@@ -73,3 +73,9 @@ The EPG coordinator now extracts each channel's stable XMLTV ID and human-readab
 Setup and **Configure** now support a comma-separated list of XMLTV channel IDs (up to 200, preserved in the entered order). Leave the field blank to show all feed channels. The native programme calendar displays events for only the selected IDs; the feed is still downloaded once in full, so this does not create additional requests. Selection is stored in the Home Assistant config entry options, and survives restarts and normal updates.
 
 This is an interim technical field, **not** yet the graphical My Channels editor from the TV Guide add-on. Enter exactly the IDs supplied by your XMLTV feed. Channel names are parsed from the same feed but are not yet exposed as an interactive picker, and calendar events remain chronological rather than grouped in a television grid.
+
+## Original channel catalogues imported
+
+The original ordered main-channel JSON catalogues for all 10 countries are now bundled directly in the integration under `custom_components/tv_guide/catalogs/`. `catalogs.py` loads them without network access and maps feed XMLTV IDs to canonical channel IDs. If a main channel has no matching feed ID, it stays in the catalogue marked unavailable rather than disappearing. The new native **TV Guide EPG channels** sensor reports the count of matched main channels (or raw feed channels without a selected country) and lists unmatched canonical IDs in attributes. Offline tests cover the bundled catalogues and a German alias mapping.
+
+**Limitations:** EPG provider enrichment and all programme UI/personal list/bookmark/reminder workflows are not yet migrated. No compatibility or CI success has been established with a running Home Assistant.
