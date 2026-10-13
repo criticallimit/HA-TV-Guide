@@ -105,3 +105,9 @@ Reminders are scheduled with Home Assistant's time-event helper (no 20-second po
 Two additional registry-backed sensors now report the number of items stored natively in Home Assistant: **TV Guide saved bookmarks** and **TV Guide saved reminders**. They are independent of the original add-on's state-published bridge counters. They update through in-memory subscriptions whenever a saved-list change is committed, with no polling and no network request. An offline test verifies saving, notifications and unsubscription.
 
 The entity names deliberately distinguish native lists from the four bridge sensors. Existing original add-on bookmark and reminder data are **not** automatically migrated; the two sets of counters may differ until a controlled migration is implemented.
+
+## Setup/unload rollback
+
+The native integration now initializes the optional EPG coordinator before installing timers and saved-state references. A failed setup removes native runtime references and cancels newly created reminder schedules. On successful unload, the integration stops timers, unregisters its options listener, and removes actions when the last entry unloads. This aims to prevent duplicated reminders after a failed setup or reload; complete HA lifecycle integration tests remain pending.
+
+**Testing status:** GitHub Actions success has not been verified. The development environment could not clone the repository for a local test because DNS resolution of `github.com` failed. Treat this revision as unverified until CI and real HA tests pass.
