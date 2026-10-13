@@ -6,7 +6,8 @@
         "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
         "data": {
           "country": "Country (optional)",
-          "feed_url": "Custom XMLTV feed URL (optional)"
+          "feed_url": "Custom XMLTV feed URL (optional)",
+          "channels": "Channel IDs (comma-separated; blank = all)"
         }
       }
     },
@@ -15,7 +16,8 @@
     },
     "error": {
       "invalid_url": "Enter a valid public HTTPS URL.",
-      "invalid_country": "Invalid country"
+      "invalid_country": "Invalid country",
+      "invalid_channels": "Invalid channel selection (maximum 200 channels)"
     }
   },
   "options": {
@@ -25,13 +27,15 @@
         "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
         "data": {
           "country": "Country (optional)",
-          "feed_url": "Custom XMLTV feed URL (optional)"
+          "feed_url": "Custom XMLTV feed URL (optional)",
+          "channels": "Channel IDs (comma-separated; blank = all)"
         }
       }
     },
     "error": {
       "invalid_url": "Enter a valid public HTTPS URL.",
-      "invalid_country": "Invalid country"
+      "invalid_country": "Invalid country",
+      "invalid_channels": "Invalid channel selection (maximum 200 channels)"
     }
   }
 }
