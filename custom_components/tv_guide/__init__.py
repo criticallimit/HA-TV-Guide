@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .coordinator import TVGuideEPGCoordinator
+from .saved_programmes import TVGuideSavedProgrammes
 from .country_sources import effective_feed
 
 PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
@@ -15,6 +16,9 @@ CONF_FEED_URL = "feed_url"
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up native entities with one coordinator per configured feed."""
     options = {**entry.data, **entry.options}
+    saved = TVGuideSavedProgrammes(hass, entry.entry_id)
+    await saved.async_load()
+    hass.data.setdefault(DOMAIN + "_saved", {})[entry.entry_id] = saved
     url = effective_feed(options)
     if url:
         coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""))
@@ -35,4 +39,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
         hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+        hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
     return success
