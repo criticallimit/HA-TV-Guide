@@ -24,11 +24,23 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
         )
         self.url = url
         self.country = country
+        self.refresh_running = False
+        self._refresh_listeners = set()
         self.last_successful_refresh: datetime | None = None
         self.canonical_channels: list[dict] = []
         self.channels: list[dict[str, str]] = []
 
+    def subscribe_refresh(self, callback):
+        self._refresh_listeners.add(callback)
+        return lambda: self._refresh_listeners.discard(callback)
+
+    def _notify_refresh(self):
+        for callback in tuple(self._refresh_listeners):
+            callback()
+
     async def _async_update_data(self) -> list[dict]:
+        self.refresh_running = True
+        self._notify_refresh()
         try:
             async with public_epg_session() as session:
                 payload = await fetch_programmes(session, self.url)
@@ -44,3 +56,6 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
             return programmes
         except Exception as exc:
             raise UpdateFailed(f"EPG update failed: {type(exc).__name__}") from exc
+        finally:
+            self.refresh_running = False
+            self._notify_refresh()
