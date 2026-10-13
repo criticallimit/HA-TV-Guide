@@ -93,6 +93,17 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(result[0]["title"], "ARD")
         self.assertEqual(result[0]["channel_name"], "Das Erste")
 
+    def test_timezone_offsets_sort_by_actual_instant(self):
+        programmes = [
+            {"channel": "b", "start": "2026-10-13T20:00:00+02:00", "stop": "2026-10-13T21:00:00+02:00", "title": "later"},
+            {"channel": "a", "start": "2026-10-13T18:30:00+01:00", "stop": "2026-10-13T19:30:00+01:00", "title": "earlier"},
+            {"channel": "bad", "start": "2026-10-13T19:00:00", "stop": "2026-10-13T20:00:00", "title": "invalid"},
+        ]
+        start = datetime(2026, 10, 13, 17, 0, tzinfo=timezone.utc)
+        end = datetime(2026, 10, 13, 20, 0, tzinfo=timezone.utc)
+        result = query(programmes, [], [], channel_id="", start=start, end=end, limit=10)
+        self.assertEqual([item["title"] for item in result], ["earlier", "later"])
+
     def test_missing_canonical_sender_not_all_programmes(self):
         programmes = [{"channel": "unknown", "start": "2026-10-13T19:00:00+00:00", "stop": "2026-10-13T20:00:00+00:00"}]
         cat = [{"id": "ard", "xmltv_id": None, "name": "Das Erste"}]
