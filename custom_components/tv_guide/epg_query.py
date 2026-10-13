@@ -38,12 +38,14 @@ def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start,
             finishes = datetime.fromisoformat(programme["stop"])
         except (KeyError, ValueError, TypeError):
             continue
+        if begins.tzinfo is None or finishes.tzinfo is None or finishes <= begins:
+            continue
         if begins < end and finishes > start:
             result.append({
                 **programme,
                 "channel_name": labels.get(programme["channel"], programme["channel"]),
             })
-    result.sort(key=lambda programme: (programme["start"], programme["channel"]))
+    result.sort(key=lambda programme: (datetime.fromisoformat(programme["start"]).timestamp(), programme["channel"]))
     return result[:limit]
 
 
@@ -74,7 +76,7 @@ def async_register_epg_query(hass):
         try:
             start = datetime.fromisoformat(call.data["start"])
             end = datetime.fromisoformat(call.data["end"])
-        except ValueError as exc:
+        except (ValueError, TypeError) as exc:
             raise HomeAssistantError("Invalid ISO 8601 timestamp") from exc
         if start.tzinfo is None or end.tzinfo is None or end <= start:
             raise HomeAssistantError("Time range must use timezone-aware start and end")
