@@ -41,7 +41,7 @@ class TVGuideSensor(SensorEntity):
     @property
     def available(self):
         """Only report values published by the original add-on."""
-        return self._state is not None
+        return self._state is not None and self.native_value is not None
 
     @property
     def native_value(self):
@@ -93,6 +93,11 @@ class TVGuideProgrammeCount(CoordinatorEntity, SensorEntity):
 
     def __init__(self, coordinator):
         super().__init__(coordinator)
+
+    @property
+    def available(self):
+        """Remain unavailable when the coordinator cannot supply EPG data."""
+        return self.coordinator.last_update_success and self.coordinator.data is not None
 
     @property
     def native_value(self):
