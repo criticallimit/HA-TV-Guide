@@ -8,9 +8,12 @@ from homeassistant.exceptions import HomeAssistantError
 
 from .channel_mapping import resolved_selection, channel_labels
 from .const import DOMAIN
+from .channel_selection import parse_channel_selection
 
 SERVICE_GET_PROGRAMMES = "get_programmes"
 SERVICE_GET_CHANNELS = "get_channels"
+SERVICE_SET_CHANNELS = "set_channels"
+SET_CHANNELS_SCHEMA = vol.Schema({vol.Required("channels"): list[str]})
 QUERY_SCHEMA = vol.Schema({
     vol.Optional("channel_id", default=""): str,
     vol.Required("start"): str,
@@ -99,6 +102,34 @@ def async_register_epg_query(hass):
         options = {**config_entry.data, **config_entry.options} if config_entry else {}
         return channel_payload(coordinator, options.get("channels", []))
 
+    async def handle_set_channels(call):
+        coordinators = hass.data.get(DOMAIN, {})
+        if len(coordinators) != 1:
+            raise HomeAssistantError("Exactly one TV Guide EPG feed must be configured")
+        entry_id, coordinator = next(iter(coordinators.items()))
+        entry = hass.config_entries.async_get_entry(entry_id)
+        if entry is None:
+            raise HomeAssistantError("TV Guide config entry not found")
+        raw = call.data["channels"]
+        if not all(isinstance(value, str) and "," not in value for value in raw):
+            raise HomeAssistantError("Invalid channel IDs")
+        try:
+            selected = parse_channel_selection(",".join(raw))
+        except ValueError as exc:
+            raise HomeAssistantError("Invalid channel selection") from exc
+        known = {station["id"] for station in coordinator.canonical_channels}
+        known.update(station["id"] for station in coordinator.channels)
+        if any(channel not in known for channel in selected):
+            raise HomeAssistantError("Unknown channel in selection")
+        hass.config_entries.async_update_entry(
+            entry, options={**entry.options, "channels": selected}
+        )
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_SET_CHANNELS, handle_set_channels,
+        schema=SET_CHANNELS_SCHEMA,
+    )
+
     hass.services.async_register(
         DOMAIN, SERVICE_GET_CHANNELS, handle_channels,
         supports_response=SupportsResponse.ONLY,
@@ -113,3 +144,4 @@ def async_register_epg_query(hass):
 def async_remove_epg_query(hass):
     hass.services.async_remove(DOMAIN, SERVICE_GET_PROGRAMMES)
     hass.services.async_remove(DOMAIN, SERVICE_GET_CHANNELS)
+    hass.services.async_remove(DOMAIN, SERVICE_SET_CHANNELS)
