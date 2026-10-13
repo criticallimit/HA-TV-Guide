@@ -111,3 +111,7 @@ The entity names deliberately distinguish native lists from the four bridge sens
 The native integration now initializes the optional EPG coordinator before installing timers and saved-state references. A failed setup removes native runtime references and cancels newly created reminder schedules. On successful unload, the integration stops timers, unregisters its options listener, and removes actions when the last entry unloads. This aims to prevent duplicated reminders after a failed setup or reload; complete HA lifecycle integration tests remain pending.
 
 **Testing status:** GitHub Actions success has not been verified. The development environment could not clone the repository for a local test because DNS resolution of `github.com` failed. Treat this revision as unverified until CI and real HA tests pass.
+
+## Independent next reminder sensor
+
+`TV Guide next native reminder` is a native timestamp entity reading solely from the new integration's persisted reminder list. It reports the next unsent delivery time and exposes the reminder ID, programme title, channel, broadcast start and advance minutes as attributes. State changes are triggered by committed saved-item updates, without depending on the original add-on's REST-published sensor. An offline test covers ordering, sent and expired reminders. The timer delivery path remains experimental until validated in Home Assistant.
