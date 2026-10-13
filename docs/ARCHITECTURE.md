@@ -1,0 +1,57 @@
+# Native TV Guide integration architecture
+
+## Current implementation
+
+The integration is a **setup-only preview**. It has an initial config flow and
+does not yet expose entities, connect to EPG providers or communicate with the
+existing add-on. Do not disable the add-on.
+
+## Existing add-on transport
+
+The add-on runs a `ThreadingHTTPServer` on port 8099 with Supervisor Ingress.
+Endpoints in `tv-guide/tvguide/api.py` include:
+
+- `GET /api/status`: cache/refresh status
+- `GET /api/reminders`: reminders
+- `GET /api/bookmarks`: saved programmes
+- `GET /api/guide`: programme data
+- `GET /api/settings`: add-on options
+
+These are designed for use through Ingress, not as a general-purpose
+authenticated Home Assistant integration API. The integration must **not**
+assume it can access the Supervisor ingress proxy or use a hard-coded private
+Docker IP. Exposing the existing unauthenticated backend on a public port would
+be unsafe.
+
+## Planned safe bridge
+
+1. Identify a supported authenticated integration-to-add-on transport, or
+   implement the standalone EPG engine directly in the integration.
+2. Reuse Home Assistant's shared HTTP session and nonblocking execution.
+3. Create a `DataUpdateCoordinator` to coalesce reads and avoid duplicated
+   EPG downloads.
+4. Register native entities with stable unique IDs and use the entity
+   registry. Ensure old REST-published state-only entity IDs do not collide.
+5. Keep add-on reminders, bookmark persistence and the Lovelace card working.
+6. Test installation, unloading, authentication, service failures and upgrades.
+
+## Native entities planned
+
+- `sensor.tv_guide_next_reminder`
+- `sensor.tv_guide_bookmark_count`
+- `sensor.tv_guide_reminder_count`
+- `sensor.tv_guide_last_update`
+- `binary_sensor.tv_guide_refresh_running`
+
+All five already exist as optional **REST-published states** in the add-on;
+they are not yet registry-backed integration entities.
+
+The integration should not publish duplicate entity IDs while the add-on
+sensor options are active.
+
+## Source constraints
+
+The EPG data and locally bundled third-party logos have rights and
+redistribution constraints described in the original repository's
+`THIRD_PARTY_NOTICES.md`. Native integration publication and possible Core
+submission require separate review.
