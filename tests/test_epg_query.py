@@ -47,9 +47,29 @@ for name in ("channel_mapping", "const", "epg_query"):
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
 query = sys.modules[f"{PKG}.epg_query"].query_programmes
+channel_payload = sys.modules[f"{PKG}.epg_query"].channel_payload
 
 
 class QueryTests(unittest.TestCase):
+    def test_channel_catalogue_keeps_main_and_additional_stations(self):
+        from types import SimpleNamespace
+        coordinator = SimpleNamespace(
+            country="de",
+            canonical_channels=[
+                {"id": "ard", "name": "Das Erste", "xmltv_id": "DasErste.de", "available": True},
+                {"id": "zdf", "name": "ZDF", "xmltv_id": None, "available": False},
+            ],
+            channels=[
+                {"id": "DasErste.de", "name": "ARD"},
+                {"id": "extra.tv", "name": "Extra TV"},
+            ],
+        )
+        response = channel_payload(coordinator, ["extra.tv", "ard"])
+        self.assertEqual(response["count"], 3)
+        self.assertEqual([item["id"] for item in response["channels"]], ["extra.tv", "ard", "zdf"])
+        self.assertFalse(response["channels"][-1]["available"])
+        self.assertFalse(response["channels"][-1]["selected"])
+
     def test_filter_channel_and_window(self):
         programmes = [
             {"channel": "ZDF.de", "start": "2026-10-13T19:00:00+00:00", "stop": "2026-10-13T20:00:00+00:00", "title": "ZDF"},
