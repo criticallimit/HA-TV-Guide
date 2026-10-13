@@ -89,3 +89,9 @@ The programme calendar now accepts both original TV Guide main-channel IDs (e.g.
 The integration now loads its own `TVGuideSavedProgrammes` Store from Home Assistant's `.storage` folder on setup, using an entry-specific key. Entries use the old add-on's `id`, `channel`, `channelId`, `title`, `start`, and `end` field names; reminders also keep `minutes`, `language`, `sent`, and optionally `sent_at`. The validation layer rejects malformed/expired records, invalid reminder offsets, and duplicate IDs, and supports saves through Home Assistant's async Store API.
 
 **Not yet implemented:** UI/actions for adding/removing saved programmes, notifications, automated reminder scheduling, migrating existing add-on files, or updating the native bridge sensors from this store. The saved-programme storage starts empty on a fresh installation and does not read or overwrite the old add-on's persistent data.
+
+## Native bookmark/reminder actions (experimental)
+
+After loading TV Guide, Home Assistant offers three actions: `tv_guide.save_bookmark`, `tv_guide.save_reminder`, and `tv_guide.remove_saved_programme`. Saves accept a stable programme `id`, `title`, `channel`, `channel_id`, ISO 8601 offset-aware `start` and `end`. Reminders additionally accept `minutes` (5, 10, 15, or 30). Removal requires `id` and `kind` (bookmark/reminder). The actions validate future programmes, persist entries using the Home Assistant Store API and replace existing items with the same ID.
+
+**Attention:** Storing a reminder does **not** yet schedule or deliver a notification. The native programme UI, migration, notification delivery and tests inside a running Home Assistant are pending. Do not disable the original TV Guide add-on if relying on its reminders.
