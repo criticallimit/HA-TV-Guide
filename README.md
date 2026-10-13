@@ -83,3 +83,9 @@ The original ordered main-channel JSON catalogues for all 10 countries are now b
 ## Canonical sender IDs in calendar (migration)
 
 The programme calendar now accepts both original TV Guide main-channel IDs (e.g. `ard`) and raw XMLTV feed IDs (e.g. `DasErste.de`) in the saved channel selection. Main-channel IDs are mapped to the matching feed ID from the bundled catalogue, and calendar event locations display the resolved broadcaster name. If a selected canonical main channel has no current XMLTV match, its selection yields no broadcasts rather than accidentally showing every channel. Channel mapping is covered by offline tests.
+
+## Native bookmark and reminder persistence (foundation)
+
+The integration now loads its own `TVGuideSavedProgrammes` Store from Home Assistant's `.storage` folder on setup, using an entry-specific key. Entries use the old add-on's `id`, `channel`, `channelId`, `title`, `start`, and `end` field names; reminders also keep `minutes`, `language`, `sent`, and optionally `sent_at`. The validation layer rejects malformed/expired records, invalid reminder offsets, and duplicate IDs, and supports saves through Home Assistant's async Store API.
+
+**Not yet implemented:** UI/actions for adding/removing saved programmes, notifications, automated reminder scheduling, migrating existing add-on files, or updating the native bridge sensors from this store. The saved-programme storage starts empty on a fresh installation and does not read or overwrite the old add-on's persistent data.
