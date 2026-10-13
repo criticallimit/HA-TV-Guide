@@ -48,7 +48,7 @@ MIT applies to the project-authored source code. External programme data, channe
 
 ## Optional experimental EPG source
 
-During setup, leave the XMLTV URL blank to use only the add-on bridge. To test a standalone feed, enter a public HTTPS XMLTV address. The coordinator fetches and parses this source, normally every three hours, and creates **TV Guide EPG programmes** to report the programme count.
+During setup, select one of the ten country baselines, supply a custom XMLTV URL, or leave both blank to use only the add-on bridge. A custom URL overrides the selected country baseline. To test a standalone feed, enter a public HTTPS XMLTV address. The coordinator fetches and parses the configured source, normally every three hours, and creates **TV Guide EPG programmes** to report the programme count.
 
 This standalone source is independent of the add-on but does **not** yet reproduce TV Guide's country-specific provider fallback, local logos, bookmarks, reminders, or complete UI. The native bridge's other five sensors still depend on the add-on.
 
@@ -59,3 +59,7 @@ Only use feeds you are authorized to access. The network restrictions and XML pa
 An optional XMLTV feed now creates **TV Guide Programmes** as a read-only Home Assistant calendar. Each programme becomes a calendar event with start and end, title, description and channel ID (as event location). Open the Home Assistant calendar interface or call `calendar.get_events` to inspect them. The calendar combines all channels into one timeline; overlapping broadcasts are expected. A per-channel programme grid, country source selection, programme artwork and notifications are **not yet implemented**.
 
 The calendar is only created when a standalone feed URL is configured. The XMLTV source must supply timezone-aware timestamps. Existing add-on operation and its reminder system are unchanged.
+
+## Country baselines (experimental)
+
+The setup and options forms now offer DE, AT, CH, NL, BE, DK, NO, FR, SE and GB, mapped to the baseline Open-EPG feed identifiers used by the existing add-on. These country selections are **not** the complete source system: official broadcaster enrichment, alternative provider fallbacks, the original per-country channel catalogues and user-curated sender ordering are not yet migrated. No feed availability or redistribution rights are implied. The current 8 MiB decompressed data limit may reject large country files; this requires real feed tests before production use.
