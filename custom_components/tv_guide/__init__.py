@@ -1,4 +1,4 @@
-"""Native TV Guide integration with optional standalone EPG retrieval."""
+"""Native TV Guide: optional EPG feed and add-on migration bridge."""
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -12,16 +12,20 @@ CONF_FEED_URL = "feed_url"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up native entities, fetching EPG only when explicitly configured."""
-    url = entry.data.get(CONF_FEED_URL)
+    """Set up native entities with one coordinator per configured feed."""
+    url = entry.options.get(CONF_FEED_URL, entry.data.get(CONF_FEED_URL))
     if url:
         coordinator = TVGuideEPGCoordinator(hass, url)
-        # Report unavailable feeds as a setup failure rather than loading a
-        # seemingly healthy entry without programme data.
         await coordinator.async_config_entry_first_refresh()
         hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_on_unload(entry.add_update_listener(async_update_options))
     return True
+
+
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload after XMLTV feed settings change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
