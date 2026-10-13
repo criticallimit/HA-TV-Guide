@@ -78,3 +78,17 @@ must use the validated address selection for its actual connection and prevent
 later resolution from bypassing the policy. HTTPS hostname and certificate
 validation must remain enabled. The downloader stays disconnected from
 Home Assistant setup pending that work.
+
+## Connection-time DNS enforcement
+
+The dormant EPG coordinator now uses a dedicated `public_epg_session`
+instead of the general Home Assistant HTTP session. Its aiohttp connector
+uses `PublicAddressResolver` during the actual connection, rejecting DNS
+answers containing any non-public IPv4 or IPv6 address. Redirects are disabled
+in the fetcher; environment proxies and automatic content decompression are
+disabled in the session. TLS certificate verification remains enabled.
+
+This is not a claim of comprehensive SSRF resistance or a production-ready
+connector: integration tests with a controlled DNS resolver, proxy/firewall
+behavior, and malformed network responses are still required. The coordinator
+is not configured or started by `async_setup_entry` yet.
