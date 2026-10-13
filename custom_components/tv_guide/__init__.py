@@ -19,6 +19,12 @@ CONF_FEED_URL = "feed_url"
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up native entities with one coordinator per configured feed."""
     options = {**entry.data, **entry.options}
+    url = effective_feed(options)
+    coordinator = None
+    if url:
+        coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""))
+        await coordinator.async_config_entry_first_refresh()
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     saved = TVGuideSavedProgrammes(hass, entry.entry_id)
     await saved.async_load()
     hass.data.setdefault(DOMAIN + "_saved", {})[entry.entry_id] = saved
@@ -27,11 +33,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     hass.data.setdefault(DOMAIN + "_reminder_schedulers", {})[entry.entry_id] = scheduler
     scheduler.reschedule()
-    url = effective_feed(options)
-    if url:
-        coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""))
-        await coordinator.async_config_entry_first_refresh()
-        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     if not hass.services.has_service(DOMAIN, "save_bookmark"):
         await async_register_saved_services(hass)
