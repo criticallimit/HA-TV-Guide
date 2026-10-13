@@ -18,6 +18,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
         entities.extend([TVGuideProgrammeCount(coordinator), TVGuideChannelsCount(coordinator)])
+    saved = hass.data.get(DOMAIN + "_saved", {}).get(entry.entry_id)
+    if saved is not None:
+        entities.extend([TVGuideSavedCount(saved, "bookmarks"), TVGuideSavedCount(saved, "reminders")])
     async_add_entities(entities)
 
 
@@ -142,3 +145,29 @@ class TVGuideChannelsCount(CoordinatorEntity, SensorEntity):
                 ][:100],
             }
         return {"country": self.coordinator.country}
+
+
+class TVGuideSavedCount(SensorEntity):
+    """Count saved native items without depending on the old add-on."""
+
+    _attr_should_poll = False
+
+    def __init__(self, saved, kind):
+        self._saved = saved
+        self._kind = kind
+        self._attr_name = f"TV Guide saved {kind}"
+        self._attr_unique_id = f"tv_guide_native_saved_{kind}_count"
+        self._attr_icon = "mdi:bookmark" if kind == "bookmarks" else "mdi:alarm"
+
+    @property
+    def native_value(self):
+        return len(getattr(self._saved, self._kind))
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        self._saved.subscribe(self._notify)
+        self.async_on_remove(lambda: self._saved.unsubscribe(self._notify))
+
+    @callback
+    def _notify(self):
+        self.async_write_ha_state()
