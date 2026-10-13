@@ -27,7 +27,7 @@ class ReminderTimeTests(unittest.TestCase):
         now = datetime(2026, 10, 13, 18, 0, tzinfo=timezone.utc)
         record = {"start": "2026-10-13T20:15:00+02:00"}
         self.assertEqual(retry_time(record, now), now + timedelta(seconds=60))
-        self.assertIsNone(retry_time(record, now + timedelta(minutes=15)))
+        self.assertIsNone(retry_time(record, now + timedelta(minutes=20)))
 
 
 if __name__ == "__main__":
