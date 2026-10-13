@@ -15,5 +15,19 @@
     "error": {
       "invalid_url": "Enter a valid public HTTPS URL."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "TV Guide",
+        "description": "Change the optional public HTTPS XMLTV feed. Leave blank to disable standalone EPG downloads.",
+        "data": {
+          "feed_url": "XMLTV feed URL (HTTPS)"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Enter a valid public HTTPS URL."
+    }
   }
 }
