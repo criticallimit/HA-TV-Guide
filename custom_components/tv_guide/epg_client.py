@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import gzip
+from io import BytesIO
 from urllib.parse import urlsplit
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 
-from .xmltv import MAX_XML_SIZE, parse_xmltv
+from .xmltv import MAX_XML_SIZE
 
 MAX_WIRE_BYTES = 12 * 1024 * 1024
 
@@ -20,7 +21,7 @@ def validate_feed_url(url: str) -> str:
     return url
 
 
-async def fetch_programmes(session: ClientSession, url: str) -> list[dict]:
+async def fetch_programmes(session: ClientSession, url: str) -> bytes:
     """Download once with strict limits, then parse off the event loop via caller."""
     validate_feed_url(url)
     try:
@@ -33,9 +34,13 @@ async def fetch_programmes(session: ClientSession, url: str) -> list[dict]:
                     raise ValueError("XMLTV download is too large")
     except ClientError as exc:
         raise ConnectionError("XMLTV download failed") from exc
-    payload = bytes(data)
+    return bytes(data)
+
+
+def decompress_feed(payload: bytes) -> bytes:
+    """Bound decompressed data; call in Home Assistant's executor."""
     if payload.startswith(b"\x1f\x8b"):
-        with gzip.GzipFile(fileobj=__import__("io").BytesIO(payload)) as stream:
+        with gzip.GzipFile(fileobj=BytesIO(payload)) as stream:
             payload = stream.read(MAX_XML_SIZE + 1)
     if len(payload) > MAX_XML_SIZE:
         raise ValueError("Decompressed XMLTV feed is too large")
