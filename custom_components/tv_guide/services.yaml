@@ -1,0 +1,82 @@
+save_bookmark:
+  name: Save programme
+  description: Save a TV programme to the native TV Guide bookmark list.
+  fields:
+    id:
+      required: true
+      example: "ard-202610132015"
+      selector:
+        text:
+    title:
+      required: true
+      selector:
+        text:
+    channel:
+      required: true
+      selector:
+        text:
+    channel_id:
+      required: true
+      selector:
+        text:
+    start:
+      required: true
+      selector:
+        text:
+    end:
+      required: true
+      selector:
+        text:
+save_reminder:
+  name: Save reminder
+  description: Store a programme reminder. Notification delivery is not yet implemented.
+  fields:
+    id:
+      required: true
+      selector:
+        text:
+    title:
+      required: true
+      selector:
+        text:
+    channel:
+      required: true
+      selector:
+        text:
+    channel_id:
+      required: true
+      selector:
+        text:
+    start:
+      required: true
+      selector:
+        text:
+    end:
+      required: true
+      selector:
+        text:
+    minutes:
+      required: false
+      default: 10
+      selector:
+        select:
+          options:
+            - "5"
+            - "10"
+            - "15"
+            - "30"
+remove_saved_programme:
+  name: Remove saved programme
+  description: Remove an item from the native TV Guide bookmark or reminder list.
+  fields:
+    id:
+      required: true
+      selector:
+        text:
+    kind:
+      required: true
+      selector:
+        select:
+          options:
+            - bookmark
+            - reminder
