@@ -2,10 +2,10 @@
 
 from datetime import timedelta
 
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .epg_client import decompress_feed, fetch_programmes
+from .secure_transport import public_epg_session
 from .xmltv import parse_xmltv
 
 
@@ -23,7 +23,8 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
 
     async def _async_update_data(self) -> list[dict]:
         try:
-            payload = await fetch_programmes(async_get_clientsession(self.hass), self.url)
+            async with public_epg_session() as session:
+                payload = await fetch_programmes(session, self.url)
             decoded = await self.hass.async_add_executor_job(decompress_feed, payload)
             return await self.hass.async_add_executor_job(parse_xmltv, decoded)
         except Exception as exc:
