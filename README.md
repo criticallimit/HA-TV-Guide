@@ -2,7 +2,7 @@
 
 **Development preview.** This project adds a custom integration named **TV Guide** to Home Assistant. It is separate from the existing [TV Guide add-on](https://github.com/criticallimit/TV-Guide).
 
-> The integration currently supports installation and creation/removal of a configuration entry only. It does **not** connect to TV Guide's EPG backend. A first test bridge now exposes five native registry-backed entities by mirroring optional state values published by the existing add-on. Continue using the existing add-on for television schedules, reminders and the dashboard card.
+> The integration currently supports installation and creation/removal of a configuration entry only. It does **not** connect to TV Guide's EPG backend. Five native registry-backed entities mirror optional state values published by the existing add-on. Supplying an HTTPS XMLTV URL also enables a separate EPG programme-count sensor. Continue using the existing add-on for television schedules, reminders and the dashboard card.
 
 ## Manual test installation (without HACS)
 
@@ -40,3 +40,11 @@ GitHub Actions contains HACS, Hassfest and Python/JSON syntax validation. A pass
 ## Licence
 
 MIT applies to the project-authored source code. External programme data, channel logos and broadcaster marks are not covered by this licence; see the existing add-on's third-party notices.
+
+## Optional experimental EPG source
+
+During setup, leave the XMLTV URL blank to use only the add-on bridge. To test a standalone feed, enter a public HTTPS XMLTV address. The coordinator fetches and parses this source, normally every three hours, and creates **TV Guide EPG programmes** to report the programme count.
+
+This standalone source is independent of the add-on but does **not** yet reproduce TV Guide's country-specific provider fallback, local logos, bookmarks, reminders, or complete UI. The native bridge's other five sensors still depend on the add-on.
+
+Only use feeds you are authorized to access. The network restrictions and XML parser are experimental and need live integration testing before production use. The first download happens during setup.
