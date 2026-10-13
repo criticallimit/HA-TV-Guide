@@ -6,6 +6,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 import logging
 import re
+from zoneinfo import ZoneInfo
 
 from homeassistant.helpers.event import async_track_point_in_utc_time
 
@@ -62,9 +63,7 @@ class TVGuideReminderScheduler:
             now = datetime.now(timezone.utc)
             if now >= start + timedelta(minutes=5):
                 return
-            time_text = start.astimezone(self.hass.config.time_zone and __import__(
-                "zoneinfo"
-            ).ZoneInfo(self.hass.config.time_zone) or timezone.utc).strftime("%H:%M")
+            time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")
             message = f'{item["channel"]}: „{item["title"]}“ beginnt um {time_text} Uhr.'
             try:
                 await self.hass.services.async_call(
