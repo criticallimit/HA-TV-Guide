@@ -5,6 +5,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import DOMAIN, REFRESH_SOURCE, SOURCE
+from .state_values import owned_state
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -34,7 +35,7 @@ class TVGuideRefreshSensor(BinarySensorEntity):
     @callback
     def _update(self):
         state = self.hass.states.get(REFRESH_SOURCE)
-        self._state = state.state if state is not None and state.attributes.get("tv_guide_source") == SOURCE and state.state in ("on", "off") else None
+        self._state = state.state if state is not None and owned_state(state.attributes, SOURCE) and state.state in ("on", "off") else None
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
