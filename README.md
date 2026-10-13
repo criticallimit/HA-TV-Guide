@@ -123,3 +123,7 @@ A new `TV Guide last native EPG update` timestamp entity reports the last succes
 ## Independent native EPG refresh-running binary sensor
 
 `TV Guide native EPG refresh running` reports whether the integration itself is currently downloading and processing XMLTV. The coordinator notifies registered entity listeners when work starts and finishes, using a `finally` block to reset the value even when download or parsing fails. No additional polling or network traffic is introduced. This does not replace the separate legacy add-on bridge binary sensor. The first refresh occurs before platforms are forwarded, so an initial brief busy state may not be observable in the Home Assistant UI.
+
+## Senderreihenfolge ohne EPG-Neuladen
+
+Eine Änderung ausschließlich der gespeicherten Sender-IDs über `tv_guide.set_channels` oder die Integrationsoptionen löst jetzt keinen neuen EPG-Download und keinen vollständigen Neustart der Integration aus, solange Land und Feed-URL unverändert bleiben. Der native Programmkalender liest die ausgewählten Sender dynamisch aus den aktuellen Config-Entry-Optionen. Änderungen der tatsächlichen EPG-Quelle führen weiterhin zu einem regulären Reload.
