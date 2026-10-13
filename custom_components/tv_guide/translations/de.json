@@ -3,9 +3,10 @@
     "step": {
       "user": {
         "title": "TV Guide",
-        "description": "Optional eine öffentliche HTTPS-XMLTV-Adresse eingeben, um den eigenständigen EPG-Abruf zu testen. Leer lassen für die bisherige Sensorbrücke.",
+        "description": "Optional Land für eine XMLTV-Basisquelle wählen oder eigene HTTPS-Adresse eingeben. Eine eigene Adresse hat Vorrang. Ohne beides erfolgen keine EPG-Downloads.",
         "data": {
-          "feed_url": "XMLTV-Feed-Adresse (HTTPS)"
+          "country": "Land (optional)",
+          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)"
         }
       }
     },
@@ -13,21 +14,24 @@
       "already_configured": "TV Guide ist bereits eingerichtet."
     },
     "error": {
-      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben."
+      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben.",
+      "invalid_country": "Ungültiges Land"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "TV Guide",
-        "description": "Öffentliche HTTPS-XMLTV-Adresse ändern. Leer lassen, um eigenständige EPG-Downloads zu deaktivieren.",
+        "description": "Optional Land für eine XMLTV-Basisquelle wählen oder eigene HTTPS-Adresse eingeben. Eine eigene Adresse hat Vorrang. Ohne beides erfolgen keine EPG-Downloads.",
         "data": {
-          "feed_url": "XMLTV-Feed-Adresse (HTTPS)"
+          "country": "Land (optional)",
+          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)"
         }
       }
     },
     "error": {
-      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben."
+      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben.",
+      "invalid_country": "Ungültiges Land"
     }
   }
 }
