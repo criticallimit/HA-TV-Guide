@@ -67,3 +67,9 @@ The setup and options forms now offer DE, AT, CH, NL, BE, DK, NO, FR, SE and GB,
 ## XMLTV channel catalogue groundwork
 
 The EPG coordinator now extracts each channel's stable XMLTV ID and human-readable display name from the **same downloaded feed**, with no additional network request. The channel metadata is retained in the coordinator and covered by offline unit tests. It is **not yet exposed as a channel-selection UI**, and the official country catalogues, logo assets, user-defined ordering and provider fallbacks still need migration.
+
+## Experimental personal channel selection
+
+Setup and **Configure** now support a comma-separated list of XMLTV channel IDs (up to 200, preserved in the entered order). Leave the field blank to show all feed channels. The native programme calendar displays events for only the selected IDs; the feed is still downloaded once in full, so this does not create additional requests. Selection is stored in the Home Assistant config entry options, and survives restarts and normal updates.
+
+This is an interim technical field, **not** yet the graphical My Channels editor from the TV Guide add-on. Enter exactly the IDs supplied by your XMLTV feed. Channel names are parsed from the same feed but are not yet exposed as an interactive picker, and calendar events remain chronological rather than grouped in a television grid.
