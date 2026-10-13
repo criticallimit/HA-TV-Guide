@@ -109,3 +109,15 @@ get_programmes:
 get_channels:
   name: Get TV channels
   description: Return the original country channel catalogue together with additional channels from the cached EPG feed, including availability and saved selection.
+
+set_channels:
+  name: Set selected TV channels
+  description: Save an ordered list of canonical or XMLTV channel IDs. An empty list means all channels.
+  fields:
+    channels:
+      required: true
+      example:
+        - ard
+        - zdf
+      selector:
+        object:
