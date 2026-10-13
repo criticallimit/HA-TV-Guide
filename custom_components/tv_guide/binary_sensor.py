@@ -10,7 +10,11 @@ from .state_values import owned_state
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Register one native bridge binary sensor."""
-    async_add_entities([TVGuideRefreshSensor()])
+    entities = [TVGuideRefreshSensor()]
+    coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    if coordinator is not None:
+        entities.append(TVGuideNativeRefreshSensor(coordinator))
+    async_add_entities(entities)
 
 
 class TVGuideRefreshSensor(BinarySensorEntity):
@@ -47,3 +51,27 @@ class TVGuideRefreshSensor(BinarySensorEntity):
             async_track_state_change_event(self.hass, [REFRESH_SOURCE], on_change)
         )
         self._update()
+
+
+class TVGuideNativeRefreshSensor(BinarySensorEntity):
+    """Reflect the integration's own download/parse lifecycle."""
+
+    _attr_name = "TV Guide native EPG refresh running"
+    _attr_unique_id = "tv_guide_native_refresh_running"
+    _attr_icon = "mdi:sync"
+    _attr_should_poll = False
+
+    def __init__(self, coordinator):
+        self._coordinator = coordinator
+
+    @property
+    def is_on(self):
+        return self._coordinator.refresh_running
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        self.async_on_remove(self._coordinator.subscribe_refresh(self._refresh_changed))
+
+    @callback
+    def _refresh_changed(self):
+        self.async_write_ha_state()
