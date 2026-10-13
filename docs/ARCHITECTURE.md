@@ -63,3 +63,18 @@ submission require separate review.
 These modules are **not wired into the configuration flow or setup**. No URL is configured and no additional background downloads occur until that wiring, security review, and tests are completed. The integration still relies on add-on-published states for its five entities.
 
 Before enabling network access, add explicit feed selection, protection against local/private-network endpoints and DNS rebinding, end-to-end tests, and review of data-source terms.
+
+## DNS policy development
+
+`dns_policy.py` now validates resolved DNS records, rejecting the entire
+response when **any** returned address is non-public. The policy has offline
+tests for mixed public/private results, loopback, link-local and malformed
+answers.
+
+**This is only the validation component.** It is not yet wired to the
+transport. In particular, a DNS preflight followed by an ordinary aiohttp
+request is insufficient against DNS rebinding: the dedicated HTTP connector
+must use the validated address selection for its actual connection and prevent
+later resolution from bypassing the policy. HTTPS hostname and certificate
+validation must remain enabled. The downloader stays disconnected from
+Home Assistant setup pending that work.
