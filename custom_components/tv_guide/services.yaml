@@ -80,3 +80,28 @@ remove_saved_programme:
           options:
             - bookmark
             - reminder
+get_programmes:
+  name: Get TV programmes
+  description: Return cached XMLTV programmes for a timezone-aware interval, without downloading the feed.
+  fields:
+    channel_id:
+      example: ard
+      selector:
+        text:
+    start:
+      required: true
+      example: "2026-10-13T19:00:00+02:00"
+      selector:
+        text:
+    end:
+      required: true
+      example: "2026-10-13T22:00:00+02:00"
+      selector:
+        text:
+    limit:
+      default: 100
+      selector:
+        number:
+          min: 1
+          max: 500
+          mode: box
