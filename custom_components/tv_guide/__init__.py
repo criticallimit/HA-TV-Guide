@@ -8,6 +8,8 @@ from .const import DOMAIN
 from .coordinator import TVGuideEPGCoordinator
 from .saved_programmes import TVGuideSavedProgrammes
 from .saved_services import async_register_saved_services, async_remove_saved_services
+from .reminder_scheduler import TVGuideReminderScheduler
+import asyncio
 from .country_sources import effective_feed
 
 PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
@@ -20,6 +22,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     saved = TVGuideSavedProgrammes(hass, entry.entry_id)
     await saved.async_load()
     hass.data.setdefault(DOMAIN + "_saved", {})[entry.entry_id] = saved
+    scheduler = TVGuideReminderScheduler(
+        hass, saved, hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock())
+    )
+    hass.data.setdefault(DOMAIN + "_reminder_schedulers", {})[entry.entry_id] = scheduler
+    scheduler.reschedule()
     url = effective_feed(options)
     if url:
         coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""))
@@ -42,6 +49,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
         hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+        scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
+        if scheduler is not None:
+            scheduler.stop()
         hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
         if not hass.data.get(DOMAIN + "_saved"):
             async_remove_saved_services(hass)
