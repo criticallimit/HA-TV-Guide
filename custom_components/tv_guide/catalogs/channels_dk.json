@@ -1,0 +1,232 @@
+{
+  "profile": "standard_dk",
+  "group": "Hauptsender",
+  "note": "Prepared Danish main-channel list. Exact Danish XMLTV IDs are preferred to avoid cross-country fuzzy matches.",
+  "channels": [
+    {
+      "order": 1,
+      "id": "dk_dr1",
+      "name": "DR1",
+      "aliases": [
+        "DR 1"
+      ],
+      "xmltv_ids": [
+        "DR1.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 2,
+      "id": "dk_tv2",
+      "name": "TV 2",
+      "aliases": [
+        "TV2",
+        "TV 2 Danmark"
+      ],
+      "xmltv_ids": [
+        "TV2.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 3,
+      "id": "dk_tv3",
+      "name": "TV3",
+      "aliases": [
+        "TV 3"
+      ],
+      "xmltv_ids": [
+        "TV3.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 4,
+      "id": "dk_kanal5",
+      "name": "Kanal 5",
+      "aliases": [
+        "Kanal5"
+      ],
+      "xmltv_ids": [
+        "Kanal5.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 5,
+      "id": "dk_dr2",
+      "name": "DR2",
+      "aliases": [
+        "DR 2"
+      ],
+      "xmltv_ids": [
+        "DR2.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 6,
+      "id": "dk_tv2echo",
+      "name": "TV 2 Echo",
+      "aliases": [
+        "TV2 Echo"
+      ],
+      "xmltv_ids": [
+        "TV2Echo.dk",
+        "TV2Zulu.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 7,
+      "id": "dk_tv3plus",
+      "name": "TV3+",
+      "aliases": [
+        "TV 3+",
+        "TV3 Plus"
+      ],
+      "xmltv_ids": [
+        "TV3plus.dk",
+        "TV3Plus.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 8,
+      "id": "dk_drramasjang",
+      "name": "DR Ramasjang",
+      "aliases": [
+        "Ramasjang"
+      ],
+      "xmltv_ids": [
+        "DRRamasjang.dk",
+        "DRRamaSjang.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 9,
+      "id": "dk_tv2charlie",
+      "name": "TV 2 Charlie",
+      "aliases": [
+        "TV2 Charlie"
+      ],
+      "xmltv_ids": [
+        "TV2Charlie.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 10,
+      "id": "dk_tv3puls",
+      "name": "TV3 Puls",
+      "aliases": [
+        "TV 3 Puls"
+      ],
+      "xmltv_ids": [
+        "TV3Puls.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 11,
+      "id": "dk_kanal4",
+      "name": "Kanal 4",
+      "aliases": [
+        "Kanal4"
+      ],
+      "xmltv_ids": [
+        "Kanal4.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 12,
+      "id": "dk_dk4",
+      "name": "dk4",
+      "aliases": [
+        "DK4"
+      ],
+      "xmltv_ids": [
+        "dk4.dk",
+        "DK4.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 13,
+      "id": "dk_tv2fri",
+      "name": "TV 2 Fri",
+      "aliases": [
+        "TV2 Fri"
+      ],
+      "xmltv_ids": [
+        "TV2Fri.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 14,
+      "id": "dk_tv3max",
+      "name": "TV3 MAX",
+      "aliases": [
+        "TV 3 MAX",
+        "TV3 Max"
+      ],
+      "xmltv_ids": [
+        "TV3MAX.dk",
+        "TV3Max.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 15,
+      "id": "dk_tv2sport",
+      "name": "TV 2 Sport",
+      "aliases": [
+        "TV2 Sport"
+      ],
+      "xmltv_ids": [
+        "TV2Sport.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 16,
+      "id": "dk_tv3sport",
+      "name": "TV3 Sport",
+      "aliases": [
+        "TV 3 Sport"
+      ],
+      "xmltv_ids": [
+        "TV3Sport.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 17,
+      "id": "dk_see",
+      "name": "See",
+      "aliases": [
+        "SEE"
+      ],
+      "xmltv_ids": [
+        "See.dk",
+        "SEE.dk"
+      ],
+      "xmltv_id_only": true
+    },
+    {
+      "order": 18,
+      "id": "dk_tv2news",
+      "name": "TV 2 News",
+      "aliases": [
+        "TV2 News"
+      ],
+      "xmltv_ids": [
+        "TV2News.dk"
+      ],
+      "xmltv_id_only": true
+    }
+  ]
+}
