@@ -115,3 +115,7 @@ The native integration now initializes the optional EPG coordinator before insta
 ## Independent next reminder sensor
 
 `TV Guide next native reminder` is a native timestamp entity reading solely from the new integration's persisted reminder list. It reports the next unsent delivery time and exposes the reminder ID, programme title, channel, broadcast start and advance minutes as attributes. State changes are triggered by committed saved-item updates, without depending on the original add-on's REST-published sensor. An offline test covers ordering, sent and expired reminders. The timer delivery path remains experimental until validated in Home Assistant.
+
+## Native last successful EPG update
+
+A new `TV Guide last native EPG update` timestamp entity reports the last successful download-and-parse cycle of the integration itself. The coordinator records the UTC completion timestamp only after both programmes and channel metadata have been processed; failed refresh attempts do not overwrite the previous timestamp. This entity does not depend on the add-on's state-published last-update sensor. The timestamp is in-memory and starts unknown after a restart until a successful initial download.
