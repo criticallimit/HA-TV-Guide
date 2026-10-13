@@ -4,6 +4,7 @@ This migration bridge does not contact EPG providers or the add-on HTTP API.
 """
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
 
@@ -13,7 +14,11 @@ from .state_values import owned_state, parse_count, parse_timestamp
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Create four read-only, registry-backed bridge sensors."""
-    async_add_entities([TVGuideSensor(key, *definition) for key, definition in SENSORS.items()])
+    entities = [TVGuideSensor(key, *definition) for key, definition in SENSORS.items()]
+    coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    if coordinator is not None:
+        entities.append(TVGuideProgrammeCount(coordinator))
+    async_add_entities(entities)
 
 
 class TVGuideSensor(SensorEntity):
@@ -76,3 +81,22 @@ class TVGuideSensor(SensorEntity):
             async_track_state_change_event(self.hass, [self._source_entity], on_change)
         )
         self._update_from_source()
+
+
+class TVGuideProgrammeCount(CoordinatorEntity, SensorEntity):
+    """Show the number of downloaded, parsed programmes."""
+
+    _attr_name = "TV Guide EPG programmes"
+    _attr_unique_id = "tv_guide_native_epg_programme_count"
+    _attr_icon = "mdi:television-guide"
+    _attr_native_unit_of_measurement = "programmes"
+
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+
+    @property
+    def native_value(self):
+        """Return count only when valid EPG data is available."""
+        if self.coordinator.data is None:
+            return None
+        return len(self.coordinator.data)
