@@ -1,0 +1,898 @@
+{
+  "profile": "standard_default",
+  "group": "Hauptsender",
+  "note": "Feste Hauptsender-Reihenfolge für die Programmübersicht. Diese 50 Sender bleiben in dieser Reihenfolge Bestandteil der Hauptsenderliste; fehlende EPG-Daten dürfen Sender nicht aus der Liste entfernen.",
+  "channels": [
+    {
+      "order": 1,
+      "id": "ard",
+      "name": "Das Erste",
+      "aliases": [
+        "ARD",
+        "Das Erste HD"
+      ],
+      "xmltv_ids": [
+        "DasErste.de",
+        "Das.Erste.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/das-erste-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/ard.svg",
+      "logo_file_light": "logos/light/ard.svg"
+    },
+    {
+      "order": 2,
+      "id": "zdf",
+      "name": "ZDF",
+      "aliases": [
+        "ZDF HD"
+      ],
+      "xmltv_ids": [
+        "ZDF.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/zdf-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/zdf.svg",
+      "logo_file_light": "logos/light/zdf.svg"
+    },
+    {
+      "order": 3,
+      "id": "rtl",
+      "name": "RTL",
+      "aliases": [
+        "RTL HD"
+      ],
+      "xmltv_ids": [
+        "RTL.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/rtl-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/rtl.svg",
+      "logo_file_light": "logos/light/rtl.svg"
+    },
+    {
+      "order": 4,
+      "id": "sat1",
+      "name": "Sat.1",
+      "aliases": [
+        "SAT.1",
+        "SAT1",
+        "Sat.1 HD"
+      ],
+      "xmltv_ids": [
+        "SAT1.de",
+        "Sat1.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/sat-1-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/sat1.svg",
+      "logo_file_light": "logos/light/sat1.svg"
+    },
+    {
+      "order": 5,
+      "id": "prosieben",
+      "name": "ProSieben",
+      "aliases": [
+        "Pro 7",
+        "ProSieben HD"
+      ],
+      "xmltv_ids": [
+        "ProSieben.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/pro-sieben-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/prosieben.svg",
+      "logo_file_light": "logos/light/prosieben.svg"
+    },
+    {
+      "order": 6,
+      "id": "kabeleins",
+      "name": "Kabel Eins",
+      "aliases": [
+        "kabel eins",
+        "Kabel 1",
+        "Kabel Eins HD"
+      ],
+      "xmltv_ids": [
+        "KabelEins.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/kabel-eins-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/kabeleins.svg",
+      "logo_file_light": "logos/light/kabeleins.svg"
+    },
+    {
+      "order": 7,
+      "id": "rtlzwei",
+      "name": "RTLZWEI",
+      "aliases": [
+        "RTL Zwei",
+        "RTL II",
+        "RTL2",
+        "RTLZWEI HD"
+      ],
+      "xmltv_ids": [
+        "RTLZwei.de",
+        "RTL2.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/rtl-zwei-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/rtlzwei.svg",
+      "logo_file_light": "logos/light/rtlzwei.svg"
+    },
+    {
+      "order": 8,
+      "id": "vox",
+      "name": "VOX",
+      "aliases": [
+        "VOX HD"
+      ],
+      "xmltv_ids": [
+        "VOX.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/vox-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/vox.svg",
+      "logo_file_light": "logos/light/vox.svg"
+    },
+    {
+      "order": 9,
+      "id": "arte",
+      "name": "arte",
+      "aliases": [
+        "ARTE",
+        "arte HD"
+      ],
+      "xmltv_ids": [
+        "Arte.de",
+        "ARTE.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/arte-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/arte.svg",
+      "logo_file_light": "logos/light/arte.svg"
+    },
+    {
+      "order": 10,
+      "id": "3sat",
+      "name": "3sat",
+      "aliases": [
+        "3sat HD"
+      ],
+      "xmltv_ids": [
+        "3sat.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/3sat-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/3sat.svg",
+      "logo_file_light": "logos/light/3sat.svg"
+    },
+    {
+      "order": 11,
+      "id": "ndr",
+      "name": "NDR",
+      "aliases": [
+        "NDR Fernsehen",
+        "NDR Hamburg",
+        "NDR HD"
+      ],
+      "xmltv_ids": [
+        "NDRFernsehen.de",
+        "NDR.de",
+        "ndr.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/ndr-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/ndr.svg",
+      "logo_file_light": "logos/light/ndr.svg"
+    },
+    {
+      "order": 12,
+      "id": "wdr",
+      "name": "WDR",
+      "aliases": [
+        "WDR Fernsehen",
+        "WDR Fernsehen Köln",
+        "WDR HD"
+      ],
+      "xmltv_ids": [
+        "WDRFernsehen.de",
+        "WDRKoeln.de",
+        "WDR.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/wdr-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/wdr.svg",
+      "logo_file_light": "logos/light/wdr.svg"
+    },
+    {
+      "order": 13,
+      "id": "mdr",
+      "name": "MDR",
+      "aliases": [
+        "MDR Fernsehen",
+        "MDR Sachsen",
+        "MDR HD"
+      ],
+      "xmltv_ids": [
+        "MDRFernsehen.de",
+        "MDR.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/mdr-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/mdr.svg",
+      "logo_file_light": "logos/light/mdr.svg"
+    },
+    {
+      "order": 14,
+      "id": "rbb",
+      "name": "RBB",
+      "aliases": [
+        "rbb Fernsehen",
+        "RBB Berlin",
+        "RBB HD"
+      ],
+      "xmltv_ids": [
+        "RBBBerlin.de",
+        "RBB.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/rbb-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/rbb.svg",
+      "logo_file_light": "logos/light/rbb.svg"
+    },
+    {
+      "order": 15,
+      "id": "br",
+      "name": "BR",
+      "aliases": [
+        "BR Fernsehen",
+        "Bayern",
+        "BR HD"
+      ],
+      "xmltv_ids": [
+        "BRFernsehen.de",
+        "BR.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/br-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/br.svg",
+      "logo_file_light": "logos/light/br.svg"
+    },
+    {
+      "order": 16,
+      "id": "swr",
+      "name": "SWR",
+      "aliases": [
+        "SWR Fernsehen",
+        "SWR BW",
+        "SWR HD",
+        "SWR Fernsehen BW",
+        "SWR Fernsehen Baden-Württemberg",
+        "SWR Fernsehen RP",
+        "SWR Fernsehen Rheinland-Pfalz"
+      ],
+      "xmltv_ids": [
+        "SWRFernsehen.de",
+        "SWR.de",
+        "SWRFernsehenBadenWurttemberg.de",
+        "SWRFernsehenBadenWuerttemberg.de",
+        "SWRFernsehenRheinlandPfalz.de",
+        "SWRFernsehenBadenWurttemberg.de@SD",
+        "SWRFernsehenRheinlandPfalz.de@SD"
+      ],
+      "shared_xmltv_ids": [
+        "SWR/SR.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/swr-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/swr.svg",
+      "logo_file_light": "logos/light/swr.svg"
+    },
+    {
+      "order": 17,
+      "id": "sr",
+      "name": "SR Fernsehen",
+      "aliases": [
+        "SR",
+        "SR Fernsehen HD",
+        "SR Fernsehen",
+        "Saarländischer Rundfunk"
+      ],
+      "xmltv_ids": [
+        "SRFernsehen.de",
+        "SR.de",
+        "SRFernsehen.de@SD",
+        "SR.Fernsehen.de"
+      ],
+      "shared_xmltv_ids": [
+        "SWR/SR.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/sr-fernsehen-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/sr.svg",
+      "logo_file_light": "logos/light/sr.svg"
+    },
+    {
+      "order": 18,
+      "id": "hr",
+      "name": "HR",
+      "aliases": [
+        "hr-fernsehen",
+        "HR Fernsehen",
+        "HR HD"
+      ],
+      "xmltv_ids": [
+        "hrfernsehen.de",
+        "HRFernsehen.de",
+        "HR.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/hr-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/hr.svg",
+      "logo_file_light": "logos/light/hr.svg"
+    },
+    {
+      "order": 19,
+      "id": "radiobremen",
+      "name": "Radio Bremen TV",
+      "aliases": [
+        "Radio Bremen",
+        "Radio Bremen Fernsehen"
+      ],
+      "xmltv_ids": [
+        "RadioBremenFernsehen.de",
+        "RadioBremen.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/radio-bremen-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/radiobremen.svg",
+      "logo_file_light": "logos/light/radiobremen.svg"
+    },
+    {
+      "order": 20,
+      "id": "ardalpha",
+      "name": "ARD-alpha",
+      "aliases": [
+        "ARD alpha",
+        "ARD-alpha HD"
+      ],
+      "xmltv_ids": [
+        "ARDAlpha.de",
+        "ARD-alpha.de",
+        "ardalpha.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/ard-alpha-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/ardalpha.svg",
+      "logo_file_light": "logos/light/ardalpha.svg"
+    },
+    {
+      "order": 21,
+      "id": "phoenix",
+      "name": "Phoenix",
+      "aliases": [
+        "phoenix",
+        "Phoenix HD"
+      ],
+      "xmltv_ids": [
+        "Phoenix.de",
+        "phoenix.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/phoenix-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/phoenix.svg",
+      "logo_file_light": "logos/light/phoenix.svg"
+    },
+    {
+      "order": 22,
+      "id": "tagesschau24",
+      "name": "tagesschau24",
+      "aliases": [
+        "Tagesschau24",
+        "tagesschau24 HD"
+      ],
+      "xmltv_ids": [
+        "Tagesschau24.de",
+        "tagesschau24.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/tagesschau24-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/tagesschau24.svg",
+      "logo_file_light": "logos/light/tagesschau24.svg"
+    },
+    {
+      "order": 23,
+      "id": "zdfneo",
+      "name": "ZDFneo",
+      "aliases": [
+        "ZDF neo",
+        "ZDFneo HD"
+      ],
+      "xmltv_ids": [
+        "ZDFneo.de",
+        "ZDFNeo.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/zdf-neo-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/zdfneo.svg",
+      "logo_file_light": "logos/light/zdfneo.svg"
+    },
+    {
+      "order": 24,
+      "id": "zdfinfo",
+      "name": "ZDFinfo",
+      "aliases": [
+        "ZDF info",
+        "ZDFinfo HD"
+      ],
+      "xmltv_ids": [
+        "ZDFinfo.de",
+        "ZDFInfo.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/cytec/tvlogos/master/zdfinfo.png",
+      "logo_source": "cytec/tvlogos",
+      "logo_file": "logos/dark/zdfinfo.svg",
+      "logo_file_light": "logos/light/zdfinfo.svg"
+    },
+    {
+      "order": 25,
+      "id": "one",
+      "name": "ONE",
+      "aliases": [
+        "One",
+        "ONE HD"
+      ],
+      "xmltv_ids": [
+        "One.de",
+        "ONE.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/one-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/one.svg",
+      "logo_file_light": "logos/light/one.svg"
+    },
+    {
+      "order": 26,
+      "id": "welt",
+      "name": "WELT",
+      "aliases": [
+        "Welt",
+        "N24",
+        "WELT HD"
+      ],
+      "xmltv_ids": [
+        "Welt.de",
+        "WELT.de",
+        "N24.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/welt-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/welt.svg",
+      "logo_file_light": "logos/light/welt.svg"
+    },
+    {
+      "order": 27,
+      "id": "ntv",
+      "name": "n-tv",
+      "aliases": [
+        "N-TV",
+        "ntv",
+        "n-tv HD"
+      ],
+      "xmltv_ids": [
+        "n-tv.de",
+        "NTV.de",
+        "ntv.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/ntv-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/ntv.svg",
+      "logo_file_light": "logos/light/ntv.svg"
+    },
+    {
+      "id": "euronews",
+      "name": "euronews",
+      "aliases": [
+        "Euronews",
+        "EURONEWS"
+      ],
+      "xmltv_ids": [
+        "Euronews.de",
+        "euronews.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/euronews-deutsch-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/euronews.svg",
+      "order": 28,
+      "logo_file_light": "logos/light/euronews.svg"
+    },
+    {
+      "id": "disneychannel",
+      "name": "Disney Channel",
+      "aliases": [
+        "Disney",
+        "Disney Channel HD"
+      ],
+      "xmltv_ids": [
+        "DisneyChannel.de",
+        "Disney.Channel.de",
+        "disneychannel.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/disney-channel-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/disneychannel.svg",
+      "order": 29,
+      "logo_file_light": "logos/light/disneychannel.svg"
+    },
+    {
+      "order": 30,
+      "id": "sixx",
+      "name": "sixx",
+      "aliases": [
+        "SIXX",
+        "sixx HD"
+      ],
+      "xmltv_ids": [
+        "Sixx.de",
+        "sixx.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/sixx-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/sixx.svg",
+      "logo_file_light": "logos/light/sixx.svg"
+    },
+    {
+      "id": "n24doku",
+      "name": "N24 Doku",
+      "aliases": [
+        "N24Doku",
+        "N24 Doku HD"
+      ],
+      "xmltv_ids": [
+        "N24Doku.de",
+        "N24.Doku.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/n24-doku-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/n24doku.svg",
+      "order": 31,
+      "logo_file_light": "logos/light/n24doku.svg"
+    },
+    {
+      "order": 32,
+      "id": "prosiebenmaxx",
+      "name": "ProSieben MAXX",
+      "aliases": [
+        "Pro7 MAXX",
+        "ProSieben Maxx",
+        "ProSieben MAXX HD"
+      ],
+      "xmltv_ids": [
+        "ProSiebenMaxx.de",
+        "ProSiebenMAXX.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/pro-sieben-maxx-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/prosiebenmaxx.svg",
+      "logo_file_light": "logos/light/prosiebenmaxx.svg"
+    },
+    {
+      "order": 33,
+      "id": "dmax",
+      "name": "DMAX",
+      "aliases": [
+        "DMAX HD"
+      ],
+      "xmltv_ids": [
+        "DMAX.de",
+        "Dmax.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/dmax-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/dmax.svg",
+      "logo_file_light": "logos/light/dmax.svg"
+    },
+    {
+      "order": 34,
+      "id": "sat1gold",
+      "name": "Sat.1 Gold",
+      "aliases": [
+        "SAT.1 Gold",
+        "Sat1 Gold",
+        "Sat.1 Gold HD"
+      ],
+      "xmltv_ids": [
+        "Sat1Gold.de",
+        "SAT1Gold.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/sat-1-gold-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/sat1gold.svg",
+      "logo_file_light": "logos/light/sat1gold.svg"
+    },
+    {
+      "id": "voxup",
+      "name": "VOXup",
+      "aliases": [
+        "VOX UP",
+        "VOXup HD",
+        "Voxup"
+      ],
+      "xmltv_ids": [
+        "VOXup.de",
+        "VoxUp.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/vox-up-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/voxup.svg",
+      "order": 35,
+      "logo_file_light": "logos/light/voxup.svg"
+    },
+    {
+      "order": 36,
+      "id": "rtlup",
+      "name": "RTLup",
+      "aliases": [
+        "RTL Up",
+        "RTLplus",
+        "RTL plus"
+      ],
+      "xmltv_ids": [
+        "RTLup.de",
+        "RTLPlus.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/rtl-up-de.png",
+      "caption": "RTLup",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/rtlup.svg",
+      "logo_file_light": "logos/light/rtlup.svg"
+    },
+    {
+      "id": "weltderwunder",
+      "name": "Welt der Wunder",
+      "aliases": [
+        "Welt der Wunder TV",
+        "WELT DER WUNDER TV"
+      ],
+      "xmltv_ids": [
+        "WeltderWunder.de",
+        "WeltDerWunder.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/welt-der-wunder-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/weltderwunder.svg",
+      "order": 37,
+      "logo_file_light": "logos/light/weltderwunder.svg"
+    },
+    {
+      "id": "hgtv",
+      "name": "HGTV",
+      "aliases": [
+        "Home & Garden TV",
+        "HGTV HD"
+      ],
+      "xmltv_ids": [
+        "HGTV.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/hgtv-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/hgtv.svg",
+      "order": 38,
+      "logo_file_light": "logos/light/hgtv.svg"
+    },
+    {
+      "id": "df1",
+      "name": "DF1",
+      "aliases": [
+        "DF 1"
+      ],
+      "xmltv_ids": [
+        "DF1.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/df1-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/df1.svg",
+      "order": 39,
+      "logo_file_light": "logos/light/df1.svg"
+    },
+    {
+      "order": 40,
+      "id": "tlc",
+      "name": "TLC",
+      "aliases": [
+        "TLC HD"
+      ],
+      "xmltv_ids": [
+        "TLC.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/tlc-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/tlc.svg",
+      "logo_file_light": "logos/light/tlc.svg"
+    },
+    {
+      "order": 41,
+      "id": "nitro",
+      "name": "NITRO",
+      "aliases": [
+        "Nitro",
+        "RTL Nitro",
+        "NITRO HD"
+      ],
+      "xmltv_ids": [
+        "Nitro.de",
+        "NITRO.de",
+        "RTLNitro.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/nitro-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/nitro.svg",
+      "logo_file_light": "logos/light/nitro.svg"
+    },
+    {
+      "order": 42,
+      "id": "tele5",
+      "name": "Tele 5",
+      "aliases": [
+        "TELE 5",
+        "Tele5",
+        "TELE 5 HD"
+      ],
+      "xmltv_ids": [
+        "TELE5.de",
+        "Tele5.de",
+        "Tele.5.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/tele-5-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/tele5.svg",
+      "logo_file_light": "logos/light/tele5.svg"
+    },
+    {
+      "order": 43,
+      "id": "superrtl",
+      "name": "Super RTL",
+      "aliases": [
+        "SUPER RTL",
+        "RTL Super",
+        "TOGGO"
+      ],
+      "xmltv_ids": [
+        "SuperRTL.de",
+        "RTLsuper.de",
+        "RTLSuper.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/cytec/tvlogos/master/super-rtl.png",
+      "logo_source": "cytec/tvlogos",
+      "logo_file": "logos/dark/superrtl.svg",
+      "logo_file_light": "logos/light/superrtl.svg"
+    },
+    {
+      "order": 44,
+      "id": "kika",
+      "name": "KiKA",
+      "aliases": [
+        "KIKA",
+        "KiKA HD"
+      ],
+      "xmltv_ids": [
+        "KiKA.de",
+        "KIKA.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/kika-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/kika.svg",
+      "logo_file_light": "logos/light/kika.svg"
+    },
+    {
+      "id": "nickelodeon",
+      "name": "Nickelodeon",
+      "aliases": [
+        "Nick",
+        "Nickelodeon Deutschland",
+        "Nickelodeon HD"
+      ],
+      "xmltv_ids": [
+        "Nickelodeon.de",
+        "Nick.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/nickelodeon-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/nickelodeon.svg",
+      "order": 45,
+      "logo_file_light": "logos/light/nickelodeon.svg"
+    },
+    {
+      "id": "comedycentral",
+      "name": "Comedy Central",
+      "aliases": [
+        "COMEDY CENTRAL",
+        "Comedy Central HD"
+      ],
+      "xmltv_ids": [
+        "ComedyCentral.de",
+        "Comedy.Central.de",
+        "ComedyCentralVIVA.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/cytec/tvlogos/master/comedy-central.png",
+      "logo_source": "cytec/tvlogos",
+      "logo_file": "logos/dark/comedycentral.svg",
+      "order": 46,
+      "logo_file_light": "logos/light/comedycentral.svg"
+    },
+    {
+      "id": "eurosport1",
+      "name": "Eurosport 1",
+      "aliases": [
+        "Eurosport",
+        "EUROSPORT 1",
+        "Eurosport 1 HD"
+      ],
+      "xmltv_ids": [
+        "Eurosport1.de",
+        "Eurosport.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/eurosport-1-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/eurosport1.svg",
+      "order": 47,
+      "logo_file_light": "logos/light/eurosport1.svg"
+    },
+    {
+      "order": 48,
+      "id": "sport1",
+      "name": "SPORT1",
+      "aliases": [
+        "Sport1",
+        "DSF",
+        "SPORT1 HD"
+      ],
+      "xmltv_ids": [
+        "Sport1.de",
+        "SPORT1.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/sport1-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/sport1.svg",
+      "logo_file_light": "logos/light/sport1.svg"
+    },
+    {
+      "id": "esportsone",
+      "name": "eSportsONE",
+      "aliases": [
+        "eSPORTS1",
+        "eSports One",
+        "eSportsONE"
+      ],
+      "xmltv_ids": [
+        "eSports1.de",
+        "eSportsONE.de",
+        "eSportsOne.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/esports-one-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/esportsone.svg",
+      "order": 49,
+      "logo_file_light": "logos/light/esportsone.svg"
+    },
+    {
+      "id": "kabeleinsdoku",
+      "name": "Kabel Eins Doku",
+      "aliases": [
+        "Kabel 1 Doku",
+        "kabel eins Doku",
+        "Kabel Eins Doku HD"
+      ],
+      "xmltv_ids": [
+        "KabelEinsDoku.de",
+        "Kabel1Doku.de"
+      ],
+      "logo_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/kabel-eins-doku-de.png",
+      "logo_source": "tv-logo/tv-logos (bundled theme variants)",
+      "logo_file": "logos/dark/kabeleinsdoku.svg",
+      "order": 50,
+      "logo_file_light": "logos/light/kabeleinsdoku.svg"
+    }
+  ]
+}
