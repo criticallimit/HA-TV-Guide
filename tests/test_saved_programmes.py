@@ -44,6 +44,32 @@ class SavedProgrammeTests(unittest.TestCase):
         self.assertEqual(reminders[0]["minutes"], 15)
         self.assertEqual(reminders[0]["channelId"], "ard")
 
+    def test_storage_change_subscription(self):
+        class FakeStore:
+            def __init__(self):
+                self.writes = []
+            async def async_save(self, data):
+                self.writes.append(data)
+
+        async def run():
+            saved = module.TVGuideSavedProgrammes.__new__(module.TVGuideSavedProgrammes)
+            saved._store = FakeStore()
+            saved.bookmarks = []
+            saved.reminders = []
+            saved._subscribers = set()
+            events = []
+            callback = lambda: events.append("changed")
+            saved.subscribe(callback)
+            await saved.async_save()
+            self.assertEqual(events, ["changed"])
+            saved.unsubscribe(callback)
+            await saved.async_save()
+            self.assertEqual(events, ["changed"])
+            self.assertEqual(len(saved._store.writes), 2)
+
+        import asyncio
+        asyncio.run(run())
+
     def test_expired_and_invalid_rejected(self):
         now = datetime.now(timezone.utc)
         past = {
