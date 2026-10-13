@@ -9,17 +9,20 @@ from homeassistant import config_entries
 from .const import DOMAIN
 from .feed_url import validate_feed_url
 from .country_sources import COUNTRY_FEEDS
+from .channel_selection import parse_channel_selection
 
 CONF_FEED_URL = "feed_url"
 CONF_COUNTRY = "country"
+CONF_CHANNELS = "channels"
 COUNTRY_OPTIONS = {"": "No predefined country", **{code: code.upper() for code in COUNTRY_FEEDS}}
 
 
-def _feed_schema(current_url: str = "", current_country: str = "") -> vol.Schema:
+def _feed_schema(current_url: str = "", current_country: str = "", current_channels: str = "") -> vol.Schema:
     """Allow an empty URL to continue using only the add-on bridge."""
     return vol.Schema({
         vol.Optional(CONF_COUNTRY, default=current_country): vol.In(COUNTRY_OPTIONS),
         vol.Optional(CONF_FEED_URL, default=current_url): str,
+        vol.Optional(CONF_CHANNELS, default=current_channels): str,
     })
 
 
@@ -29,7 +32,11 @@ def _validated_feed(user_input: dict[str, Any]) -> tuple[dict[str, str], dict[st
     country = user_input.get(CONF_COUNTRY, "")
     if country not in COUNTRY_OPTIONS:
         return {}, {CONF_COUNTRY: "invalid_country"}
-    data = {CONF_COUNTRY: country, CONF_FEED_URL: ""}
+    try:
+        selected = parse_channel_selection(user_input.get(CONF_CHANNELS, ""))
+    except ValueError:
+        return {}, {CONF_CHANNELS: "invalid_channels"}
+    data = {CONF_COUNTRY: country, CONF_FEED_URL: "", CONF_CHANNELS: selected}
     if not url:
         return data, {}
     try:
@@ -79,6 +86,9 @@ class TVGuideOptionsFlow(config_entries.OptionsFlow):
         country = self.config_entry.options.get(
             CONF_COUNTRY, self.config_entry.data.get(CONF_COUNTRY, "")
         )
+        channels = self.config_entry.options.get(
+            CONF_CHANNELS, self.config_entry.data.get(CONF_CHANNELS, [])
+        )
         return self.async_show_form(
-            step_id="init", data_schema=_feed_schema(current, country), errors=errors
+            step_id="init", data_schema=_feed_schema(current, country, ", ".join(channels)), errors=errors
         )
