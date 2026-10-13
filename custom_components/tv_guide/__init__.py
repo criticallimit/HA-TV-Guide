@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .coordinator import TVGuideEPGCoordinator
 
-PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR)
+PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
 CONF_FEED_URL = "feed_url"
 
 
