@@ -6,13 +6,15 @@ from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+from .channel_selection import filter_programmes
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Create a programme calendar only when standalone EPG is enabled."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
-        async_add_entities([TVGuideProgrammeCalendar(coordinator)])
+        options = {**entry.data, **entry.options}
+        async_add_entities([TVGuideProgrammeCalendar(coordinator, options.get("channels", []))])
 
 
 class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
@@ -21,8 +23,9 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
     _attr_name = "TV Guide Programmes"
     _attr_unique_id = "tv_guide_xmltv_programmes_calendar"
 
-    def __init__(self, coordinator):
+    def __init__(self, coordinator, selected_channels):
         super().__init__(coordinator)
+        self._selected_channels = selected_channels
 
     @staticmethod
     def _to_event(programme):
@@ -47,7 +50,7 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
         now = datetime.now(timezone.utc)
         events = (
             event
-            for record in (self.coordinator.data or [])
+            for record in filter_programmes(self.coordinator.data or [], self._selected_channels)
             if (event := self._to_event(record)) is not None and event.end > now
         )
         return min(events, key=lambda event: (max(event.start, now), event.start), default=None)
@@ -55,7 +58,7 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
     async def async_get_events(self, hass, start_date, end_date):
         """Retrieve programmes overlapping the requested time window."""
         events = []
-        for record in self.coordinator.data or []:
+        for record in filter_programmes(self.coordinator.data or [], self._selected_channels):
             event = self._to_event(record)
             if event is not None and event.start < end_date and event.end > start_date:
                 events.append(event)
