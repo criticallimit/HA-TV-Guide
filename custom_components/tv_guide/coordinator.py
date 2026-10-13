@@ -8,6 +8,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .epg_client import decompress_feed, fetch_programmes
 from .secure_transport import public_epg_session
 from .xmltv import parse_xmltv
+from .channel_catalog import parse_channel_catalog
 
 
 class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
@@ -21,12 +22,16 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
             update_interval=timedelta(hours=3),
         )
         self.url = url
+        self.channels: list[dict[str, str]] = []
 
     async def _async_update_data(self) -> list[dict]:
         try:
             async with public_epg_session() as session:
                 payload = await fetch_programmes(session, self.url)
             decoded = await self.hass.async_add_executor_job(decompress_feed, payload)
-            return await self.hass.async_add_executor_job(parse_xmltv, decoded)
+            programmes = await self.hass.async_add_executor_job(parse_xmltv, decoded)
+            channels = await self.hass.async_add_executor_job(parse_channel_catalog, decoded)
+            self.channels = channels
+            return programmes
         except Exception as exc:
             raise UpdateFailed(f"EPG update failed: {type(exc).__name__}") from exc
