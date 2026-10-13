@@ -3,9 +3,10 @@
     "step": {
       "user": {
         "title": "TV Guide",
-        "description": "Optionally enter a public HTTPS XMLTV feed URL to test standalone EPG updates. Leave blank to use only the existing add-on state bridge.",
+        "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
         "data": {
-          "feed_url": "XMLTV feed URL (HTTPS)"
+          "country": "Country (optional)",
+          "feed_url": "Custom XMLTV feed URL (optional)"
         }
       }
     },
@@ -13,21 +14,24 @@
       "already_configured": "TV Guide is already configured."
     },
     "error": {
-      "invalid_url": "Enter a valid public HTTPS URL."
+      "invalid_url": "Enter a valid public HTTPS URL.",
+      "invalid_country": "Invalid country"
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "TV Guide",
-        "description": "Change the optional public HTTPS XMLTV feed. Leave blank to disable standalone EPG downloads.",
+        "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
         "data": {
-          "feed_url": "XMLTV feed URL (HTTPS)"
+          "country": "Country (optional)",
+          "feed_url": "Custom XMLTV feed URL (optional)"
         }
       }
     },
     "error": {
-      "invalid_url": "Enter a valid public HTTPS URL."
+      "invalid_url": "Enter a valid public HTTPS URL.",
+      "invalid_country": "Invalid country"
     }
   }
 }
