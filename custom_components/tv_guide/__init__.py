@@ -88,4 +88,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
         if not hass.data.get(DOMAIN + "_saved"):
             async_remove_saved_services(hass)
+        if not hass.data.get(DOMAIN):
+            async_remove_epg_query(hass)
     return success
