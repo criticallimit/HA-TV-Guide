@@ -3,11 +3,17 @@
     "step": {
       "user": {
         "title": "TV Guide",
-        "description": "Development preview: setup only. EPG data and sensors are not connected yet."
+        "description": "Optionally enter a public HTTPS XMLTV feed URL to test standalone EPG updates. Leave blank to use only the existing add-on state bridge.",
+        "data": {
+          "feed_url": "XMLTV feed URL (HTTPS)"
+        }
       }
     },
     "abort": {
       "already_configured": "TV Guide is already configured."
+    },
+    "error": {
+      "invalid_url": "Enter a valid public HTTPS URL."
     }
   }
 }
