@@ -70,6 +70,16 @@ class QueryTests(unittest.TestCase):
         self.assertFalse(response["channels"][-1]["available"])
         self.assertFalse(response["channels"][-1]["selected"])
 
+    def test_set_channel_helper_accepts_known_ids(self):
+        from types import SimpleNamespace
+        coordinator = SimpleNamespace(
+            country="de",
+            canonical_channels=[{"id": "ard", "name": "Das Erste", "xmltv_id": "DasErste.de", "available": True}],
+            channels=[{"id": "DasErste.de", "name": "Das Erste"}],
+        )
+        result = channel_payload(coordinator, ["ard"])
+        self.assertEqual(result["channels"][0]["selected"], True)
+
     def test_filter_channel_and_window(self):
         programmes = [
             {"channel": "ZDF.de", "start": "2026-10-13T19:00:00+00:00", "stop": "2026-10-13T20:00:00+00:00", "title": "ZDF"},
