@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "TV Guide",
+        "description": "Development preview: setup only. EPG data and sensors are not connected yet."
+      }
+    },
+    "abort": {
+      "already_configured": "TV Guide is already configured."
+    }
+  }
+}
