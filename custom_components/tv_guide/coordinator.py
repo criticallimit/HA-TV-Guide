@@ -1,6 +1,7 @@
 """Async EPG coordinator for an opt-in external XMLTV feed."""
 
 from datetime import timedelta
+import logging
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -15,7 +16,7 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
     def __init__(self, hass, url: str):
         super().__init__(
             hass,
-            logger=__import__("logging").getLogger(__name__),
+            logger=logging.getLogger(__name__),
             name="TV Guide EPG",
             update_interval=timedelta(hours=3),
         )
