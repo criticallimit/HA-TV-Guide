@@ -29,7 +29,7 @@ def _validated_feed(user_input: dict[str, Any]) -> tuple[dict[str, str], dict[st
     country = user_input.get(CONF_COUNTRY, "")
     if country not in COUNTRY_OPTIONS:
         return {}, {CONF_COUNTRY: "invalid_country"}
-    data = {CONF_COUNTRY: country} if country else {}
+    data = {CONF_COUNTRY: country, CONF_FEED_URL: ""}
     if not url:
         return data, {}
     try:
