@@ -1,6 +1,6 @@
 """Async EPG coordinator for an opt-in external XMLTV feed."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -24,6 +24,7 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
         )
         self.url = url
         self.country = country
+        self.last_successful_refresh: datetime | None = None
         self.canonical_channels: list[dict] = []
         self.channels: list[dict[str, str]] = []
 
@@ -39,6 +40,7 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
             )
             self.channels = channels
             self.canonical_channels = canonical_channels
+            self.last_successful_refresh = datetime.now(timezone.utc)
             return programmes
         except Exception as exc:
             raise UpdateFailed(f"EPG update failed: {type(exc).__name__}") from exc
