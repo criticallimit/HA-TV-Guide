@@ -55,3 +55,11 @@ The EPG data and locally bundled third-party logos have rights and
 redistribution constraints described in the original repository's
 `THIRD_PARTY_NOTICES.md`. Native integration publication and possible Core
 submission require separate review.
+
+## Experimental native EPG downloader
+
+`epg_client.py` and `coordinator.py` provide an isolated, **not yet activated** HTTPS XMLTV fetcher and a shared 3-hour refresh coordinator. Redirects are disabled, incoming data is bounded to 12 MiB, and gzip decoding and XML parsing run in the Home Assistant executor. The 8 MiB decompressed data limit is deliberately conservative and may reject large country feeds.
+
+These modules are **not wired into the configuration flow or setup**. No URL is configured and no additional background downloads occur until that wiring, security review, and tests are completed. The integration still relies on add-on-published states for its five entities.
+
+Before enabling network access, add explicit feed selection, protection against local/private-network endpoints and DNS rebinding, end-to-end tests, and review of data-source terms.
