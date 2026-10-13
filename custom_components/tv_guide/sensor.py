@@ -19,7 +19,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = [TVGuideSensor(key, *definition) for key, definition in SENSORS.items()]
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
-        entities.extend([TVGuideProgrammeCount(coordinator), TVGuideChannelsCount(coordinator)])
+        entities.extend([TVGuideProgrammeCount(coordinator), TVGuideChannelsCount(coordinator), TVGuideLastRefresh(coordinator)])
     saved = hass.data.get(DOMAIN + "_saved", {}).get(entry.entry_id)
     if saved is not None:
         entities.extend([TVGuideSavedCount(saved, "bookmarks"), TVGuideSavedCount(saved, "reminders"), TVGuideNextReminder(saved)])
@@ -214,3 +214,19 @@ class TVGuideNextReminder(SensorEntity):
     @callback
     def _notify(self):
         self.async_write_ha_state()
+
+
+class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
+    """Last successful native EPG refresh; does not use add-on data."""
+
+    _attr_name = "TV Guide last native EPG update"
+    _attr_unique_id = "tv_guide_native_epg_last_successful_refresh"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_icon = "mdi:update"
+
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+
+    @property
+    def native_value(self):
+        return self.coordinator.last_successful_refresh
