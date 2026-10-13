@@ -53,3 +53,9 @@ During setup, leave the XMLTV URL blank to use only the add-on bridge. To test a
 This standalone source is independent of the add-on but does **not** yet reproduce TV Guide's country-specific provider fallback, local logos, bookmarks, reminders, or complete UI. The native bridge's other five sensors still depend on the add-on.
 
 Only use feeds you are authorized to access. The network restrictions and XML parser are experimental and need live integration testing before production use. The first download happens during setup. If this fetch fails, Home Assistant reports the entry as not ready and retries rather than silently pretending the EPG is available.
+
+## Native programme calendar (experimental)
+
+An optional XMLTV feed now creates **TV Guide Programmes** as a read-only Home Assistant calendar. Each programme becomes a calendar event with start and end, title, description and channel ID (as event location). Open the Home Assistant calendar interface or call `calendar.get_events` to inspect them. The calendar combines all channels into one timeline; overlapping broadcasts are expected. A per-channel programme grid, country source selection, programme artwork and notifications are **not yet implemented**.
+
+The calendar is only created when a standalone feed URL is configured. The XMLTV source must supply timezone-aware timestamps. Existing add-on operation and its reminder system are unchanged.
