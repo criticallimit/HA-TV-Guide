@@ -14,8 +14,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     """Create a programme calendar only when standalone EPG is enabled."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
-        options = {**entry.data, **entry.options}
-        async_add_entities([TVGuideProgrammeCalendar(coordinator, options.get("channels", []))])
+        async_add_entities([TVGuideProgrammeCalendar(coordinator, entry)])
 
 
 class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
@@ -24,9 +23,13 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
     _attr_name = "TV Guide Programmes"
     _attr_unique_id = "tv_guide_xmltv_programmes_calendar"
 
-    def __init__(self, coordinator, selected_channels):
+    def __init__(self, coordinator, entry):
         super().__init__(coordinator)
-        self._selected_channels = selected_channels
+        self._entry = entry
+
+    @property
+    def _selected_channels(self):
+        return self._entry.options.get("channels", self._entry.data.get("channels", []))
 
     def _selected_programmes(self):
         records = self.coordinator.data or []
