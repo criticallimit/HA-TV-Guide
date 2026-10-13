@@ -24,6 +24,7 @@ class FeedURLTests(unittest.TestCase):
             "https://user:pass@example.org/feed", "https://example.org:8443/feed",
             "https://example.org/feed#fragment", "https://example.org/feed\n",
             "https://singlelabel/feed", "https://example.org:bad/feed",
+            "https://8.8.8.8/feed", "https://[2606:4700:4700::1111]/feed",
         )
         for value in invalid:
             with self.subTest(value=value), self.assertRaises(ValueError):
