@@ -25,7 +25,7 @@ To install future test commits without HACS, copy the updated folder over the ol
 
 ## What is next?
 
-- Secure communication or a standalone native EPG backend (the current add-on API is Ingress-oriented).
+- Connect the standalone XMLTV parser to an asynchronous Home Assistant data coordinator and a properly configured programme provider (the add-on API is Ingress-oriented).
 - Standalone native Home Assistant sensor and binary sensor data sources (the temporary native bridge is already implemented).
 - Safe migration from existing REST-published state-only sensors.
 - EPG update coordination and compatibility with the existing dashboard.
