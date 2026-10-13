@@ -15,5 +15,19 @@
     "error": {
       "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "TV Guide",
+        "description": "Öffentliche HTTPS-XMLTV-Adresse ändern. Leer lassen, um eigenständige EPG-Downloads zu deaktivieren.",
+        "data": {
+          "feed_url": "XMLTV-Feed-Adresse (HTTPS)"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben."
+    }
   }
 }
