@@ -3,11 +3,17 @@
     "step": {
       "user": {
         "title": "TV Guide",
-        "description": "Entwicklungsvorschau: Nur die Einrichtung ist möglich. EPG-Daten und Sensoren sind noch nicht angebunden."
+        "description": "Optional eine öffentliche HTTPS-XMLTV-Adresse eingeben, um den eigenständigen EPG-Abruf zu testen. Leer lassen für die bisherige Sensorbrücke.",
+        "data": {
+          "feed_url": "XMLTV-Feed-Adresse (HTTPS)"
+        }
       }
     },
     "abort": {
       "already_configured": "TV Guide ist bereits eingerichtet."
+    },
+    "error": {
+      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben."
     }
   }
 }
