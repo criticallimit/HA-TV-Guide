@@ -4,21 +4,13 @@ from __future__ import annotations
 
 import gzip
 from io import BytesIO
-from urllib.parse import urlsplit
 
 from aiohttp import ClientError, ClientSession, ClientTimeout
 
 from .xmltv import MAX_XML_SIZE
+from .feed_url import validate_feed_url
 
 MAX_WIRE_BYTES = 12 * 1024 * 1024
-
-
-def validate_feed_url(url: str) -> str:
-    """Accept only fully qualified HTTPS URLs without credentials."""
-    parsed = urlsplit(url)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.fragment:
-        raise ValueError("Enter an HTTPS XMLTV feed URL without credentials or fragments")
-    return url
 
 
 async def fetch_programmes(session: ClientSession, url: str) -> bytes:
