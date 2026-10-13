@@ -79,3 +79,7 @@ This is an interim technical field, **not** yet the graphical My Channels editor
 The original ordered main-channel JSON catalogues for all 10 countries are now bundled directly in the integration under `custom_components/tv_guide/catalogs/`. `catalogs.py` loads them without network access and maps feed XMLTV IDs to canonical channel IDs. If a main channel has no matching feed ID, it stays in the catalogue marked unavailable rather than disappearing. The new native **TV Guide EPG channels** sensor reports the count of matched main channels (or raw feed channels without a selected country) and lists unmatched canonical IDs in attributes. Offline tests cover the bundled catalogues and a German alias mapping.
 
 **Limitations:** EPG provider enrichment and all programme UI/personal list/bookmark/reminder workflows are not yet migrated. No compatibility or CI success has been established with a running Home Assistant.
+
+## Canonical sender IDs in calendar (migration)
+
+The programme calendar now accepts both original TV Guide main-channel IDs (e.g. `ard`) and raw XMLTV feed IDs (e.g. `DasErste.de`) in the saved channel selection. Main-channel IDs are mapped to the matching feed ID from the bundled catalogue, and calendar event locations display the resolved broadcaster name. If a selected canonical main channel has no current XMLTV match, its selection yields no broadcasts rather than accidentally showing every channel. Channel mapping is covered by offline tests.
