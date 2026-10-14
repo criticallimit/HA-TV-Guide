@@ -29,11 +29,12 @@ async def main():
         hass.config.skip_pip = True
         try:
             configured = await async_from_config_dict({
-                'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'AT', 'language': 'de'},
+                'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'AT'},
                 'http': {'server_host': '127.0.0.1', 'server_port': 8123},
                 'persistent_notification': {},
             }, hass)
             assert configured is not None
+            await hass.config.async_update(language='de')
             await hass.async_start()
             from custom_components.tv_guide.original_runtime import OriginalRuntime
             with patch.object(OriginalRuntime, 'start_background', lambda *args, **kwargs: None):
@@ -47,7 +48,7 @@ async def main():
                 assert entry.state.value == 'loaded', entry.state
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
-                assert '/tv_guide/frontend/tv-guide-native-card.js?v=4' in hass.data[frontend.DATA_EXTRA_MODULE_URL]
+                assert '/tv_guide/frontend/tv-guide-native-card.js?v=4' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 store = coordinator.backend.runtime.STORE
                 now = datetime.now(timezone.utc)

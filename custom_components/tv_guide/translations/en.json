@@ -2,6 +2,11 @@
   "config": {
     "abort": {
       "already_configured": "TV Guide is already configured."
+    },
+    "step": {
+      "user": {
+        "title": "TV Guide"
+      }
     }
   }
 }
