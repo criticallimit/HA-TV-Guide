@@ -160,12 +160,13 @@ class GuideRuntime:
             if self.closed:
                 return
             with self.runtime.SETTINGS_LOCK:
+                # Retain the active country and countries represented in My Channels.
+                # Drop unselected, idle stores before scheduling network refreshes.
+                self.runtime.prune_country_stores()
                 active = self.runtime.STORE
                 stores = [active, *(store for store in self.runtime.COUNTRY_STORES.values() if store is not active)]
             for store in stores:
                 store.ensure_fresh_async()
-            # Only the active and explicitly selected country stores need refreshes.
-            # Do not download EPG for unrelated countries every maintenance tick.
 
     def refresh_active(self):
         """Use the same owned pool for periodic coordinator refreshes."""
