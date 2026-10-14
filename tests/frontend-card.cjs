@@ -57,7 +57,7 @@ const server = http.createServer((req,res) => {
         let response;
         if(message.service==='get_guide')response=model;
         else if(message.service==='get_saved_programmes')response=saved;
-        else if(message.service==='get_channels')response={channels:model.channels,order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]};
+        else if(message.service==='get_personal_channels')response={channels:model.channels,order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]};
         else if(message.service==='get_ui_settings')response={...model.ui,country:'de'};
         else if(message.service==='set_ui_settings'){Object.assign(model.ui,message.service_data.options);response={ok:true};}
         else throw new Error('Unexpected service');
