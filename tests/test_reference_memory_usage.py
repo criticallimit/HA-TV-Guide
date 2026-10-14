@@ -50,7 +50,7 @@ class MemoryTests(unittest.TestCase):
         self.assertLess(peak, 4 * 1024 * 1024, f"Channel-only scan retained {peak} bytes")
 
     def test_missing_cache_file_during_stat_is_handled(self):
-        with patch.object(self.active.parsed_cache_file.__class__, "exists", return_value=True), \
+        with patch.object(self.active.parsed_cache_file.__class__, "exists", side_effect=AssertionError("redundant exists check")), \
              patch.object(self.active.parsed_cache_file.__class__, "stat", side_effect=FileNotFoundError):
             self.active.cache_schema_current = True
             self.active.source_metrics = [{"source": "fixture"}]
