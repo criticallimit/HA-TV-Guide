@@ -31,6 +31,18 @@ spec.loader.exec_module(module)
 
 
 class SavedProgrammeTests(unittest.TestCase):
+    def test_long_country_qualified_channel_id_survives_storage(self):
+        now=datetime.now(timezone.utc)+timedelta(hours=1)
+        channel_id='de:'+'x'*160
+        item={'id':'long','channelId':channel_id,'start':now.isoformat(),'end':(now+timedelta(hours=1)).isoformat()}
+        self.assertEqual(module.normalize_items([item])[0]['channelId'],channel_id)
+
+    def test_minute_selector_strings_are_supported_but_fractional_values_are_rejected(self):
+        for value in (5,10,15,30,'5','10','15','30'):
+            self.assertEqual(module.normalize_reminder_minutes(value),int(value))
+        for value in (True,10.5,10.0,'10.5','11',None):
+            with self.assertRaises(ValueError):module.normalize_reminder_minutes(value)
+
     def test_original_field_names_and_deduplication(self):
         now = datetime.now(timezone.utc)
         base = {

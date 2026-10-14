@@ -51,3 +51,7 @@ Named card themes retain the original visual editor, HA mode values and dashboar
 ## Manual installation review
 
 Distribution uses manual installation of the complete custom component directory. CI validates the native integration with offline unit/JSON/syntax checks, Hassfest, browser parity and a real Home Assistant smoke test. Calendar range queries capture the current snapshot and selection, then build/filter/sort events in HA's executor. The smoke also exercises the native calendar get_events action.
+
+## Complete action review
+
+The native get_native_guide action validates optional aware timestamps and returns a copied seven-row window when requested; default original-provider timelines remain complete for date navigation. HA reminder select fields may supply numeric strings, which are normalized to supported integer values; fractional and boolean minute values are rejected. Saved channel identifiers share a 200-character bound across the action schema and storage, preserving country-qualified XMLTV identifiers.

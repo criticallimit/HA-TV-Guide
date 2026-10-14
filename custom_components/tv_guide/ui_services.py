@@ -6,7 +6,7 @@ from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from .const import DOMAIN
 from .catalogs import resolve_catalogue_channels
-from .ui_payload import build_guide, personal_payload, ui_settings, normalize_ui_settings
+from .ui_payload import build_guide, guide_at, personal_payload, ui_settings, normalize_ui_settings
 
 SERVICES=('get_native_guide','get_native_channels','get_ui_settings','set_ui_settings')
 PRESENTATION_OPTIONS=('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')
@@ -39,6 +39,14 @@ def async_register_ui_services(hass):
     async def handle(call):
         entry,options=entry_and_options()
         coordinator=hass.data.get(DOMAIN,{}).get(entry.entry_id)
+        requested_at = None
+        if call.service == 'get_native_guide' and call.data.get('at'):
+            try:
+                requested_at = datetime.fromisoformat(call.data['at'])
+                if requested_at.tzinfo is None:
+                    raise ValueError('Timestamp must include a timezone')
+            except (TypeError, ValueError) as exc:
+                raise HomeAssistantError('Invalid guide timestamp') from exc
         if getattr(coordinator,'is_original',False):
             if call.service=='native_request':
                 try:
@@ -54,6 +62,8 @@ def async_register_ui_services(hass):
             endpoint={'get_ui_settings':'settings','get_native_guide':'guide','get_native_channels':'personal-channels'}.get(call.service)
             if endpoint:
                 result=await coordinator.async_original_request(endpoint)
+                if endpoint == 'guide' and requested_at is not None:
+                    return await hass.async_add_executor_job(guide_at, result, requested_at)
                 return result
             if call.service=='set_ui_settings':
                 try:

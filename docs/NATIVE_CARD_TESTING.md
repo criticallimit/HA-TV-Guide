@@ -20,3 +20,5 @@ The real-HA CI smoke uses the official stable HA image and fixture provider data
 11. Leave the guide closed beyond its configured refresh interval and confirm active data refreshes through the maintenance timer. Request a forced refresh while normal work is running; it must not be lost. Check calendar channel selection and overlapping time ranges with a large cached programme set.
 
 12. Choose an installed HA theme in the Lovelace visual card editor. Test light/dark theme mode values, then reset to Home Assistant / Dashboard. The card height and other YAML settings must survive the selection.
+
+13. Call get_native_guide with an aware at timestamp, get_programmes with a time range and calendar.get_events with start_date_time/end_date_time. Test the save_reminder minute selector in HA Developer Tools. A country-qualified sender ID longer than 120 characters must survive native storage and reload.

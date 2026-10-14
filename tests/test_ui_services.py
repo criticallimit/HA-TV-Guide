@@ -1,5 +1,6 @@
 """Response action adapters validate writes and read the native snapshot only."""
 import importlib.util
+from datetime import datetime,timedelta,timezone
 from pathlib import Path
 import sys
 import types
@@ -57,6 +58,27 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
     async def test_unload_removes_all_native_ui_actions(self):
         adapter.async_remove_ui_services(self.hass)
         self.assertEqual(self.handlers,{})
+
+    async def test_original_guide_action_honours_at_without_truncating_default_timelines(self):
+        at=datetime(2030,1,1,tzinfo=timezone.utc)
+        rows=[{'id':str(i),'title':str(i),'start':(at+timedelta(hours=i)).isoformat(),'end':(at+timedelta(hours=i+1)).isoformat(),'icon':'artwork'} for i in range(-2,9)]
+        guide={'country':'de','channels':[{'id':'ard','logo':'original','programs':rows}]}
+        async def request(*args):return guide
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_original=True,async_original_request=request)}
+        window=await self.call('get_native_guide',{'at':at.isoformat()})
+        self.assertEqual([item['id'] for item in window['channels'][0]['programs']],[str(i) for i in range(7)])
+        self.assertEqual(window['channels'][0]['logo'],'original')
+        self.assertEqual(window['channels'][0]['programs'][0]['icon'],'artwork')
+        self.assertEqual(len((await self.call('get_native_guide'))['channels'][0]['programs']),11)
+        self.assertEqual(len(guide['channels'][0]['programs']),11)
+
+    async def test_original_guide_rejects_invalid_timestamp_before_dispatch(self):
+        calls=[]
+        async def request(*args):calls.append(args);return {}
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_original=True,async_original_request=request)}
+        for at in ('bad','2030-01-01T12:00:00'):
+            with self.assertRaises(exc.HomeAssistantError):await self.call('get_native_guide',{'at':at})
+        self.assertEqual(calls,[])
 
     async def test_original_settings_persist_normalized_values_and_notification_destination(self):
         settings={'country':'at','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}

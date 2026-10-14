@@ -15,6 +15,17 @@ _LOGGER = logging.getLogger(__name__)
 
 STORAGE_VERSION = 1
 MAX_ITEMS = 1000
+MAX_CHANNEL_ID_LENGTH = 200
+REMINDER_MINUTES = (5, 10, 15, 30)
+
+
+def normalize_reminder_minutes(value):
+    """Accept supported minute values from numeric clients or HA select fields."""
+    if isinstance(value, str) and value in {str(minutes) for minutes in REMINDER_MINUTES}:
+        value = int(value)
+    if type(value) is not int or value not in REMINDER_MINUTES:
+        raise ValueError("Invalid reminder minutes")
+    return value
 
 
 def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
@@ -39,17 +50,15 @@ def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
             continue
         if reminders:
             try:
-                minutes = int(item.get("minutes", 10))
+                minutes = normalize_reminder_minutes(item.get("minutes", 10))
             except (ValueError, TypeError):
-                continue
-            if minutes not in (5, 10, 15, 30):
                 continue
         else:
             minutes = None
         result = {
             "id": record_id,
             "channel": str(item.get("channel") or "")[:120],
-            "channelId": str(item.get("channelId") or "")[:120],
+            "channelId": str(item.get("channelId") or "")[:MAX_CHANNEL_ID_LENGTH],
             "title": str(item.get("title") or "")[:240],
             "start": start.isoformat(),
             "end": end.isoformat(),

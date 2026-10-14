@@ -129,9 +129,10 @@ get_saved_programmes:
 
 get_native_guide:
   name: Get native TV Guide view
-  description: Return seven programme rows per displayed sender in the original TV Guide presentation model.
+  description: Return the original TV Guide presentation model. An optional timestamp limits each sender to seven overlapping or upcoming programmes.
   fields:
     at:
+      description: Optional ISO timestamp including its timezone.
       selector:
         text:
 get_native_channels:

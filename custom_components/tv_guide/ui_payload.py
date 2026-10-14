@@ -62,6 +62,24 @@ def personal_payload(catalogue,feed_channels,options):
     order=list(dict.fromkeys(aliases.get(key,key) for key in selected if aliases.get(key,key) in known)) if selected else [item['id'] for item in channels[:MAX_DISPLAY_CHANNELS]]
     return {'channels':channels,'order':order,'countries':[country],'supported_countries':[{'code':country,'name':COUNTRY_NAMES.get(country,'XMLTV')} ]}
 
+def guide_at(payload, at):
+    """Copy a full provider view into a bounded timestamp window for HA actions."""
+    channels = []
+    for channel in payload.get('channels', []):
+        programmes = []
+        for item in channel.get('programs', []):
+            try:
+                start = datetime.fromisoformat(item['start'])
+                end = datetime.fromisoformat(item['end'])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if start.tzinfo is not None and end.tzinfo is not None and end > start and end > at:
+                programmes.append(item)
+        programmes.sort(key=lambda item: datetime.fromisoformat(item['start']).timestamp())
+        channels.append({**channel, 'programs': programmes[:7]})
+    return {**payload, 'channels': channels}
+
+
 def build_guide(programmes,catalogue,feed_channels,options,at,refresh_running=False):
     """Return seven rows per visible sender; never transfer the whole feed to the UI."""
     country=options.get('country','')

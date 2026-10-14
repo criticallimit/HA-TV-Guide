@@ -79,6 +79,15 @@ class SavedServiceTests(unittest.IsolatedAsyncioTestCase):
         services_module.async_remove_saved_services(self.hass)
         self.assertEqual(self.hass.services.handlers, {})
 
+    async def test_bookmark_and_reminder_preserve_long_channel_identifiers(self):
+        record={**self.record,'channel_id':'at:'+'x'*160}
+        await self.call('save_bookmark',record)
+        await self.call('save_reminder',{**record,'minutes':'15'})
+        result=await self.call('get_saved_programmes')
+        self.assertEqual(result['bookmarks'][0]['channelId'],record['channel_id'])
+        self.assertEqual(result['reminders'][0]['channelId'],record['channel_id'])
+        self.assertEqual(result['reminders'][0]['minutes'],15)
+
     async def test_read_omits_expired_records_and_returns_independent_snapshot(self):
         await self.call("save_bookmark", self.record)
         old = datetime.now(timezone.utc)-timedelta(days=1)

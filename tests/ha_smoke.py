@@ -108,6 +108,12 @@ async def main():
                 guide = await request('guide')
                 programme = guide['channels'][0]['programs'][0]
                 assert programme['icon'].endswith('programme.jpg')
+                window=await hass.services.async_call('tv_guide','get_native_guide',
+                    {'at':now.isoformat()},blocking=True,return_response=True)
+                assert window['channels'][0]['programs'][0]['id']==programme['id']
+                empty_window=await hass.services.async_call('tv_guide','get_native_guide',
+                    {'at':(now+timedelta(hours=3)).isoformat()},blocking=True,return_response=True)
+                assert empty_window['channels'][0]['programs']==[]
                 queried = await hass.services.async_call('tv_guide','get_programmes',
                     {'start':now.isoformat(),'end':(now+timedelta(hours=3)).isoformat(),'limit':1},
                     blocking=True,return_response=True)
@@ -127,12 +133,15 @@ async def main():
                 await request('settings','POST',{**settings,'columns_desktop':4})
                 await hass.async_block_till_done()
                 assert (await request('settings'))['columns_desktop'] == 4
-                fields = {'id':programme['id'],'title':programme['title'],'channel':'Das Erste','channel_id':'ard',
+                fields = {'id':programme['id'],'title':programme['title'],'channel':'Das Erste','channel_id':'at:'+'x'*160,
                           'start':programme['start'],'end':programme['end']}
                 await hass.services.async_call('tv_guide','save_bookmark',fields,blocking=True)
-                await hass.services.async_call('tv_guide','save_reminder',{**fields,'minutes':10},blocking=True)
+                await hass.services.async_call('tv_guide','save_reminder',{**fields,'minutes':'15'},blocking=True)
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
                 assert len(saved['bookmarks']) == len(saved['reminders']) == 1
+                assert saved['bookmarks'][0]['channelId']==fields['channel_id']
+                assert saved['reminders'][0]['channelId']==fields['channel_id']
+                assert saved['reminders'][0]['minutes']==15
                 count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_native_saved_reminders_count')
                 assert hass.states.get(count_id).state=='1'
                 native_saved=hass.data['tv_guide_saved'][entry.entry_id]
@@ -161,4 +170,3 @@ async def main():
 
 if __name__=='__main__':
     asyncio.run(main())
-
