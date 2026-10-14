@@ -41,7 +41,7 @@ sys.modules.setdefault("homeassistant", ha)
 sys.modules.setdefault("homeassistant.core", core)
 sys.modules.setdefault("homeassistant.exceptions", exc)
 
-for name in ("channel_mapping", "const", "epg_query"):
+for name in ("channel_mapping", "channel_selection", "const", "epg_query"):
     spec = importlib.util.spec_from_file_location(f"{PKG}.{name}", ROOT / f"{name}.py")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
