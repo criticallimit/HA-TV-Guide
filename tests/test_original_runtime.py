@@ -42,6 +42,17 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.assertFalse(hasattr(self.runtime,'load_bookmarks'))
         with self.assertRaises(ValueError):self.backend.request('bookmarks','POST',{})
 
+    def test_prepared_guide_reused_and_invalidated(self):
+        first = self.backend.request('guide', 'GET')
+        self.assertIs(first, self.backend.request('guide', 'GET'))
+        self.backend._backend_changed()
+        updated = self.backend.request('guide', 'GET')
+        self.assertIsNot(updated, first)
+        self.assertIs(updated, self.backend.request('guide', 'GET'))
+        settings = self.backend.request('settings', 'GET')
+        self.backend.request('settings', 'POST', {**settings, 'language': 'en'})
+        self.assertIsNot(self.backend.request('guide', 'GET'), updated)
+
     def test_original_guide_all_countries_picker_and_logos(self):
         guide = self.backend.request('guide','GET')
         self.assertEqual(guide['country'],'de')
