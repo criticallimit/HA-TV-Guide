@@ -117,6 +117,27 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         await asyncio.gather(first, second)
         self.assertEqual(calls, ['close', 'closed'])
 
+    async def test_cancelled_shutdown_waiter_does_not_cancel_cleanup(self):
+        entered = asyncio.Event()
+        release = asyncio.Event()
+        calls = []
+        async def executor(fn, *args):
+            entered.set()
+            await release.wait()
+            return fn(*args)
+        self.coordinator.hass.async_add_executor_job = executor
+        self.coordinator.backend.close = lambda: calls.append('closed')
+        first = asyncio.create_task(self.coordinator.async_stop())
+        await entered.wait()
+        first.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await first
+        second = asyncio.create_task(self.coordinator.async_stop())
+        self.assertFalse(second.done())
+        release.set()
+        await second
+        self.assertEqual(calls, ['closed'])
+
     async def test_maintenance_timer_checks_freshness_independently_of_snapshots(self):
         calls=[]
         self.coordinator.backend.maintain_caches=lambda:calls.append('check')
