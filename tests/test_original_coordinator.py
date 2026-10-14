@@ -92,6 +92,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         c._cancel_preload=lambda:calls.append('cancel')
         c.backend.close=lambda:calls.append('close')
         await c.async_stop()
+        await c.async_stop()
         await c._async_preload(None)
         self.assertEqual(calls,['cancel','close'])
         self.assertIsNone(c._cancel_preload)
