@@ -94,6 +94,28 @@ class SchedulerTests(unittest.TestCase):
             self.assertEqual(saved.saves, 1)
         asyncio.run(run())
 
+    def test_notify_destination_uses_notify_service(self):
+        async def run():
+            scheduler, saved, hass = self._make()
+            scheduler.notification_service = "notify.mobile_app_test"
+            await scheduler._deliver("test")
+            self.assertEqual(len(hass.services.calls), 1)
+            domain, service, payload, blocking = hass.services.calls[0]
+            self.assertEqual((domain, service), ("notify", "mobile_app_test"))
+            self.assertNotIn("notification_id", payload)
+            self.assertTrue(blocking)
+        asyncio.run(run())
+
+    def test_cancelled_timer_callback_does_not_queue_task(self):
+        scheduler, saved, hass = self._make()
+        queued = []
+        hass.async_create_task = lambda coro: queued.append(coro)
+        scheduler.reschedule()
+        callback = timers[0]["callback"]
+        scheduler.stop()
+        callback(datetime.now(timezone.utc))
+        self.assertEqual(queued, [])
+
     def test_failure_does_not_mark_sent(self):
         async def run():
             scheduler, saved, hass = self._make(fail=True)
