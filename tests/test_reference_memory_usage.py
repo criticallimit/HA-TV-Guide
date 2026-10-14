@@ -49,6 +49,15 @@ class MemoryTests(unittest.TestCase):
         self.assertEqual(len(channels), 2)
         self.assertLess(peak, 4 * 1024 * 1024, f"Channel-only scan retained {peak} bytes")
 
+    def test_refresh_backoff_avoids_expensive_cache_scan(self):
+        self.active.refresh_running = True
+        with patch.object(self.active, "_cache_fresh", side_effect=AssertionError("cache scanned")):
+            self.active.ensure_fresh_async()
+        self.active.refresh_running = False
+        self.active.last_refresh_attempt = __import__("time").time()
+        with patch.object(self.active, "_cache_fresh", side_effect=AssertionError("cache scanned")):
+            self.active.ensure_fresh_async()
+
     def test_unused_stores_are_released_but_selection_and_refresh_are_preserved(self):
         selected = app.EPGStore("at")
         refreshing = app.EPGStore("ch")
