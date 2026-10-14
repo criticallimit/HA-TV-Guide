@@ -55,10 +55,10 @@ class OriginalRuntime:
         self._module_name = name
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
         runtime = importlib.util.module_from_spec(spec)
-        runtime.GUIDE_ASSET_ROOT = assets
-        runtime.GUIDE_STORAGE_ROOT = storage
-        runtime.GUIDE_LOCALE = locale
-        runtime.GUIDE_WAKE = self._backend_changed
+        runtime.NATIVE_ASSET_ROOT = assets
+        runtime.NATIVE_STORAGE_ROOT = storage
+        runtime.NATIVE_LOCALE = locale
+        runtime.NATIVE_WAKE = self._backend_changed
         # Persist presentation settings between HA restarts; never touch /data.
         options_path = storage / "options.json"
         try:
