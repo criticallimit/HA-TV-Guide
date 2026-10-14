@@ -16,7 +16,7 @@ Native bookmarks/reminders use HA Store and the event-driven scheduler. All prev
 
 ## Verification and remaining detail work
 
-Inherited provider regression fixtures exercise the copied engine. Existing Python/browser tests cover native storage/reminders and original appearance. CI adds a real HA stable-container startup/actions/reload/unload smoke test with offline provider fixtures. Live provider availability and real notification destinations still require an installation test. The complete source logo library is packaged locally; saved records exist exclusively in the native HA Store. Repository privacy/topics currently block HACS publication validation.
+Inherited provider regression fixtures exercise the copied engine. Existing Python/browser tests cover native storage/reminders and original appearance. CI adds a real HA stable-container startup/actions/reload/unload smoke test with offline provider fixtures. Live provider availability and real notification destinations still require an installation test. The complete source logo library is packaged locally; saved records exist exclusively in the native HA Store. Repository privacy, disabled issues and missing topics currently block HACS publication validation.
 
 Repeated refresh requests share one queued/running job per country store. Periodic coordinator refreshes use the same owned worker pool, so unload drains those requests as well. Native option restoration tolerates corrupt/wrong-root JSON and writes the replacement atomically. Live DE/GB engine checks passed on 14 October 2026; actual HA runtime verification remains fixture-backed.
 
@@ -41,3 +41,5 @@ The logo index contains all 20,292 original image paths, mapped to 18,528 verifi
 The two-minute maintenance timer checks active and retained country caches before inactive preloading. This guarantees freshness even when frequent data/status notifications reschedule the DataUpdateCoordinator timer. Forced requests arriving during non-forced work request one forced follow-up within the same owned job; duplicate already-forced requests remain deduplicated. Shutdown rejects new requests and chunk reads cooperatively, preserving the original network policies; a currently blocked IO call still observes its provider timeout.
 
 Restored native cache records are checked for valid aware date ranges and metadata containers before use. Good rows survive a partially damaged cache. Calendar label lookup happens once per snapshot/range, avoiding a catalogue scan for every programme. Main logos use their own country prefix when another country is active. Browser pixel comparisons now include all ten countries and all eight interface languages.
+
+The sidebar sizes the guide to available viewport height in portrait and landscape. Card heights are finite, bounded values; invalid configuration values fall back to 1000 pixels.

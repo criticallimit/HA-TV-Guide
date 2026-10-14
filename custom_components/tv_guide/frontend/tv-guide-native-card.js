@@ -203,9 +203,11 @@ class TVGuideNativeCard extends HTMLElement {
   }
 
   setConfig(config) {
+    const height = Number(config?.height);
     this._config = {
       ...config,
-      height:Math.max(500, Math.min(2200, Number(config?.height || 1000))),
+      height:Number.isFinite(height) && height > 0
+        ? Math.max(240, Math.min(2200, height)) : 1000,
       theme:String(config?.theme || "").trim()
     };
     this._applyConfiguredTheme();

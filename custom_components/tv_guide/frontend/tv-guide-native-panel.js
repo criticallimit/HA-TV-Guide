@@ -1,4 +1,4 @@
-import "./tv-guide-native-card.js?v=6";
+import "./tv-guide-native-card.js?v=7";
 
 class TVGuideNativePanel extends HTMLElement {
   constructor() {
@@ -14,7 +14,7 @@ class TVGuideNativePanel extends HTMLElement {
       <header><ha-menu-button></ha-menu-button><span>TV Guide</span></header>
       <tv-guide-native-card></tv-guide-native-card>`;
     this._resize = () => this.shadowRoot.querySelector("tv-guide-native-card")
-      .setConfig({height:Math.max(500,window.innerHeight-64)});
+      .setConfig({height:Math.max(240,window.innerHeight-64)});
   }
   set hass(hass) {
     this.shadowRoot.querySelector("tv-guide-native-card").hass = hass;
