@@ -22,20 +22,11 @@
 <p>Open a programme and select <strong>Save</strong>. Find saved programmes under <strong>★ Saved</strong>. For a saved future programme, enable <strong>Remind me</strong> and choose how early to be notified.</p>
 <p>In settings, open <strong>Reminders</strong> and choose Home Assistant or a connected mobile device. Use <strong>Test notification</strong> to check the destination. TV Guide and Home Assistant must be running when the reminder is due.</p>
 <p>Your saved programmes and channel lists are available on devices using the same Home Assistant installation and survive restarts and updates.</p>
-<h2>Add the dashboard card</h2>
-<p>The sidebar needs no extra setup. For your dashboard:</p>
-<ol>
-<li>Open <strong>On your dashboard</strong> in TV Guide settings.</li>
-<li>In Home Assistant, open <strong>Settings → Dashboards → Resources</strong>. Enable advanced mode in your profile if Resources is hidden.</li>
-<li>Add <code>custom:tv-guide-native-card</code> as a <strong>JavaScript module</strong>.</li>
-<li>Reload Home Assistant and add the <strong>TV Guide</strong> card.</li>
-</ol>
-<p>If this is your first dashboard resource and the card is missing, restart Home Assistant once. The card help in TV Guide lets you check the setup and copy the resource address.</p>
-<h2>When something is missing</h2>
+<h2>Add the dashboard card</h2><p>Add a manual dashboard card with <code>type: custom:tv-guide-native-card</code>. The integration registers the JavaScript resource automatically; no manual resource setup is needed.</p><h2>When something is missing</h2>
 <p><strong>No programme for a channel:</strong> Availability depends on public sources. Confirmed broadcaster data is preferred; other feeds fill gaps. Coverage and updates vary by channel and date. The Netherlands currently uses a checked public programme feed.</p>
 <p><strong>Empty guide after an update or country change:</strong> Let the download finish and reopen the guide after a few minutes.</p>
 <p><strong>No reminder:</strong> Check the destination in settings and send a test notification. Mobile reminders need a device connected to the Home Assistant app.</p>
 <h2>Updates and help</h2>
-<p>Install published updates through the Home Assistant app/add-on store. Changes on the main branch may arrive before the next release.</p>
+<p>To update, copy the current integration into <code>/config/custom_components/tv_guide</code> and restart Home Assistant. This is not an add-on.</p>
 <p><a href="https://github.com/criticallimit/HA-TV-Guide/issues">Report an issue</a> and include the country, channel, date and time.</p>
 </main></body></html>
