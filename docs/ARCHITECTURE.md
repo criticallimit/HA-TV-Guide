@@ -17,3 +17,5 @@ Native bookmarks/reminders use HA Store and the event-driven scheduler. All prev
 ## Verification and remaining detail work
 
 Inherited provider regression fixtures exercise the copied engine. Existing Python/browser tests cover native storage/reminders and original appearance. CI adds a real HA stable-container startup/actions/reload/unload smoke test with offline provider fixtures. Live provider availability and real notification destinations still require an installation test. Additional station assets use text logos until their full library is packaged; explicit saved-data migration remains separate. Repository privacy/topics currently block HACS publication validation.
+
+Repeated refresh requests share one queued/running job per country store. Periodic coordinator refreshes use the same owned worker pool, so unload drains those requests as well. Native option restoration tolerates corrupt/wrong-root JSON and writes the replacement atomically. Live DE/GB engine checks passed on 14 October 2026; actual HA runtime verification remains fixture-backed.

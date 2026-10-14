@@ -63,7 +63,7 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
             # Setup must not wait for all broadcaster endpoints to finish.
             await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
         else:
-            await self.hass.async_add_executor_job(self.backend.runtime.STORE.refresh)
+            await self.hass.async_add_executor_job(self.backend.refresh_active)
         return await self._snapshot()
 
     async def async_original_request(self, endpoint, method="GET", body=None):

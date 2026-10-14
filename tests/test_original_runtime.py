@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor
 import types
 import unittest
 from unittest.mock import patch
@@ -27,6 +29,7 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.backend = module.OriginalRuntime(Path(self.temp.name)/'entry', {'country':'de'}, {'language':'de','country':'DE'}, lambda:None)
         self.addCleanup(self.backend.close)
         self.runtime = self.backend.runtime
+        self.submit = self.runtime.start_background
         self.runtime.start_background = lambda *args, **kwargs: None
 
     def test_startup_is_isolated_from_addon_paths_and_supervisor(self):
@@ -77,6 +80,72 @@ class OriginalRuntimeTests(unittest.TestCase):
         settings=self.backend.request('settings','GET')
         with self.assertRaises(ValueError):self.backend.request('settings','POST',{**settings,'country':'invalid'})
         self.assertEqual(self.backend.request('settings','GET')['country'],'de')
+
+    def test_duplicate_refresh_requests_share_one_owned_job(self):
+        started = threading.Event()
+        release = threading.Event()
+        calls = []
+        def refresh(force=False):
+            calls.append(force)
+            started.set()
+            self.assertTrue(release.wait(5))
+        try:
+            first = self.submit(refresh)
+            self.assertTrue(started.wait(5))
+            self.assertIs(self.submit(refresh, force=True), first)
+            self.assertEqual(len(self.backend._jobs), 1)
+        finally:
+            release.set()
+        first.result(timeout=5)
+        self.assertEqual(calls, [False])
+
+    def test_periodic_refresh_uses_the_owned_pool(self):
+        calls = []
+        self.runtime.STORE.refresh = lambda: calls.append(threading.current_thread().name)
+        self.backend.refresh_active()
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(calls[0].startswith('tv-guide-native'))
+
+    def test_corrupt_native_options_do_not_prevent_startup(self):
+        root = self.runtime.OPTIONS_FILE.parent
+        self.backend.close()
+        for value in ('{broken', '[]'):
+            with self.subTest(value=value):
+                (root/'options.json').write_text(value, encoding='utf-8')
+                module = type(self.backend)
+                replacement = module(root, {'country':'at'}, {'language':'de'}, lambda:None)
+                try:
+                    self.assertEqual(replacement.request('settings','GET')['country'], 'at')
+                    self.assertFalse((root/'options.tmp').exists())
+                finally:
+                    replacement.close()
+
+    def test_unload_waits_for_running_worker_and_blocks_new_submissions(self):
+        started = threading.Event()
+        release = threading.Event()
+        closing = threading.Event()
+        closed = threading.Event()
+        def work():
+            started.set()
+            self.assertTrue(release.wait(5))
+        def close():
+            closing.set()
+            self.backend.close()
+            closed.set()
+        try:
+            job = self.submit(work)
+            self.assertTrue(started.wait(5))
+            with ThreadPoolExecutor(max_workers=1) as closer:
+                future = closer.submit(close)
+                self.assertTrue(closing.wait(5))
+                self.assertFalse(closed.wait(0.05))
+                release.set()
+                future.result(timeout=5)
+        finally:
+            release.set()
+        self.assertTrue(job.done())
+        self.assertTrue(self.backend.closed)
+        self.assertIsNone(self.submit(lambda: self.fail('Must not run after unload')))
 
 
 if __name__=='__main__':unittest.main()

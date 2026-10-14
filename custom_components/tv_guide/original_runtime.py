@@ -5,6 +5,7 @@ from hashlib import sha256
 import importlib.util
 from io import BytesIO
 import json
+import logging
 from pathlib import Path
 import sys
 import threading
@@ -13,6 +14,7 @@ import zipfile
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
 POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
+_LOGGER = logging.getLogger(__name__)
 
 
 class OriginalRuntime:
@@ -32,6 +34,7 @@ class OriginalRuntime:
         self.closed = False
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide-native")
+        self._jobs = {}
         self._wake = wake
         name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
         self._module_name = name
@@ -44,8 +47,15 @@ class OriginalRuntime:
         runtime.NATIVE_WAKE = wake
         # Persist presentation settings between HA restarts; never touch /data.
         options_path = storage / "options.json"
-        previous = json.loads(options_path.read_text(encoding="utf-8")) if options_path.exists() else {}
-        options_path.write_text(json.dumps({**previous, **options, "country": options.get("country") or "de"}), encoding="utf-8")
+        try:
+            previous = json.loads(options_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            previous = {}
+        if not isinstance(previous, dict):
+            previous = {}
+        options_tmp = options_path.with_suffix(".tmp")
+        options_tmp.write_text(json.dumps({**previous, **options, "country": options.get("country") or "de"}), encoding="utf-8")
+        options_tmp.replace(options_path)
         sys.modules[name] = runtime
         try:
             spec.loader.exec_module(runtime)
@@ -77,8 +87,29 @@ class OriginalRuntime:
         with self._lock:
             if self.closed:
                 return
+            # Bound methods identify a particular country store. Keep at most
+            # one queued/running refresh per store, including forced requests.
+            if function in self._jobs:
+                return self._jobs[function]
             future = self._pool.submit(function, **kwargs)
-            future.add_done_callback(lambda _: self._wake())
+            self._jobs[function] = future
+            def finished(job):
+                with self._lock:
+                    self._jobs.pop(function, None)
+                if not job.cancelled():
+                    try:
+                        job.result()
+                    except Exception:
+                        _LOGGER.exception("TV Guide provider worker failed")
+                self._wake()
+            future.add_done_callback(finished)
+            return future
+
+    def refresh_active(self):
+        """Use the same owned pool for periodic coordinator refreshes."""
+        future = self.start_background(self.runtime.STORE.refresh)
+        if future is not None:
+            future.result()
 
     def request(self, endpoint: str, method: str, body=None):
         """Dispatch the original route code in-process, without opening HTTP ports."""
