@@ -2,7 +2,7 @@ const TV_GUIDE_PICKER_LOGO = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=
 
 const TV_GUIDE_CARD_TRANSLATIONS = {"da":{"TV Guide wird geladen …":"TV Guide indlæses …","TV Guide konnte nicht geladen werden.":"TV Guide kunne ikke indlæses.","TV Guide ist nicht installiert.":"TV Guide er ikke installeret.","TV Guide ist nicht gestartet.":"TV Guide er ikke startet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen ingress-adresse er tilgængelig for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV Guide-kortet kunne ikke oprettes.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide blev ikke fundet i Home Assistant."},"de":{"TV Guide wird geladen …":"TV Guide wird geladen …","TV Guide konnte nicht geladen werden.":"TV Guide konnte nicht geladen werden.","TV Guide ist nicht installiert.":"TV Guide ist nicht installiert.","TV Guide ist nicht gestartet.":"TV Guide ist nicht gestartet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Für TV Guide ist keine Ingress-Adresse verfügbar.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV-Guide-Karte konnte nicht aufgebaut werden.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV-Guide-App wurde in Home Assistant nicht gefunden."},"en":{"TV Guide wird geladen …":"Loading TV Guide …","TV Guide konnte nicht geladen werden.":"Could not load TV Guide.","TV Guide ist nicht installiert.":"TV Guide is not installed.","TV Guide ist nicht gestartet.":"TV Guide is not running.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"No ingress address is available for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Could not create the TV Guide card.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide was not found in Home Assistant."},"nl":{"TV Guide wird geladen …":"TV Guide laden …","TV Guide konnte nicht geladen werden.":"TV Guide kon niet worden geladen.","TV Guide ist nicht installiert.":"TV Guide is niet geïnstalleerd.","TV Guide ist nicht gestartet.":"TV Guide is niet gestart.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Geen ingress-adres beschikbaar voor TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"De TV Guide-kaart kon niet worden gemaakt.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide is niet gevonden in Home Assistant."},"fr":{"TV Guide wird geladen …":"Chargement de TV Guide…","TV Guide konnte nicht geladen werden.":"Impossible de charger TV Guide.","TV Guide ist nicht installiert.":"TV Guide n’est pas installé.","TV Guide ist nicht gestartet.":"TV Guide n’est pas démarré.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Aucune adresse ingress disponible pour TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Impossible de créer la carte TV Guide.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide est introuvable dans Home Assistant."},"it":{"TV Guide wird geladen …":"Caricamento di TV Guide…","TV Guide konnte nicht geladen werden.":"Impossibile caricare TV Guide.","TV Guide ist nicht installiert.":"TV Guide non è installato.","TV Guide ist nicht gestartet.":"TV Guide non è avviato.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Nessun indirizzo ingress disponibile per TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Impossibile creare la scheda TV Guide.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide non è stato trovato in Home Assistant."},"nb":{"TV Guide wird geladen …":"Laster TV Guide …","TV Guide konnte nicht geladen werden.":"Kunne ikke laste TV Guide.","TV Guide ist nicht installiert.":"TV Guide er ikke installert.","TV Guide ist nicht gestartet.":"TV Guide er ikke startet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen ingress-adresse er tilgjengelig for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Kunne ikke opprette TV Guide-kortet.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide ble ikke funnet i Home Assistant."},"sv":{"TV Guide wird geladen …":"Läser in TV Guide …","TV Guide konnte nicht geladen werden.":"TV Guide kunde inte läsas in.","TV Guide ist nicht installiert.":"TV Guide är inte installerad.","TV Guide ist nicht gestartet.":"TV Guide är inte startad.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen Ingress-adress är tillgänglig för TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV Guide-kortet kunde inte skapas.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide hittades inte i Home Assistant."}};
 
-class TVGuideNativeCardEditor extends HTMLElement {
+class TVGuideCardEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode:"open"});
@@ -75,11 +75,11 @@ class TVGuideNativeCardEditor extends HTMLElement {
   }
 }
 
-if (!customElements.get("tv-guide-native-card-editor")) {
-  customElements.define("tv-guide-native-card-editor", TVGuideNativeCardEditor);
+if (!customElements.get("tv-guide-card-editor")) {
+  customElements.define("tv-guide-card-editor", TVGuideCardEditor);
 }
 
-class TVGuideNativeCard extends HTMLElement {
+class TVGuideCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode:"open"});
@@ -193,7 +193,7 @@ class TVGuideNativeCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return document.createElement("tv-guide-native-card-editor");
+    return document.createElement("tv-guide-card-editor");
   }
 
   _t(message) {
@@ -446,6 +446,6 @@ class TVGuideNativeCard extends HTMLElement {
     card.appendChild(iframe);
   }
 }
-if (!customElements.get("tv-guide-native-card")) customElements.define("tv-guide-native-card",TVGuideNativeCard);
+if (!customElements.get("tv-guide-card")) customElements.define("tv-guide-card",TVGuideCard);
 window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === "tv-guide-native-card")) window.customCards.push({type:"tv-guide-native-card",name:"TV Guide Native",description:"Original TV Guide presentation using native Home Assistant data",preview:true});
+if (!window.customCards.some(card => card.type === "tv-guide-card")) window.customCards.push({type:"tv-guide-card",name:"TV Guide",description:"TV programme guide for Home Assistant",preview:true});

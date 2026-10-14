@@ -45,7 +45,9 @@ const server = http.createServer((req,res) => {
   const requests=[];native.on('request',r=>{requests.push(r.url());if(process.env.TVG_DEBUG)console.log('Resource',r.url());});
   console.log('Pages ready');
   await native.goto(base);console.log('Native host ready');
-  await native.addScriptTag({path:path.join(root,'tv-guide-native-card.js')});
+  await native.addScriptTag({path:path.join(root,'tv-guide-card.js')});
+  await native.waitForFunction(()=>customElements.get('tv-guide-card'));
+  assert.equal(await native.evaluate(()=>window.customCards.find(c=>c.type==='tv-guide-card')?.name),'TV Guide');
   await native.evaluate(data=>{
     window.calls=[];window.model=structuredClone(data);window.saved={bookmarks:[],reminders:[]};window.fail='';
     localStorage.setItem('tvguide-native-bookmarks',JSON.stringify([{id:'old-cache-record',title:'Old cache',start:'2040-10-14T20:00:00Z',end:'2040-10-14T21:00:00Z'}]));
@@ -69,9 +71,9 @@ const server = http.createServer((req,res) => {
           for(const key of data.kind==='programme'?['bookmarks','reminders']:data.kind==='bookmark'?['bookmarks']:['reminders'])saved[key]=saved[key].filter(item=>item.id!==data.id);
         }else if(service==='set_channels')model.custom_channel_ids=data.channels.length?data.channels:model.main_channel_ids;
       }};
-    const card=document.createElement('tv-guide-native-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
+    const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
   },fixture);console.log('Native card mounted');
-  const card=native.locator('tv-guide-native-card');
+  const card=native.locator('tv-guide-card');
   const frame=card.locator('iframe').contentFrame();
   await frame.locator('.channel-card').first().waitFor({timeout:20000});
   await original.goto(base+'/reference/index.html?tv_guide_card=1');
@@ -165,7 +167,7 @@ const server = http.createServer((req,res) => {
   const darkVars={"--primary-background-color":"#111318","--secondary-background-color":"#191c22","--card-background-color":"#191c22","--primary-text-color":"#f4f6f8","--secondary-text-color":"#acb3bd","--divider-color":"#343a44"};
   await native.evaluate(vars=>{
     for(const [key,value] of Object.entries(vars))document.documentElement.style.setProperty(key,value);
-    hass.themes.darkMode=true;document.querySelector('tv-guide-native-card').hass={...hass};
+    hass.themes.darkMode=true;document.querySelector('tv-guide-card').hass={...hass};
   },darkVars);
   await original.evaluate(vars=>window.postMessage({type:'tv-guide-theme',vars,darkMode:true},location.origin),darkVars);
   await frame.locator('html[data-ha-theme="dark"]').waitFor();
@@ -177,32 +179,32 @@ const server = http.createServer((req,res) => {
 
   await native.evaluate(()=>{
     hass.themes.themes={Dirk:{'primary-background-color':'#fff','primary-text-color':'#111',modes:{dark:{'primary-color':'#123456'},light:{'primary-color':'#654321'}}},'A <B> & "C"':{}};
-    document.querySelector('tv-guide-native-card').hass={...hass};
-    const editor=customElements.get('tv-guide-native-card').getConfigElement();
-    editor.hass=hass;editor.setConfig({type:'custom:tv-guide-native-card',height:1000});
-    editor.addEventListener('config-changed',event=>document.querySelector('tv-guide-native-card').setConfig(event.detail.config));
+    document.querySelector('tv-guide-card').hass={...hass};
+    const editor=customElements.get('tv-guide-card').getConfigElement();
+    editor.hass=hass;editor.setConfig({type:'custom:tv-guide-card',height:1000});
+    editor.addEventListener('config-changed',event=>document.querySelector('tv-guide-card').setConfig(event.detail.config));
     document.body.append(editor);
   });
-  const themeSelect=native.locator('tv-guide-native-card-editor').locator('#theme');
+  const themeSelect=native.locator('tv-guide-card-editor').locator('#theme');
   assert.deepEqual(await themeSelect.locator('option').allTextContents(),['Home Assistant / Dashboard','A <B> & "C"','Dirk']);
   await themeSelect.selectOption('Dirk');
   assert.equal(await native.evaluate(()=>{
-    const editor=document.querySelector('tv-guide-native-card-editor'),select=editor.shadowRoot.getElementById('theme');
+    const editor=document.querySelector('tv-guide-card-editor'),select=editor.shadowRoot.getElementById('theme');
     select.focus();editor.setConfig({...editor._config});editor.hass={...hass,states:{updated:{state:'on'}}};
     return editor.shadowRoot.getElementById('theme')===select&&editor.shadowRoot.activeElement===select&&select.value==='Dirk';
   }),true);
   await frame.locator('html[data-ha-theme="light"]').waitFor();
-  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card')._config.theme),'Dirk');
-  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card')._config.height),1000);
-  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-native-card')).getPropertyValue('--primary-color').trim()),'#123456');
+  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-card')._config.theme),'Dirk');
+  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-card')._config.height),1000);
+  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-card')).getPropertyValue('--primary-color').trim()),'#123456');
   assert.equal(await frame.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--primary-background-color').trim()),'#fff');
-  await native.evaluate(()=>{hass.themes.darkMode=false;document.querySelector('tv-guide-native-card').hass={...hass};});
-  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-native-card')).getPropertyValue('--primary-color').trim()),'#654321');
+  await native.evaluate(()=>{hass.themes.darkMode=false;document.querySelector('tv-guide-card').hass={...hass};});
+  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-card')).getPropertyValue('--primary-color').trim()),'#654321');
   await themeSelect.selectOption('');
   await frame.locator('html[data-ha-theme="dark"]').waitFor();
-  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card').style.getPropertyValue('--primary-background-color')),'');
-  assert.equal(await native.evaluate(()=>Object.hasOwn(document.querySelector('tv-guide-native-card')._config,'theme')&&document.querySelector('tv-guide-native-card')._config.theme!==''),false);
-  await native.evaluate(()=>{document.querySelector('tv-guide-native-card-editor').remove();hass.themes.darkMode=true;document.querySelector('tv-guide-native-card').hass={...hass};});
+  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-card').style.getPropertyValue('--primary-background-color')),'');
+  assert.equal(await native.evaluate(()=>Object.hasOwn(document.querySelector('tv-guide-card')._config,'theme')&&document.querySelector('tv-guide-card')._config.theme!==''),false);
+  await native.evaluate(()=>{document.querySelector('tv-guide-card-editor').remove();hass.themes.darkMode=true;document.querySelector('tv-guide-card').hass={...hass};});
   assert.deepEqual(errors,[]);
   console.log('PASS visual theme picker preserves card configuration, applies mode values and restores dashboard inheritance');
 
@@ -214,7 +216,7 @@ const server = http.createServer((req,res) => {
   assert.ok(mobile.equals(mobileExpected),'Mobile appearance must match the add-on');
   assert.equal(await frame.locator('html').evaluate(el=>el.scrollWidth<=390),true);
   console.log('PASS pixel-identical mobile card view');
-  await native.evaluate(()=>{const card=document.querySelector('tv-guide-native-card');card.remove();document.body.append(card);});
+  await native.evaluate(()=>{const card=document.querySelector('tv-guide-card');card.remove();document.body.append(card);});
   await frame.locator('.channel-card').first().waitFor();
   assert.deepEqual(errors,[]);
   console.log('PASS native card detach/reinsert rebuilds the original frontend');
@@ -235,7 +237,7 @@ const server = http.createServer((req,res) => {
       else throw new Error('Unexpected original runtime route');
       return {response:structuredClone(response)};
     };
-    document.querySelector('tv-guide-native-card').hass=hass;
+    document.querySelector('tv-guide-card').hass=hass;
   });
   await frame.locator('#showChannelSettings').click();
   await frame.locator('#channelSettingsList .channel-settings-row').first().waitFor();
@@ -268,22 +270,22 @@ const server = http.createServer((req,res) => {
   console.log('PASS automatic setup settings omit manual controls; refresh and native test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
-  await native.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-native-panel.js',type:'module'});
-  await native.waitForFunction(()=>customElements.get('tv-guide-native-panel'));
+  await native.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});
+  await native.waitForFunction(()=>customElements.get('tv-guide-panel'));
   await native.evaluate(()=>{
-    document.querySelector('tv-guide-native-card').remove();
-    const panel=document.createElement('tv-guide-native-panel');panel.hass=hass;panel.narrow=false;document.body.append(panel);
+    document.querySelector('tv-guide-card').remove();
+    const panel=document.createElement('tv-guide-panel');panel.hass=hass;panel.narrow=false;document.body.append(panel);
   });
-  const panelFrame=native.locator('tv-guide-native-panel').locator('tv-guide-native-card').locator('iframe').contentFrame();
+  const panelFrame=native.locator('tv-guide-panel').locator('tv-guide-card').locator('iframe').contentFrame();
   await panelFrame.locator('.channel-card').first().waitFor();
-  assert.equal(await native.locator('tv-guide-native-panel').locator('header').count(),0);
+  assert.equal(await native.locator('tv-guide-panel').locator('header').count(),0);
   await native.setViewportSize({width:390,height:700});
-  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-native-panel').shadowRoot.querySelector('tv-guide-native-card').shadowRoot.querySelector('iframe').style.height)<=700);
-  assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
+  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-panel').shadowRoot.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.height)<=700);
+  assert.ok(await native.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
   await native.setViewportSize({width:700,height:390});
-  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-native-panel').shadowRoot.querySelector('tv-guide-native-card').shadowRoot.querySelector('iframe').style.height)<=390);
-  assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=390));
-  assert.equal(await native.evaluate(()=>{const card=document.createElement('tv-guide-native-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
+  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-panel').shadowRoot.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.height)<=390);
+  assert.ok(await native.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=390));
+  assert.equal(await native.evaluate(()=>{const card=document.createElement('tv-guide-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
   assert.deepEqual(errors,[]);
   console.log('PASS automatic sidebar panel loads the native guide and adapts to mobile');
 
@@ -298,12 +300,12 @@ const server = http.createServer((req,res) => {
     const ref=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
     host.on('pageerror',error=>errors.push(error.message));
     await host.clock.setFixedTime(new Date(fixed));await ref.clock.setFixedTime(new Date(fixed));
-    await host.goto(base);await host.addScriptTag({path:path.join(root,'tv-guide-native-card.js')});
+    await host.goto(base);await host.addScriptTag({path:path.join(root,'tv-guide-card.js')});
     await host.evaluate(data=>{
       const hass={language:data.ui.language,locale:{language:data.ui.language},themes:{darkMode:false,themes:{}},services:{tv_guide:{native_request:{}}},async callWS(message){return {response:message.service==='get_saved_programmes'?{bookmarks:[],reminders:[]}:data};}};
-      const card=document.createElement('tv-guide-native-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
+      const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
     },data);
-    const countryCard=host.locator('tv-guide-native-card'),countryFrame=countryCard.locator('iframe').contentFrame();
+    const countryCard=host.locator('tv-guide-card'),countryFrame=countryCard.locator('iframe').contentFrame();
     await countryFrame.locator('.channel-card').first().waitFor();await ref.goto(base+'/reference/index.html?tv_guide_card=1');await ref.locator('.channel-card').first().waitFor();
     const ready=async()=>{await document.fonts.ready;await Promise.all(Array.from(document.images).filter(img=>{const r=img.getBoundingClientRect();return r.width&&r.height&&r.top<innerHeight&&r.bottom>0;}).map(img=>img.decode().catch(()=>{})));document.activeElement?.blur();};
     await countryFrame.locator('body').evaluate(ready);await ref.evaluate(ready);
