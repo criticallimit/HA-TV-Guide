@@ -12,10 +12,10 @@ from .guide_runtime import GuideRuntime
 class TVGuideCoordinator(TVGuideEPGCoordinator):
     """Start with cached/empty channels, then fetch sources in tracked workers."""
 
-    is_original = True
+    is_multi_source = True
 
     def __init__(self, hass, entry, options):
-        super().__init__(hass, "original-providers", options.get("country") or "de", config_entry=entry)
+        super().__init__(hass, "multi-source-providers", options.get("country") or "de", config_entry=entry)
         self.entry = entry
         self.options = options
         self.backend = None
@@ -88,7 +88,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         if not self._closed and self.backend is not None:
             await self.hass.async_add_executor_job(self.backend.maintain_caches)
 
-    async def async_original_request(self, endpoint, method="GET", body=None):
+    async def async_guide_request(self, endpoint, method="GET", body=None):
         if self._closed:
             raise RuntimeError("TV Guide is unloading")
         result = await self.hass.async_add_executor_job(self.backend.request, endpoint, method, body)
