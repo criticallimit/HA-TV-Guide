@@ -46,6 +46,8 @@ const server = http.createServer((req,res) => {
   console.log('Pages ready');
   await native.goto(base);console.log('Native host ready');
   await native.addScriptTag({path:path.join(root,'tv-guide-native-card.js')});
+  await native.waitForFunction(()=>customElements.get('tv-guide-card'));
+  assert.equal(await native.evaluate(()=>window.customCards.find(c=>c.type==='tv-guide-card')?.name),'TV Guide');
   await native.evaluate(data=>{
     window.calls=[];window.model=structuredClone(data);window.saved={bookmarks:[],reminders:[]};window.fail='';
     localStorage.setItem('tvguide-native-bookmarks',JSON.stringify([{id:'old-cache-record',title:'Old cache',start:'2040-10-14T20:00:00Z',end:'2040-10-14T21:00:00Z'}]));
