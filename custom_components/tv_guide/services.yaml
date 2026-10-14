@@ -113,7 +113,7 @@ get_channels:
 
 set_channels:
   name: Set selected TV channels
-  description: Save an ordered list of canonical or XMLTV channel IDs. An empty list means all channels.
+  description: Save an ordered list of active-country canonical or XMLTV channel IDs for the calendar and native programme queries. An empty list means all channels.
   fields:
     channels:
       required: true

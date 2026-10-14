@@ -66,8 +66,9 @@ class ProgrammeTitleTests(unittest.TestCase):
         self.assertEqual(self.store._parse_rtl_programmes(page([teaser]), 'vox', date(2026, 10, 4)), [])
 
     def test_old_cache_refreshes_only_records_from_affected_source(self):
-        wrong = {'title': 'Episode title', 'subtitle': 'Series title', '_source_url': 'https://www.rtl.de/fernsehprogramm/vox/2026-10-04/'}
-        correct = {'title': 'Other programme', '_source_url': 'https://www.open-epg.com/files/germany.xml.gz'}
+        dates = {'start':'2026-10-04T12:00:00+02:00','end':'2026-10-04T13:00:00+02:00'}
+        wrong = {**dates, 'title': 'Episode title', 'subtitle': 'Series title', '_source_url': 'https://www.rtl.de/fernsehprogramm/vox/2026-10-04/'}
+        correct = {**dates, 'title': 'Other programme', '_source_url': 'https://www.open-epg.com/files/germany.xml.gz'}
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'parsed.json'
             for version in [9, app.PARSED_CACHE_SCHEMA_VERSION]:

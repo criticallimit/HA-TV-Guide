@@ -16,3 +16,5 @@ The real-HA CI smoke uses the official stable HA image and fixture provider data
 9. Check inactive-country cache warming after two-minute idle intervals; active downloads take priority. Sent reminders must stop contributing to the pending count, and switching to an uncached country must clear the previous last-update timestamp. Native mode should create no add-on bridge entities.
 
 10. Select an additional channel with a matching library asset. Both logo themes should load through /tv_guide/logo/ without any external image request. Unknown logo paths must return 404. Native bookmark counts must ignore stale browser caches and unrelated similarly named entities.
+
+11. Leave the guide closed beyond its configured refresh interval and confirm active data refreshes through the maintenance timer. Request a forced refresh while normal work is running; it must not be lost. Check calendar channel selection and overlapping time ranges with a large cached programme set.

@@ -2,6 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from hashlib import sha256
+from functools import partial
 import importlib.util
 from io import BytesIO
 import json
@@ -12,6 +13,7 @@ import threading
 from urllib.parse import quote
 import zipfile
 from .logo_assets import bundled_logo_library
+from .worker_io import worker_urlopen
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
 POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
@@ -69,13 +71,15 @@ class OriginalRuntime:
             self._pool.shutdown(wait=False, cancel_futures=True)
             raise
         self.runtime = runtime
+        runtime.urlopen = partial(worker_urlopen, runtime.urlopen, lambda:self.closed)
         runtime.start_background = self.start_background
         runtime.normalized_logo_urls = self.logo_urls
 
     def logo_urls(self, channel):
         """Use native main logos and the complete offline station library."""
         raw_id = str(channel.get("id") or "")
-        country = raw_id.partition(":")[0] if ":" in raw_id else self.runtime.STORE.country
+        prefix = raw_id.split(':',1)[0].split('_',1)[0]
+        country = channel.get('source_country') or (prefix if prefix in self.runtime.COUNTRIES else self.runtime.STORE.country)
         channel_id = str(channel.get("source_channel_id") or raw_id).split(":")[-1]
         root = Path(__file__).parent / "frontend" / "app" / "logos"
         result = []
@@ -102,20 +106,50 @@ class OriginalRuntime:
             # Bound methods identify a particular country store. Keep at most
             # one queued/running refresh per store, including forced requests.
             if function in self._jobs:
-                return self._jobs[function]
-            future = self._pool.submit(function, **kwargs)
-            self._jobs[function] = future
-            def finished(job):
+                job = self._jobs[function]
+                if kwargs.get('force') and not job['forced']:
+                    job['pending_force'] = True
+                return job['future']
+            job = {'kwargs': dict(kwargs), 'forced': bool(kwargs.get('force')), 'pending_force': False}
+            self._jobs[function] = job
+            def run():
+                while True:
+                    function(**job['kwargs'])
+                    with self._lock:
+                        if not self.closed and job['pending_force']:
+                            job['pending_force'] = False
+                            job['forced'] = True
+                            job['kwargs']['force'] = True
+                        else:
+                            if self._jobs.get(function) is job:
+                                self._jobs.pop(function)
+                            return
+            future = self._pool.submit(run)
+            job['future'] = future
+            def finished(completed):
                 with self._lock:
-                    self._jobs.pop(function, None)
-                if not job.cancelled():
+                    if self._jobs.get(function) is job:
+                        self._jobs.pop(function)
+                if not completed.cancelled():
                     try:
-                        job.result()
+                        completed.result()
                     except Exception:
                         _LOGGER.exception("TV Guide provider worker failed")
                 self._wake()
             future.add_done_callback(finished)
             return future
+
+    def maintain_caches(self):
+        """Check used caches independently of coordinator notification scheduling."""
+        with self._lock:
+            if self.closed:
+                return
+            with self.runtime.SETTINGS_LOCK:
+                active = self.runtime.STORE
+                stores = [active, *(store for store in self.runtime.COUNTRY_STORES.values() if store is not active)]
+            for store in stores:
+                store.ensure_fresh_async()
+            self.preload_next()
 
     def refresh_active(self):
         """Use the same owned pool for periodic coordinator refreshes."""
@@ -150,8 +184,11 @@ class OriginalRuntime:
     def request(self, endpoint: str, method: str, body=None):
         """Dispatch the original route code in-process, without opening HTTP ports."""
         if method == "GET" and endpoint == "refresh":
-            self.start_background(self.runtime.STORE.refresh, force=True)
-            return {"ok": True, "refresh_started": True}
+            with self._lock:
+                if self.closed:
+                    raise RuntimeError("TV Guide is unloading")
+                self.start_background(self.runtime.STORE.refresh, force=True)
+                return {"ok": True, "refresh_started": True}
         if endpoint not in (GET_ENDPOINTS if method == "GET" else POST_ENDPOINTS if method == "POST" else set()):
             raise ValueError("Unsupported reference operation")
         encoded = json.dumps(body or {}).encode("utf-8")

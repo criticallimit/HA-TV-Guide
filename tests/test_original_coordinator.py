@@ -81,3 +81,11 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         await c._async_preload(None)
         self.assertEqual(calls,['cancel','close'])
         self.assertIsNone(c._cancel_preload)
+
+    async def test_maintenance_timer_checks_freshness_independently_of_snapshots(self):
+        calls=[]
+        self.coordinator.backend.maintain_caches=lambda:calls.append('check')
+        await self.coordinator._async_preload(None)
+        self.coordinator.async_set_updated_data([])
+        await self.coordinator._async_preload(None)
+        self.assertEqual(calls,['check','check'])

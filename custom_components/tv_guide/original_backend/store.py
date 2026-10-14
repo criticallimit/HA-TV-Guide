@@ -97,8 +97,30 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
 
             cached_channels = [
                 item for item in payload.get("channels", [])
-                if isinstance(item, dict) and item.get("id")
+                if isinstance(item, dict) and isinstance(item.get("id"), str) and item.get("id")
             ]
+            for item in cached_channels:
+                retained = []
+                programmes = item.get('programs')
+                for programme in programmes if isinstance(programmes, list) else []:
+                    if not isinstance(programme, dict) or not isinstance(programme.get('title'), str):
+                        continue
+                    try:
+                        start = self.runtime.datetime.fromisoformat(programme['start'])
+                        end = self.runtime.datetime.fromisoformat(programme['end'])
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                    if start.tzinfo is None or end.tzinfo is None or end <= start:
+                        continue
+                    retained.append(programme)
+                item['programs'] = retained
+                item['available'] = bool(retained)
+            try:
+                latest = self.runtime.datetime.fromisoformat(latest_end_raw)
+                if latest.tzinfo is None:
+                    latest_end_raw = None
+            except (TypeError, ValueError):
+                latest_end_raw = None
             if cache_version < 10:
                 # Old RTL records can contain reversed series/episode fields.
                 # Keep other source data while these records are fetched again.
@@ -129,7 +151,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                         "catalog_group": "Hauptsender",
                     })
                 else:
-                    restored.append(dict(item))
+                    restored.append({**item, 'name': str(item.get('name') or channel_id)})
 
             # Older caches may not contain every configured main channel yet.
             existing_ids = {item["id"] for item in restored}
@@ -161,8 +183,11 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             self.channels = restored
             self.last_loaded = payload.get("last_loaded") or payload.get("saved_at")
             self.feed_latest_end = latest_end_raw
-            self.source_metrics = list(payload.get("source_metrics") or [])
-            self.official_metrics = dict(payload.get("official_metrics") or self.official_metrics)
+            metrics = payload.get('source_metrics')
+            self.source_metrics = [item for item in metrics if isinstance(item, dict)] if isinstance(metrics, list) else []
+            official = payload.get('official_metrics')
+            if isinstance(official, dict):
+                self.official_metrics = {**self.official_metrics, **official}
             print(
                 "[TV Guide] Persistenter EPG-Cache sofort geladen: "
                 f"{sum(1 for item in restored if item.get('available'))} von {len(restored)} Sendern",

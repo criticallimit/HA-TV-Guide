@@ -84,7 +84,7 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
 
     async def _async_preload(self, _now):
         if not self._closed and self.backend is not None:
-            await self.hass.async_add_executor_job(self.backend.preload_next)
+            await self.hass.async_add_executor_job(self.backend.maintain_caches)
 
     async def async_original_request(self, endpoint, method="GET", body=None):
         if self._closed:

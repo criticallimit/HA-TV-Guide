@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import json
+from datetime import datetime,timedelta,timezone
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import types
@@ -98,7 +100,57 @@ class OriginalRuntimeTests(unittest.TestCase):
         finally:
             release.set()
         first.result(timeout=5)
-        self.assertEqual(calls, [False])
+        self.assertEqual(calls, [False, True])
+
+    def test_duplicate_forced_refresh_does_not_repeat_the_same_forced_work(self):
+        started,release=threading.Event(),threading.Event()
+        calls=[]
+        def refresh(force=False):
+            calls.append(force);started.set();self.assertTrue(release.wait(5))
+        try:
+            first=self.submit(refresh,force=True)
+            self.assertTrue(started.wait(5))
+            self.assertIs(self.submit(refresh,force=True),first)
+        finally:release.set()
+        first.result(timeout=5)
+        self.assertEqual(calls,[True])
+
+    def test_maintenance_checks_active_then_used_caches_without_open_frontend(self):
+        inactive=self.runtime.EPGStore('at')
+        self.runtime.COUNTRY_STORES['at']=inactive
+        calls=[]
+        with patch.object(self.runtime.STORE,'ensure_fresh_async',side_effect=lambda:calls.append('de')),patch.object(inactive,'ensure_fresh_async',side_effect=lambda:calls.append('at')),patch.object(self.backend,'preload_next',side_effect=lambda:calls.append('preload')):
+            self.backend.maintain_caches()
+        self.assertEqual(calls,['de','at','preload'])
+
+    def test_refresh_after_unload_does_not_report_started(self):
+        self.backend.close()
+        with self.assertRaises(RuntimeError):self.backend.request('refresh','GET')
+
+    def test_foreign_main_logo_uses_its_country_even_when_another_is_active(self):
+        channel=self.runtime.COUNTRY_CATALOGS['gb']['channels'][0]
+        for logo in self.backend.logo_urls(channel):
+            self.assertTrue(logo.startswith('/tv_guide/frontend/app/logos/gb-'),logo)
+
+    def test_damaged_cached_rows_and_metadata_preserve_valid_programmes(self):
+        now=datetime.now(timezone.utc)
+        valid={'title':'Valid cache','start':(now-timedelta(minutes=10)).isoformat(),'end':(now+timedelta(minutes=50)).isoformat()}
+        channel={**self.runtime.STORE.channels[0],'programs':[valid,{'title':'broken','start':'invalid','end':valid['end']},{**valid,'start':'2026-10-14T11:00:00'},None]}
+        payload={'schema_version':10,'country':'de','channels':[channel],'source_metrics':[{'ok':True},'bad'],'official_metrics':['bad'],'feed_latest_end':'invalid'}
+        self.runtime.STORE.parsed_cache_file.write_text(json.dumps(payload),encoding='utf-8')
+        restored=self.runtime.EPGStore('de')
+        self.assertEqual(restored.channels[0]['programs'],[valid])
+        self.assertEqual(restored.source_metrics,[{'ok':True}])
+        self.assertIsNone(restored.feed_latest_end)
+        self.assertTrue(restored._cache_fresh())
+
+    def test_wrong_cached_programme_container_is_replaced_by_empty_native_data(self):
+        channel={**self.runtime.STORE.channels[0],'programs':{'bad':'container'}}
+        payload={'schema_version':10,'country':'de','channels':[channel],'source_metrics':[{'ok':True}]}
+        self.runtime.STORE.parsed_cache_file.write_text(json.dumps(payload),encoding='utf-8')
+        restored=self.runtime.EPGStore('de')
+        self.assertFalse(restored.channels[0]['programs'])
+        self.assertFalse(restored._cache_fresh())
 
     def test_periodic_refresh_uses_the_owned_pool(self):
         calls = []

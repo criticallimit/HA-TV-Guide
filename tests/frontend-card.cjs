@@ -248,5 +248,32 @@ const server = http.createServer((req,res) => {
   assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
   assert.deepEqual(errors,[]);
   console.log('PASS automatic sidebar panel loads the native guide and adapts to mobile');
+
+  const countryInfo=JSON.parse(fs.readFileSync(path.join(reference,'..','data','countries.json'),'utf8'));
+  const languageFor={at:'de',be:'fr',dk:'da',fr:'fr',de:'de',nl:'nl',no:'nb',se:'sv',ch:'it',gb:'en'};
+  for(const [country,language] of Object.entries(languageFor)){
+    const catalogue=JSON.parse(fs.readFileSync(path.join(reference,'..','data',country==='de'?'channels.json':countryInfo[country].catalog),'utf8'));
+    const rows=catalogue.channels.slice(0,5);
+    const data={...structuredClone(fixture),country,ui:{...fixture.ui,language,theme_mode:'light',default_view:'now'},main_channel_ids:rows.map(ch=>ch.id),custom_channel_ids:rows.map(ch=>ch.id),channels:rows.map(ch=>({...ch,source_country:country,available:true,logo_normalized_light:`/tv_guide/frontend/app/logos/${country}-${ch.id}-light.svg`,logo_normalized_dark:`/tv_guide/frontend/app/logos/${country}-${ch.id}-dark.svg`,programs:structuredClone(fixture.channels[0].programs)}))};
+    Object.assign(fixture,data);
+    const host=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+    const ref=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+    host.on('pageerror',error=>errors.push(error.message));
+    await host.clock.setFixedTime(new Date(fixed));await ref.clock.setFixedTime(new Date(fixed));
+    await host.goto(base);await host.addScriptTag({path:path.join(root,'tv-guide-native-card.js')});
+    await host.evaluate(data=>{
+      const hass={language:data.ui.language,locale:{language:data.ui.language},themes:{darkMode:false,themes:{}},services:{tv_guide:{native_request:{}}},async callWS(message){return {response:message.service==='get_saved_programmes'?{bookmarks:[],reminders:[]}:data};}};
+      const card=document.createElement('tv-guide-native-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
+    },data);
+    const countryCard=host.locator('tv-guide-native-card'),countryFrame=countryCard.locator('iframe').contentFrame();
+    await countryFrame.locator('.channel-card').first().waitFor();await ref.goto(base+'/reference/index.html?tv_guide_card=1');await ref.locator('.channel-card').first().waitFor();
+    const ready=async()=>{await document.fonts.ready;await Promise.all(Array.from(document.images).filter(img=>{const r=img.getBoundingClientRect();return r.width&&r.height&&r.top<innerHeight&&r.bottom>0;}).map(img=>img.decode().catch(()=>{})));document.activeElement?.blur();};
+    await countryFrame.locator('body').evaluate(ready);await ref.evaluate(ready);
+    assert.equal(await countryFrame.locator('html').getAttribute('lang'),language);
+    assert.ok((await countryCard.locator('iframe').screenshot()).equals(await ref.screenshot({fullPage:false})),`Country ${country} and language ${language} must retain original pixels`);
+    await host.close();await ref.close();
+  }
+  assert.deepEqual(errors,[]);
+  console.log('PASS pixel parity for all ten countries and all eight interface languages');
   await browser.close();server.close();
 })().catch(error=>{console.error(error);server.close();process.exit(1);});

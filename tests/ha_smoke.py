@@ -72,6 +72,10 @@ async def main():
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
                 assert '/tv_guide/frontend/tv-guide-native-card.js?v=6' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
+                assert coordinator._cancel_preload is not None
+                with patch.object(coordinator.backend,'maintain_caches') as maintenance:
+                    await coordinator._async_preload(None)
+                    maintenance.assert_called_once()
                 import aiohttp
                 source=next(key for key in coordinator.backend._logos.entries if key.startswith('logos/europe/light/'))
                 async with aiohttp.ClientSession() as client:
