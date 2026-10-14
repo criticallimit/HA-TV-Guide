@@ -144,7 +144,7 @@ class OriginalRuntime:
                         completed.result()
                     except Exception:
                         _LOGGER.exception("TV Guide provider worker failed")
-                self._wake()
+                self._backend_changed()
             future.add_done_callback(finished)
             return future
 
