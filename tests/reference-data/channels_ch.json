@@ -1,0 +1,474 @@
+{
+  "profile": "standard_ch",
+  "group": "Hauptsender",
+  "channels": [
+    {
+      "order": 1,
+      "id": "ch_srf1",
+      "name": "SRF 1",
+      "aliases": [
+        "SRF1.ch"
+      ],
+      "xmltv_ids": [
+        "SRF1.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/536ef7.svg",
+      "logo_file": "logos/library/dark/a6bb5d812199dc1007c7.svg",
+      "logo_file_light": "logos/library/light/a6bb5d812199dc1007c7.svg"
+    },
+    {
+      "order": 2,
+      "id": "ch_srf2",
+      "name": "SRF zwei",
+      "aliases": [
+        "SRF2.ch"
+      ],
+      "xmltv_ids": [
+        "SRF2.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/0bd3a6.svg",
+      "logo_file": "logos/library/dark/7cc60ca249631092d454.svg",
+      "logo_file_light": "logos/library/light/7cc60ca249631092d454.svg"
+    },
+    {
+      "order": 3,
+      "id": "ch_srfi",
+      "name": "SRF info",
+      "aliases": [
+        "SRFi.ch"
+      ],
+      "xmltv_ids": [
+        "SRFi.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/716d50.svg",
+      "logo_file": "logos/library/dark/8a68d28c7a82fb71e8c4.svg",
+      "logo_file_light": "logos/library/light/8a68d28c7a82fb71e8c4.svg"
+    },
+    {
+      "id": "ch_3",
+      "name": "3+",
+      "aliases": [
+        "3+.ch",
+        "3+",
+        "3plus"
+      ],
+      "xmltv_ids": [
+        "3+.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/70c0f1.svg",
+      "order": 4,
+      "logo_file": "logos/library/dark/15331ba494bdae94f262.svg",
+      "logo_file_light": "logos/library/light/15331ba494bdae94f262.svg"
+    },
+    {
+      "id": "ch_4",
+      "name": "4+",
+      "aliases": [
+        "4+.ch",
+        "3+ Movies",
+        "3plus-movies"
+      ],
+      "xmltv_ids": [
+        "4+.ch",
+        "3+ Movies.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/f76a365.svg",
+      "order": 5,
+      "logo_file": "logos/library/dark/ef519f7ea8e90ce87f11.svg",
+      "logo_file_light": "logos/library/light/ef519f7ea8e90ce87f11.svg"
+    },
+    {
+      "id": "ch_5",
+      "name": "5+",
+      "aliases": [
+        "5+.ch",
+        "3+ Series",
+        "3plus-series"
+      ],
+      "xmltv_ids": [
+        "5+.ch",
+        "3+ Series.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/8bec761.svg",
+      "order": 6,
+      "logo_file": "logos/library/dark/773d917a551d117932c2.svg",
+      "logo_file_light": "logos/library/light/773d917a551d117932c2.svg"
+    },
+    {
+      "id": "ch_6",
+      "name": "6+",
+      "aliases": [
+        "6+.ch",
+        "3+ Crime",
+        "3plus-crime"
+      ],
+      "xmltv_ids": [
+        "6+.ch",
+        "3+ Crime.ch"
+      ],
+      "logo_url": null,
+      "order": 7,
+      "logo_file": "logos/library/dark/05220170d8496eb171cf.svg",
+      "logo_file_light": "logos/library/light/05220170d8496eb171cf.svg"
+    },
+    {
+      "id": "ch_7_nick_ch",
+      "name": "7+ / Nick CH",
+      "aliases": [
+        "7+ / Nick CH.ch",
+        "3+ Family",
+        "3plus-family"
+      ],
+      "xmltv_ids": [
+        "7+ / Nick CH.ch",
+        "3+ Family.ch"
+      ],
+      "logo_url": null,
+      "order": 8,
+      "logo_file": "logos/library/dark/fb3dc124def067a2744f.svg",
+      "logo_file_light": "logos/library/light/fb3dc124def067a2744f.svg"
+    },
+    {
+      "order": 9,
+      "id": "ch_rts1",
+      "name": "RTS 1",
+      "aliases": [
+        "RTS1.ch"
+      ],
+      "xmltv_ids": [
+        "RTS1.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/857dda.svg",
+      "logo_file": "logos/library/dark/c8809be3c4025c574604.svg",
+      "logo_file_light": "logos/library/light/c8809be3c4025c574604.svg"
+    },
+    {
+      "order": 10,
+      "id": "ch_rts2",
+      "name": "RTS 2",
+      "aliases": [
+        "RTS2.ch"
+      ],
+      "xmltv_ids": [
+        "RTS2.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/c915e35.svg",
+      "logo_file": "logos/library/dark/84ccc8a91e95fa363f2e.svg",
+      "logo_file_light": "logos/library/light/84ccc8a91e95fa363f2e.svg"
+    },
+    {
+      "order": 11,
+      "id": "ch_rsila1",
+      "name": "RSI LA 1",
+      "aliases": [
+        "RSILA1.ch"
+      ],
+      "xmltv_ids": [
+        "RSILA1.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/7156bf6.svg",
+      "logo_file": "logos/library/dark/561da284f5de86659ccf.svg",
+      "logo_file_light": "logos/library/light/561da284f5de86659ccf.svg"
+    },
+    {
+      "order": 12,
+      "id": "ch_rsila2",
+      "name": "RSI LA 2",
+      "aliases": [
+        "RSILA2.ch"
+      ],
+      "xmltv_ids": [
+        "RSILA2.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/f732e34.svg",
+      "logo_file": "logos/library/dark/a95cdfe1b373717d420b.svg",
+      "logo_file_light": "logos/library/light/a95cdfe1b373717d420b.svg"
+    },
+    {
+      "order": 13,
+      "id": "ch_tv24",
+      "name": "TV24",
+      "aliases": [
+        "TV24.ch",
+        "3+ Adrenalin",
+        "3plus-adrenalin"
+      ],
+      "xmltv_ids": [
+        "TV24.ch",
+        "3+ Adrenalin.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/85f2e1a.svg",
+      "logo_file": "logos/library/dark/709015032a40a81d22f0.svg",
+      "logo_file_light": "logos/library/light/709015032a40a81d22f0.svg"
+    },
+    {
+      "order": 14,
+      "id": "ch_tv25",
+      "name": "TV25",
+      "aliases": [
+        "TV25.ch",
+        "3+ Emotion",
+        "3plus-emotion"
+      ],
+      "xmltv_ids": [
+        "TV25.ch",
+        "3+ Emotion.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/9410ee.svg",
+      "logo_file": "logos/library/dark/111642329342b536a79a.svg",
+      "logo_file_light": "logos/library/light/111642329342b536a79a.svg"
+    },
+    {
+      "order": 15,
+      "id": "ch_tele1",
+      "name": "Tele1",
+      "aliases": [
+        "Tele1.ch"
+      ],
+      "xmltv_ids": [
+        "Tele1.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/ec6f496.svg",
+      "logo_file": "logos/library/dark/74b498f999fedf8abcc3.svg",
+      "logo_file_light": "logos/library/light/74b498f999fedf8abcc3.svg"
+    },
+    {
+      "order": 16,
+      "id": "ch_telem1",
+      "name": "TeleM1",
+      "aliases": [
+        "TeleM1.ch"
+      ],
+      "xmltv_ids": [
+        "TeleM1.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/ad3c07.svg",
+      "logo_file": "logos/library/dark/caabbe5659e993a15c03.svg",
+      "logo_file_light": "logos/library/light/caabbe5659e993a15c03.svg"
+    },
+    {
+      "order": 17,
+      "id": "ch_teletop",
+      "name": "TeleTop",
+      "aliases": [
+        "TeleTop.ch"
+      ],
+      "xmltv_ids": [
+        "TeleTop.ch"
+      ],
+      "logo_url": "https://il.srgssr.ch/image-service/dynamic/6106ed.svg",
+      "logo_file": "logos/library/dark/ddc5933db7ff6f63185a.svg",
+      "logo_file_light": "logos/library/light/ddc5933db7ff6f63185a.svg"
+    },
+    {
+      "order": 18,
+      "id": "ch_teleticino",
+      "name": "TeleTicino",
+      "aliases": [
+        "TeleTicino.ch"
+      ],
+      "xmltv_ids": [
+        "TeleTicino.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/library/dark/314e1d976888a6a558a8.svg",
+      "logo_file_light": "logos/library/light/314e1d976888a6a558a8.svg"
+    },
+    {
+      "order": 19,
+      "id": "ch_telebielingue",
+      "name": "TeleBielingue",
+      "aliases": [
+        "TeleBielingue.ch"
+      ],
+      "xmltv_ids": [
+        "TeleBielingue.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/library/dark/91fa96cbfca176711451.svg",
+      "logo_file_light": "logos/library/light/91fa96cbfca176711451.svg"
+    },
+    {
+      "order": 20,
+      "id": "ch_latele",
+      "name": "LaTele",
+      "aliases": [
+        "LaTele.ch"
+      ],
+      "xmltv_ids": [
+        "LaTele.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/library/dark/f2633ee1bc9c5a3d1b53.svg",
+      "logo_file_light": "logos/library/light/f2633ee1bc9c5a3d1b53.svg"
+    },
+    {
+      "order": 21,
+      "id": "ch_startv",
+      "name": "StarTV",
+      "aliases": [
+        "StarTV.ch"
+      ],
+      "xmltv_ids": [
+        "StarTV.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/library/dark/412e2d55e97491cbac7b.svg",
+      "logo_file_light": "logos/library/light/412e2d55e97491cbac7b.svg"
+    },
+    {
+      "order": 22,
+      "id": "ch_zdf",
+      "name": "ZDF",
+      "aliases": [
+        "ZDF.ch"
+      ],
+      "xmltv_ids": [
+        "ZDF.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/zdf.svg",
+      "logo_file_light": "logos/light/zdf.svg"
+    },
+    {
+      "order": 23,
+      "id": "ch_zdfneo",
+      "name": "ZDFneo",
+      "aliases": [
+        "ZDFneo.ch"
+      ],
+      "xmltv_ids": [
+        "ZDFneo.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/zdfneo.svg",
+      "logo_file_light": "logos/light/zdfneo.svg"
+    },
+    {
+      "order": 24,
+      "id": "ch_arte",
+      "name": "Arte",
+      "aliases": [
+        "Arte.ch"
+      ],
+      "xmltv_ids": [
+        "Arte.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/arte.svg",
+      "logo_file_light": "logos/light/arte.svg"
+    },
+    {
+      "order": 25,
+      "id": "ch_artefr",
+      "name": "ArteFr",
+      "aliases": [
+        "ArteFr.ch"
+      ],
+      "xmltv_ids": [
+        "ArteFr.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/arte.svg",
+      "logo_file_light": "logos/light/arte.svg"
+    },
+    {
+      "id": "ch_ard",
+      "name": "ARD",
+      "aliases": [
+        "ARD.ch"
+      ],
+      "xmltv_ids": [
+        "ARD.ch"
+      ],
+      "logo_url": null,
+      "order": 26,
+      "logo_file": "logos/dark/ard.svg",
+      "logo_file_light": "logos/light/ard.svg"
+    },
+    {
+      "id": "ch_3sat",
+      "name": "3sat",
+      "aliases": [
+        "3sat.ch"
+      ],
+      "xmltv_ids": [
+        "3sat.ch"
+      ],
+      "logo_url": null,
+      "order": 27,
+      "logo_file": "logos/dark/3sat.svg",
+      "logo_file_light": "logos/light/3sat.svg"
+    },
+    {
+      "order": 28,
+      "id": "ch_rtl",
+      "name": "RTL Schweiz",
+      "aliases": [
+        "RTLch.ch"
+      ],
+      "xmltv_ids": [
+        "RTLch.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/rtl.svg",
+      "logo_file_light": "logos/light/rtl.svg"
+    },
+    {
+      "order": 29,
+      "id": "ch_prosieben",
+      "name": "ProSieben Schweiz",
+      "aliases": [
+        "Pro7ch.ch"
+      ],
+      "xmltv_ids": [
+        "Pro7ch.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/prosieben.svg",
+      "logo_file_light": "logos/light/prosieben.svg"
+    },
+    {
+      "order": 30,
+      "id": "ch_rtlzwei",
+      "name": "RTLZWEI Schweiz",
+      "aliases": [
+        "RTL2ch.ch"
+      ],
+      "xmltv_ids": [
+        "RTL2ch.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/rtlzwei.svg",
+      "logo_file_light": "logos/light/rtlzwei.svg"
+    },
+    {
+      "order": 31,
+      "id": "ch_vox",
+      "name": "VOX Schweiz",
+      "aliases": [
+        "VOXch.ch"
+      ],
+      "xmltv_ids": [
+        "VOXch.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/vox.svg",
+      "logo_file_light": "logos/light/vox.svg"
+    },
+    {
+      "order": 32,
+      "id": "ch_sat1",
+      "name": "SAT.1 Schweiz",
+      "aliases": [
+        "Sat.1ch.ch"
+      ],
+      "xmltv_ids": [
+        "Sat.1ch.ch"
+      ],
+      "logo_url": null,
+      "logo_file": "logos/dark/sat1.svg",
+      "logo_file_light": "logos/light/sat1.svg"
+    }
+  ]
+}
