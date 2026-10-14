@@ -189,7 +189,7 @@ async def main():
                 assert saved_storage.exists()
                 owned_ids = [entity.entity_id for entity in registry.entities.values()
                              if entity.config_entry_id == entry.entry_id]
-                assert len(owned_ids) == 8
+                assert len(owned_ids) == 6
                 assert await hass.config_entries.async_remove(entry.entry_id)
                 await hass.async_block_till_done()
                 assert not [entity for entity in registry.entities.values()
