@@ -75,7 +75,7 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
         if self.backend is None:
             locale = {"language": self.hass.config.language, "country": self.hass.config.country,
                       "time_zone": self.hass.config.time_zone}
-            storage = Path(self.hass.config.path(".storage", "tv_guide_native", self.entry.entry_id))
+            storage = Path(self.hass.config.path(".storage", "tv_guide_store", self.entry.entry_id))
             self.backend = await self.hass.async_add_executor_job(OriginalRuntime, storage, self.options, locale, self._wake)
             # Setup must not wait for all broadcaster endpoints to finish.
             await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
