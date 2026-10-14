@@ -20,6 +20,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         self.options = options
         self.backend = None
         self._closed = False
+        self._stop_task = None
         self._sync_pending = False
         self._sync_requested = False
         self._sync_lock = asyncio.Lock()
@@ -104,9 +105,13 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         return result
 
     async def async_stop(self, event=None):
-        if self._closed:
-            return
-        self._closed = True
+        """Wait for the same cleanup when unload and shutdown overlap."""
+        if self._stop_task is None:
+            self._closed = True
+            self._stop_task = asyncio.create_task(self._async_close_resources())
+        await asyncio.shield(self._stop_task)
+
+    async def _async_close_resources(self):
         if self._cancel_preload is not None:
             self._cancel_preload()
             self._cancel_preload = None
