@@ -38,19 +38,19 @@ const server = http.createServer((req,res) => {
     browser={newPage:()=>context.newPage(),close:()=>context.close()};
   }else browser=await chromium.launch(launchOptions);
   console.log('Browser ready');
-  const native=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+  const guidePage=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
   const original=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
-  await native.clock.setFixedTime(new Date(fixed));await original.clock.setFixedTime(new Date(fixed));
-  const errors=[];native.on('pageerror',e=>{errors.push(e.message);console.error('Browser error',e.message);});
-  const requests=[];native.on('request',r=>{requests.push(r.url());if(process.env.TVG_DEBUG)console.log('Resource',r.url());});
+  await guidePage.clock.setFixedTime(new Date(fixed));await original.clock.setFixedTime(new Date(fixed));
+  const errors=[];guidePage.on('pageerror',e=>{errors.push(e.message);console.error('Browser error',e.message);});
+  const requests=[];guidePage.on('request',r=>{requests.push(r.url());if(process.env.TVG_DEBUG)console.log('Resource',r.url());});
   console.log('Pages ready');
-  await native.goto(base);console.log('TV Guide host ready');
-  await native.addScriptTag({path:path.join(root,'tv-guide-card.js')});
-  await native.waitForFunction(()=>customElements.get('tv-guide-card'));
-  assert.equal(await native.evaluate(()=>window.customCards.find(c=>c.type==='tv-guide-card')?.name),'TV Guide');
-  await native.evaluate(data=>{
+  await guidePage.goto(base);console.log('TV Guide host ready');
+  await guidePage.addScriptTag({path:path.join(root,'tv-guide-card.js')});
+  await guidePage.waitForFunction(()=>customElements.get('tv-guide-card'));
+  assert.equal(await guidePage.evaluate(()=>window.customCards.find(c=>c.type==='tv-guide-card')?.name),'TV Guide');
+  await guidePage.evaluate(data=>{
     window.calls=[];window.model=structuredClone(data);window.saved={bookmarks:[],reminders:[]};window.fail='';
-    localStorage.setItem('tvguide-native-bookmarks',JSON.stringify([{id:'old-cache-record',title:'Old cache',start:'2040-10-14T20:00:00Z',end:'2040-10-14T21:00:00Z'}]));
+    localStorage.setItem('tvguide-guidePage-bookmarks',JSON.stringify([{id:'old-cache-record',title:'Old cache',start:'2040-10-14T20:00:00Z',end:'2040-10-14T21:00:00Z'}]));
     window.hass={language:'de',locale:{language:'de'},config:{time_zone:'Europe/Berlin'},themes:{darkMode:false,themes:{}},services:{notify:{mobile_app_test:{},send_message:{}}},connection:{},
       async callWS(message){
         calls.push(message);if(fail===message.service)throw new Error('Simulated service failure');
@@ -73,7 +73,7 @@ const server = http.createServer((req,res) => {
       }};
     const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
   },fixture);console.log('TV Guide card mounted');
-  const card=native.locator('tv-guide-card');
+  const card=guidePage.locator('tv-guide-card');
   const frame=card.locator('iframe').contentFrame();
   await frame.locator('.channel-card').first().waitFor({timeout:20000});
   await original.goto(base+'/reference/index.html?tv_guide_card=1');
@@ -84,22 +84,22 @@ const server = http.createServer((req,res) => {
   const first=await card.locator('iframe').screenshot();
   const expected=await original.screenshot({fullPage:false});
   if(process.env.TVG_SCREENSHOT){fs.writeFileSync(process.env.TVG_SCREENSHOT,first);fs.writeFileSync(process.env.TVG_SCREENSHOT.replace('.png','-reference.png'),expected);}
-  assert.ok(first.equals(expected),'TV Guide main view must be pixel-identical to the original add-on for the same data');
+  assert.ok(first.equals(expected),'TV Guide main view must be pixel-identical to the reference view for the same data');
   console.log('PASS pixel-identical original card view on desktop (CSS, fonts, logos, rows, progress and toolbar)');
   assert.equal(await frame.locator('#bookmarkCount').textContent(),'0');
-  assert.equal(await native.evaluate(()=>calls.some(call=>call.service==='save_bookmark'&&call.service_data.id==='old-cache-record')),false);
+  assert.equal(await guidePage.evaluate(()=>calls.some(call=>call.service==='save_bookmark'&&call.service_data.id==='old-cache-record')),false);
 
   await frame.locator('[data-channel-id="zdf"] [data-program-start]').nth(2).click();
   await frame.locator('#bookmarkProgram').click();
-  await native.waitForFunction(()=>saved.bookmarks.length===1);
-  assert.equal(await native.evaluate(()=>saved.bookmarks[0].id),'guide_zdf_2');
+  await guidePage.waitForFunction(()=>saved.bookmarks.length===1);
+  assert.equal(await guidePage.evaluate(()=>saved.bookmarks[0].id),'guide_zdf_2');
   await frame.locator('#reminderEnabled').check();
-  await native.waitForFunction(()=>saved.reminders.length===1);
-  assert.equal(await native.evaluate(()=>saved.reminders[0].minutes),10);
+  await guidePage.waitForFunction(()=>saved.reminders.length===1);
+  assert.equal(await guidePage.evaluate(()=>saved.reminders[0].minutes),10);
   await frame.locator('#detail .close').click();
   await frame.locator('#showBookmarks').click();
   await frame.locator('#bookmarksBody [data-remove]').click();
-  await native.waitForFunction(()=>saved.bookmarks.length===0&&saved.reminders.length===0);
+  await guidePage.waitForFunction(()=>saved.bookmarks.length===0&&saved.reminders.length===0);
   await frame.locator('#bookmarksDialog .close').click();
   console.log('PASS original programme detail, bookmark/reminder controls and atomic removal using TV Guide actions');
 
@@ -107,15 +107,15 @@ const server = http.createServer((req,res) => {
   await frame.locator('#channelSettingsList .channel-settings-row').first().waitFor();
   assert.equal(await frame.locator('#channelSettingsList .channel-settings-row').count(),5);
   await frame.locator('#saveChannelSettings').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='set_channels'));
+  await guidePage.waitForFunction(()=>calls.some(call=>call.service==='set_channels'));
   await frame.locator('#channelSettingsDialog').waitFor({state:'hidden'});
   await frame.locator('#showAppSettings').click();
   await frame.locator('#saveAppSettings').waitFor({state:'visible'});
-  await native.waitForFunction(()=>calls.some(call=>call.service==='get_ui_settings'));
+  await guidePage.waitForFunction(()=>calls.some(call=>call.service==='get_ui_settings'));
   await frame.locator('#cancelAppSettings').click();
   console.log('PASS original sender picker and settings dialogue route to TV Guide storage');
 
-  const guideReadsBefore = await native.evaluate(() => calls.filter(call => call.service === 'get_guide' || (call.service === 'guide_request' && call.service_data?.endpoint === 'guide')).length);
+  const guideReadsBefore = await guidePage.evaluate(() => calls.filter(call => call.service === 'get_guide' || (call.service === 'guide_request' && call.service_data?.endpoint === 'guide')).length);
   await frame.locator('[data-mode="2015"]').click();
   await frame.locator('[data-mode="2015"].active').waitFor();
   await original.locator('[data-mode="2015"]').click();
@@ -145,27 +145,27 @@ const server = http.createServer((req,res) => {
   await frame.locator('[data-channel-view="main"]').click();
   await frame.locator('[data-mode="2015"]').click();
   await original.locator('[data-mode="2015"]').click();
-  const guideReadsAfter = await native.evaluate(() => calls.filter(call => call.service === 'get_guide' || (call.service === 'guide_request' && call.service_data?.endpoint === 'guide')).length);
+  const guideReadsAfter = await guidePage.evaluate(() => calls.filter(call => call.service === 'get_guide' || (call.service === 'guide_request' && call.service_data?.endpoint === 'guide')).length);
   assert.equal(guideReadsAfter, guideReadsBefore, 'Time-only navigation must not request the EPG again');
   console.log('PASS every header time button and custom time without extra backend queries');
 
   await frame.locator('[data-channel-id="ard"] [data-program-start]').first().click();
-  await native.evaluate(()=>fail='save_bookmark');
+  await guidePage.evaluate(()=>fail='save_bookmark');
   await frame.locator('#bookmarkProgram').click();
   await frame.locator('#reminderStatus').filter({hasText:'Simulated write failure'}).waitFor();
   await frame.locator('#detail .close').click();
-  await native.evaluate(()=>fail='');
-  assert.equal(await native.evaluate(()=>calls.every(call=>call.type!=='supervisor/api')),true);
+  await guidePage.evaluate(()=>fail='');
+  assert.equal(await guidePage.evaluate(()=>calls.every(call=>call.type!=='supervisor/api')),true);
   assert.equal(requests.some(url=>url.includes('/app/api/')),false);
-  const before=await native.evaluate(()=>calls.length);
-  await native.evaluate(()=>window.postMessage({type:'tv-guide-request',id:'spoof',endpoint:'settings',method:'POST',body:{country:'fr'}},location.origin));
-  await native.waitForTimeout(100);
-  assert.equal(await native.evaluate(()=>calls.length),before);
+  const before=await guidePage.evaluate(()=>calls.length);
+  await guidePage.evaluate(()=>window.postMessage({type:'tv-guide-request',id:'spoof',endpoint:'settings',method:'POST',body:{country:'fr'}},location.origin));
+  await guidePage.waitForTimeout(100);
+  assert.equal(await guidePage.evaluate(()=>calls.length),before);
   assert.deepEqual(errors,[]);
   console.log('PASS service errors visible; no add-on/Ingress/API fetches; unrelated window messages cannot write settings');
 
   const darkVars={"--primary-background-color":"#111318","--secondary-background-color":"#191c22","--card-background-color":"#191c22","--primary-text-color":"#f4f6f8","--secondary-text-color":"#acb3bd","--divider-color":"#343a44"};
-  await native.evaluate(vars=>{
+  await guidePage.evaluate(vars=>{
     for(const [key,value] of Object.entries(vars))document.documentElement.style.setProperty(key,value);
     hass.themes.darkMode=true;document.querySelector('tv-guide-card').hass={...hass};
   },darkVars);
@@ -177,7 +177,7 @@ const server = http.createServer((req,res) => {
   assert.ok((await card.locator('iframe').screenshot()).equals(await original.screenshot({fullPage:false})),'Dark theme must match the add-on');
   console.log('PASS pixel-identical dark theme and original dark logo variants');
 
-  await native.evaluate(()=>{
+  await guidePage.evaluate(()=>{
     hass.themes.themes={Dirk:{'primary-background-color':'#fff','primary-text-color':'#111',modes:{dark:{'primary-color':'#123456'},light:{'primary-color':'#654321'}}},'A <B> & "C"':{}};
     document.querySelector('tv-guide-card').hass={...hass};
     const editor=customElements.get('tv-guide-card').getConfigElement();
@@ -185,43 +185,43 @@ const server = http.createServer((req,res) => {
     editor.addEventListener('config-changed',event=>document.querySelector('tv-guide-card').setConfig(event.detail.config));
     document.body.append(editor);
   });
-  const themeSelect=native.locator('tv-guide-card-editor').locator('#theme');
+  const themeSelect=guidePage.locator('tv-guide-card-editor').locator('#theme');
   assert.deepEqual(await themeSelect.locator('option').allTextContents(),['Home Assistant / Dashboard','A <B> & "C"','Dirk']);
   await themeSelect.selectOption('Dirk');
-  assert.equal(await native.evaluate(()=>{
+  assert.equal(await guidePage.evaluate(()=>{
     const editor=document.querySelector('tv-guide-card-editor'),select=editor.shadowRoot.getElementById('theme');
     select.focus();editor.setConfig({...editor._config});editor.hass={...hass,states:{updated:{state:'on'}}};
     return editor.shadowRoot.getElementById('theme')===select&&editor.shadowRoot.activeElement===select&&select.value==='Dirk';
   }),true);
   await frame.locator('html[data-ha-theme="light"]').waitFor();
-  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-card')._config.theme),'Dirk');
-  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-card')._config.height),1000);
-  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-card')).getPropertyValue('--primary-color').trim()),'#123456');
+  assert.equal(await guidePage.evaluate(()=>document.querySelector('tv-guide-card')._config.theme),'Dirk');
+  assert.equal(await guidePage.evaluate(()=>document.querySelector('tv-guide-card')._config.height),1000);
+  assert.equal(await guidePage.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-card')).getPropertyValue('--primary-color').trim()),'#123456');
   assert.equal(await frame.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--primary-background-color').trim()),'#fff');
-  await native.evaluate(()=>{hass.themes.darkMode=false;document.querySelector('tv-guide-card').hass={...hass};});
-  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-card')).getPropertyValue('--primary-color').trim()),'#654321');
+  await guidePage.evaluate(()=>{hass.themes.darkMode=false;document.querySelector('tv-guide-card').hass={...hass};});
+  assert.equal(await guidePage.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-card')).getPropertyValue('--primary-color').trim()),'#654321');
   await themeSelect.selectOption('');
   await frame.locator('html[data-ha-theme="dark"]').waitFor();
-  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-card').style.getPropertyValue('--primary-background-color')),'');
-  assert.equal(await native.evaluate(()=>Object.hasOwn(document.querySelector('tv-guide-card')._config,'theme')&&document.querySelector('tv-guide-card')._config.theme!==''),false);
-  await native.evaluate(()=>{document.querySelector('tv-guide-card-editor').remove();hass.themes.darkMode=true;document.querySelector('tv-guide-card').hass={...hass};});
+  assert.equal(await guidePage.evaluate(()=>document.querySelector('tv-guide-card').style.getPropertyValue('--primary-background-color')),'');
+  assert.equal(await guidePage.evaluate(()=>Object.hasOwn(document.querySelector('tv-guide-card')._config,'theme')&&document.querySelector('tv-guide-card')._config.theme!==''),false);
+  await guidePage.evaluate(()=>{document.querySelector('tv-guide-card-editor').remove();hass.themes.darkMode=true;document.querySelector('tv-guide-card').hass={...hass};});
   assert.deepEqual(errors,[]);
   console.log('PASS visual theme picker preserves card configuration, applies mode values and restores dashboard inheritance');
 
-  await native.setViewportSize({width:390,height:1000});await original.setViewportSize({width:390,height:1000});
-  await native.waitForTimeout(100);
+  await guidePage.setViewportSize({width:390,height:1000});await original.setViewportSize({width:390,height:1000});
+  await guidePage.waitForTimeout(100);
   await frame.locator('body').evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
   await original.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});
   const mobile=await card.locator('iframe').screenshot();const mobileExpected=await original.screenshot({fullPage:false});
   assert.ok(mobile.equals(mobileExpected),'Mobile appearance must match the add-on');
   assert.equal(await frame.locator('html').evaluate(el=>el.scrollWidth<=390),true);
   console.log('PASS pixel-identical mobile card view');
-  await native.evaluate(()=>{const card=document.querySelector('tv-guide-card');card.remove();document.body.append(card);});
+  await guidePage.evaluate(()=>{const card=document.querySelector('tv-guide-card');card.remove();document.body.append(card);});
   await frame.locator('.channel-card').first().waitFor();
   assert.deepEqual(errors,[]);
-  console.log('PASS native card detach/reinsert rebuilds the original frontend');
-  await native.setViewportSize({width:1100,height:1000});
-  await native.evaluate(()=>{
+  console.log('PASS guidePage card detach/reinsert rebuilds the original frontend');
+  await guidePage.setViewportSize({width:1100,height:1000});
+  await guidePage.evaluate(()=>{
     const previous=hass.callWS.bind(hass);
     hass.services.tv_guide={guide_request:{}};
     hass.callWS=async message=>{
@@ -242,7 +242,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('#showChannelSettings').click();
   await frame.locator('#channelSettingsList .channel-settings-row').first().waitFor();
   await frame.locator('#saveChannelSettings').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.endpoint==='personal-channels'&&call.service_data.method==='POST'));
+  await guidePage.waitForFunction(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.endpoint==='personal-channels'&&call.service_data.method==='POST'));
   await frame.locator('#channelSettingsDialog').waitFor({state:'hidden'});
   await frame.locator('#showAppSettings').click();
   await frame.locator('#saveAppSettings').waitFor({state:'visible'});
@@ -255,37 +255,37 @@ const server = http.createServer((req,res) => {
   assert.equal(await frame.locator('#settingNotificationService option[value="notify.send_message"]').count(),0);
   await frame.locator('#settingNotificationService').selectOption('notify.mobile_app_test');
   await frame.locator('#saveAppSettings').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
-  assert.equal(await native.evaluate(()=>model.ui.refresh_minutes),360);
+  await guidePage.waitForFunction(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
+  assert.equal(await guidePage.evaluate(()=>model.ui.refresh_minutes),360);
   await frame.locator('#appSettingsDialog').waitFor({state:'hidden'});
   await frame.locator('#showAppSettings').click();
   await frame.locator('#saveAppSettings:not([disabled])').waitFor();
   await frame.locator('details:has(#testNotification) > summary').click();
   await frame.locator('#testNotification').click();
-  await native.waitForFunction(()=>calls.some(call=>call.domain==='notify'&&call.service==='mobile_app_test'));
-  const notification=await native.evaluate(()=>calls.find(call=>call.domain==='notify'&&call.service==='mobile_app_test').service_data);
+  await guidePage.waitForFunction(()=>calls.some(call=>call.domain==='notify'&&call.service==='mobile_app_test'));
+  const notification=await guidePage.evaluate(()=>calls.find(call=>call.domain==='notify'&&call.service==='mobile_app_test').service_data);
   assert.equal(notification.title,'TV Guide – Erinnerung');
   assert.match(notification.message,/Testbenachrichtigung/);
   await frame.locator('#cancelAppSettings').click();
-  console.log('PASS automatic setup settings omit manual controls; refresh and native test notification work');
+  console.log('PASS automatic setup settings omit manual controls; refresh and guidePage test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
-  await native.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});
-  await native.waitForFunction(()=>customElements.get('tv-guide-panel'));
-  await native.evaluate(()=>{
+  await guidePage.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});
+  await guidePage.waitForFunction(()=>customElements.get('tv-guide-panel'));
+  await guidePage.evaluate(()=>{
     document.querySelector('tv-guide-card').remove();
     const panel=document.createElement('tv-guide-panel');panel.hass=hass;panel.narrow=false;document.body.append(panel);
   });
-  const panelFrame=native.locator('tv-guide-panel').locator('tv-guide-card').locator('iframe').contentFrame();
+  const panelFrame=guidePage.locator('tv-guide-panel').locator('tv-guide-card').locator('iframe').contentFrame();
   await panelFrame.locator('.channel-card').first().waitFor();
-  assert.equal(await native.locator('tv-guide-panel').locator('header').count(),0);
-  await native.setViewportSize({width:390,height:700});
-  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-panel').shadowRoot.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.height)<=700);
-  assert.ok(await native.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
-  await native.setViewportSize({width:700,height:390});
-  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-panel').shadowRoot.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.height)<=390);
-  assert.ok(await native.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=390));
-  assert.equal(await native.evaluate(()=>{const card=document.createElement('tv-guide-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
+  assert.equal(await guidePage.locator('tv-guide-panel').locator('header').count(),0);
+  await guidePage.setViewportSize({width:390,height:700});
+  await guidePage.waitForFunction(()=>parseInt(document.querySelector('tv-guide-panel').shadowRoot.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.height)<=700);
+  assert.ok(await guidePage.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
+  await guidePage.setViewportSize({width:700,height:390});
+  await guidePage.waitForFunction(()=>parseInt(document.querySelector('tv-guide-panel').shadowRoot.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.height)<=390);
+  assert.ok(await guidePage.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=390));
+  assert.equal(await guidePage.evaluate(()=>{const card=document.createElement('tv-guide-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
   assert.deepEqual(errors,[]);
   console.log('PASS automatic sidebar panel loads the guide and adapts to mobile');
 
