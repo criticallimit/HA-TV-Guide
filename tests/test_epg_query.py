@@ -79,7 +79,7 @@ class QueryTests(unittest.TestCase):
         self.assertTrue(response["truncated"])
         self.assertEqual(response["count"], 500)
         self.assertEqual(len(response["programmes"]), 500)
-        self.assertTrue(response["programmes"][0]["id"].startswith("native_"))
+        self.assertTrue(response["programmes"][0]["id"].startswith("guide_"))
         self.assertEqual(len(threads), 1)
         self.assertNotEqual(threads[0], threading.get_ident())
 
