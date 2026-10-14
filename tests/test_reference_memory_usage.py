@@ -49,6 +49,14 @@ class MemoryTests(unittest.TestCase):
         self.assertEqual(len(channels), 2)
         self.assertLess(peak, 4 * 1024 * 1024, f"Channel-only scan retained {peak} bytes")
 
+    def test_missing_cache_file_during_stat_is_handled(self):
+        from unittest.mock import Mock
+        with patch.object(self.active.parsed_cache_file.__class__, "exists", return_value=True), \
+             patch.object(self.active.parsed_cache_file.__class__, "stat", side_effect=FileNotFoundError):
+            self.active.cache_schema_current = True
+            self.active.source_metrics = [{"source": "fixture"}]
+            self.assertFalse(self.active._cache_fresh())
+
     def test_refresh_backoff_avoids_expensive_cache_scan(self):
         self.active.refresh_running = True
         with patch.object(self.active, "_cache_fresh", side_effect=AssertionError("cache scanned")):
