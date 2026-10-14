@@ -1,0 +1,366 @@
+{
+  "profile": "standard_fr",
+  "group": "Hauptsender",
+  "channels": [
+    {
+      "order": 1,
+      "id": "fr_tf1",
+      "name": "TF1",
+      "aliases": [
+        "TF1.fr"
+      ],
+      "xmltv_ids": [
+        "TF1.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984809.png",
+      "logo_file": "logos/library/dark/fr-badge-tf1.svg",
+      "logo_file_light": "logos/library/light/fr-badge-tf1.svg"
+    },
+    {
+      "order": 2,
+      "id": "fr_france2",
+      "name": "France 2",
+      "aliases": [
+        "France 2.fr"
+      ],
+      "xmltv_ids": [
+        "France2.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984583.png",
+      "logo_file": "logos/library/dark/de9ff8504f4423c35a13.svg",
+      "logo_file_light": "logos/library/light/de9ff8504f4423c35a13.svg"
+    },
+    {
+      "order": 3,
+      "id": "fr_france3",
+      "name": "France 3",
+      "aliases": [
+        "France 3.fr"
+      ],
+      "xmltv_ids": [
+        "France3.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984607.png",
+      "logo_file": "logos/library/dark/7c4afccd34f8dbfdadc8.svg",
+      "logo_file_light": "logos/library/light/7c4afccd34f8dbfdadc8.svg"
+    },
+    {
+      "order": 4,
+      "id": "fr_france4",
+      "name": "France 4",
+      "aliases": [
+        "France 4.fr"
+      ],
+      "xmltv_ids": [
+        "France4.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984609.png",
+      "logo_file": "logos/library/dark/dda4103c777067414a31.svg",
+      "logo_file_light": "logos/library/light/dda4103c777067414a31.svg"
+    },
+    {
+      "order": 5,
+      "id": "fr_france5",
+      "name": "France 5",
+      "aliases": [
+        "France 5.fr"
+      ],
+      "xmltv_ids": [
+        "France5.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984610.png",
+      "logo_file": "logos/library/dark/ff4ae439ab656ec22b4a.svg",
+      "logo_file_light": "logos/library/light/ff4ae439ab656ec22b4a.svg"
+    },
+    {
+      "order": 6,
+      "id": "fr_m6",
+      "name": "M6",
+      "aliases": [
+        "M6.fr"
+      ],
+      "xmltv_ids": [
+        "M6.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984662.png",
+      "logo_file": "logos/library/dark/2f7398bea8f70719f36c.svg",
+      "logo_file_light": "logos/library/light/2f7398bea8f70719f36c.svg"
+    },
+    {
+      "order": 7,
+      "id": "fr_arte",
+      "name": "ARTE",
+      "aliases": [
+        "ARTE.fr"
+      ],
+      "xmltv_ids": [
+        "Arte.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/699492.png",
+      "logo_file": "logos/library/dark/de7d5b6940d40ffde5c6.svg",
+      "logo_file_light": "logos/library/light/de7d5b6940d40ffde5c6.svg"
+    },
+    {
+      "order": 8,
+      "id": "fr_lcp",
+      "name": "LCP / Public Sénat",
+      "aliases": [
+        "LCP / Public Sénat.fr"
+      ],
+      "xmltv_ids": [
+        "LCP.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984643.png",
+      "logo_file": "logos/library/dark/fr-badge-lcp.svg",
+      "logo_file_light": "logos/library/light/fr-badge-lcp.svg"
+    },
+    {
+      "order": 9,
+      "id": "fr_w9",
+      "name": "W9",
+      "aliases": [
+        "W9.fr"
+      ],
+      "xmltv_ids": [
+        "W9.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984853.png",
+      "logo_file": "logos/library/dark/a2a2024e3558a9c4f526.svg",
+      "logo_file_light": "logos/library/light/a2a2024e3558a9c4f526.svg"
+    },
+    {
+      "order": 10,
+      "id": "fr_tmc",
+      "name": "TMC",
+      "aliases": [
+        "TMC.fr"
+      ],
+      "xmltv_ids": [
+        "TMC.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984817.png",
+      "logo_file": "logos/library/dark/fr-badge-tmc.svg",
+      "logo_file_light": "logos/library/light/fr-badge-tmc.svg"
+    },
+    {
+      "order": 11,
+      "id": "fr_tfx",
+      "name": "TFX",
+      "aliases": [
+        "TFX.fr"
+      ],
+      "xmltv_ids": [
+        "TFX.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984812.png",
+      "logo_file": "logos/library/dark/044b88b8c672f952bfe3.svg",
+      "logo_file_light": "logos/library/light/044b88b8c672f952bfe3.svg"
+    },
+    {
+      "order": 12,
+      "id": "fr_gulli",
+      "name": "Gulli",
+      "aliases": [
+        "Gulli.fr"
+      ],
+      "xmltv_ids": [
+        "Gulli.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984620.png",
+      "logo_file": "logos/library/dark/4eaecc660157e6a1c6f9.svg",
+      "logo_file_light": "logos/library/light/4eaecc660157e6a1c6f9.svg"
+    },
+    {
+      "order": 13,
+      "id": "fr_cnews",
+      "name": "CNEWS",
+      "aliases": [
+        "CNEWS.fr"
+      ],
+      "xmltv_ids": [
+        "CNews.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984541.png",
+      "logo_file": "logos/library/dark/a5ba14398a026ec08436.svg",
+      "logo_file_light": "logos/library/light/a5ba14398a026ec08436.svg"
+    },
+    {
+      "order": 14,
+      "id": "fr_lci",
+      "name": "LCI",
+      "aliases": [
+        "LCI.fr"
+      ],
+      "xmltv_ids": [
+        "LCI.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984641.png",
+      "logo_file": "logos/library/dark/7dc61cd501a2f5d211a1.svg",
+      "logo_file_light": "logos/library/light/7dc61cd501a2f5d211a1.svg"
+    },
+    {
+      "order": 15,
+      "id": "fr_franceinfo",
+      "name": "Franceinfo",
+      "aliases": [
+        "Franceinfo.fr"
+      ],
+      "xmltv_ids": [
+        "FranceInfo.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/x1823.png",
+      "logo_file": "logos/library/dark/881e2e5af1c63a59657b.svg",
+      "logo_file_light": "logos/library/light/881e2e5af1c63a59657b.svg"
+    },
+    {
+      "order": 16,
+      "id": "fr_cstar",
+      "name": "CSTAR",
+      "aliases": [
+        "CSTAR.fr"
+      ],
+      "xmltv_ids": [
+        "CStar.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984547.png",
+      "logo_file": "logos/library/dark/4b52cdb428cb963392bb.svg",
+      "logo_file_light": "logos/library/light/4b52cdb428cb963392bb.svg"
+    },
+    {
+      "order": 17,
+      "id": "fr_t18",
+      "name": "T18",
+      "aliases": [
+        "T18.fr"
+      ],
+      "xmltv_ids": [
+        "T18.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984800.png",
+      "logo_file": "logos/library/dark/fr-badge-t18.svg",
+      "logo_file_light": "logos/library/light/fr-badge-t18.svg"
+    },
+    {
+      "order": 18,
+      "id": "fr_novo19",
+      "name": "NOVO19",
+      "aliases": [
+        "NOVO19.fr"
+      ],
+      "xmltv_ids": [
+        "NOVO19.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/12298778.png",
+      "logo_file": "logos/library/dark/356f0fab7aa2c6f627e0.svg",
+      "logo_file_light": "logos/library/light/356f0fab7aa2c6f627e0.svg"
+    },
+    {
+      "order": 19,
+      "id": "fr_tf1seriesfilms",
+      "name": "TF1 Séries Films",
+      "aliases": [
+        "TF1 Séries Films.fr"
+      ],
+      "xmltv_ids": [
+        "TF1SeriesFilms.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/20210782.png",
+      "logo_file": "logos/library/dark/fr-badge-tf1seriesfilms.svg",
+      "logo_file_light": "logos/library/light/fr-badge-tf1seriesfilms.svg"
+    },
+    {
+      "order": 20,
+      "id": "fr_lequipe",
+      "name": "L’Équipe",
+      "aliases": [
+        "L’Équipe.fr"
+      ],
+      "xmltv_ids": [
+        "LEquipe.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/699506.png",
+      "logo_file": "logos/library/dark/fe651ad87d96e174020c.svg",
+      "logo_file_light": "logos/library/light/fe651ad87d96e174020c.svg"
+    },
+    {
+      "order": 21,
+      "id": "fr_6ter",
+      "name": "6ter",
+      "aliases": [
+        "6ter.fr"
+      ],
+      "xmltv_ids": [
+        "6ter.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984422.png",
+      "logo_file": "logos/library/dark/c3f4d6bd4fda4168b037.svg",
+      "logo_file_light": "logos/library/light/c3f4d6bd4fda4168b037.svg"
+    },
+    {
+      "order": 22,
+      "id": "fr_rmcstory",
+      "name": "RMC Story",
+      "aliases": [
+        "RMC Story.fr"
+      ],
+      "xmltv_ids": [
+        "RMCSTORY.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/19984764.png",
+      "logo_file": "logos/library/dark/0ac859e6a553074e6d47.svg",
+      "logo_file_light": "logos/library/light/0ac859e6a553074e6d47.svg"
+    },
+    {
+      "order": 23,
+      "id": "fr_rmcdecouverte",
+      "name": "RMC Découverte",
+      "aliases": [
+        "RMC Découverte.fr"
+      ],
+      "xmltv_ids": [
+        "RMCDecouverte.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/20210708.png",
+      "logo_file": "logos/library/dark/c9b66cdfd1c05e7181d9.svg",
+      "logo_file_light": "logos/library/light/c9b66cdfd1c05e7181d9.svg"
+    },
+    {
+      "order": 24,
+      "id": "fr_rmclife",
+      "name": "RMC Life",
+      "aliases": [
+        "RMC Life.fr"
+      ],
+      "xmltv_ids": [
+        "RMCLife.fr"
+      ],
+      "xmltv_id_only": true,
+      "logo_url": "https://images.open-epg.com/7525642.png",
+      "logo_file": "logos/library/dark/636752d5513ddb6ad318.svg",
+      "logo_file_light": "logos/library/light/636752d5513ddb6ad318.svg"
+    }
+  ]
+}
