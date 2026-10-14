@@ -8,5 +8,37 @@
         "title": "TV Guide"
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "epg_programmes": {
+        "name": "EPG programmes"
+      },
+      "epg_channels": {
+        "name": "EPG channels"
+      },
+      "saved_bookmarks": {
+        "name": "Saved bookmarks"
+      },
+      "saved_reminders": {
+        "name": "Saved reminders"
+      },
+      "next_reminder": {
+        "name": "Next reminder"
+      },
+      "last_epg_update": {
+        "name": "Last EPG update"
+      }
+    },
+    "binary_sensor": {
+      "epg_refresh_running": {
+        "name": "EPG refresh running"
+      }
+    },
+    "calendar": {
+      "programmes": {
+        "name": "Programmes"
+      }
+    }
   }
 }
