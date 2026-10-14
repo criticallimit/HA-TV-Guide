@@ -1,4 +1,4 @@
-"""Calculate the next unsent TV Guide reminder for a native timestamp sensor."""
+"""Calculate the next unsent TV Guide reminder for a Home Assistant timestamp sensor."""
 
 from datetime import datetime, timedelta, timezone
 
