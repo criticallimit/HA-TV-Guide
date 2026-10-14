@@ -1,4 +1,4 @@
-"""HA lifecycle adapter for the full original multi-provider programme engine."""
+"""HA lifecycle adapter for the multi-provider programme engine."""
 import asyncio
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -6,16 +6,16 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.helpers.event import async_track_time_interval
 
 from .coordinator import TVGuideEPGCoordinator
-from .original_runtime import OriginalRuntime
+from .guide_runtime import GuideRuntime
 
 
-class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
+class TVGuideCoordinator(TVGuideEPGCoordinator):
     """Start with cached/empty channels, then fetch sources in tracked workers."""
 
-    is_original = True
+    is_multi_source = True
 
     def __init__(self, hass, entry, options):
-        super().__init__(hass, "original-providers", options.get("country") or "de", config_entry=entry)
+        super().__init__(hass, "multi-source-providers", options.get("country") or "de", config_entry=entry)
         self.entry = entry
         self.options = options
         self.backend = None
@@ -76,7 +76,7 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
             locale = {"language": self.hass.config.language, "country": self.hass.config.country,
                       "time_zone": self.hass.config.time_zone}
             storage = Path(self.hass.config.path(".storage", "tv_guide_store", self.entry.entry_id))
-            self.backend = await self.hass.async_add_executor_job(OriginalRuntime, storage, self.options, locale, self._wake)
+            self.backend = await self.hass.async_add_executor_job(GuideRuntime, storage, self.options, locale, self._wake)
             # Setup must not wait for all broadcaster endpoints to finish.
             await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
             self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(seconds=120))
@@ -88,7 +88,7 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
         if not self._closed and self.backend is not None:
             await self.hass.async_add_executor_job(self.backend.maintain_caches)
 
-    async def async_original_request(self, endpoint, method="GET", body=None):
+    async def async_guide_request(self, endpoint, method="GET", body=None):
         if self._closed:
             raise RuntimeError("TV Guide is unloading")
         result = await self.hass.async_add_executor_job(self.backend.request, endpoint, method, body)

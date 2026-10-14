@@ -16,19 +16,19 @@ ROOT = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"
 PKG = "_tvguide_original_runtime_tests"
 
 
-class OriginalRuntimeTests(unittest.TestCase):
+class GuideRuntimeTests(unittest.TestCase):
     def setUp(self):
         package = types.ModuleType(PKG)
         package.__path__ = [str(ROOT)]
         self.imports = patch.dict(sys.modules, {PKG: package})
         self.imports.start()
         self.addCleanup(self.imports.stop)
-        spec = importlib.util.spec_from_file_location(PKG + '.original_runtime', ROOT / 'original_runtime.py')
+        spec = importlib.util.spec_from_file_location(PKG + '.guide_runtime', ROOT / 'guide_runtime.py')
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         self.temp = tempfile.TemporaryDirectory(dir=os.environ.get('TVG_TEST_TMP'))
         self.addCleanup(self.temp.cleanup)
-        self.backend = module.OriginalRuntime(Path(self.temp.name)/'entry', {'country':'de'}, {'language':'de','country':'DE'}, lambda:None)
+        self.backend = module.GuideRuntime(Path(self.temp.name)/'entry', {'country':'de'}, {'language':'de','country':'DE'}, lambda:None)
         self.addCleanup(self.backend.close)
         self.runtime = self.backend.runtime
         self.submit = self.runtime.start_background

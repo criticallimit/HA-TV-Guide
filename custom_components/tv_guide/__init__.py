@@ -33,8 +33,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         url = effective_feed(options)
         if not options.get("feed_url"):
-            from .original_coordinator import TVGuideOriginalCoordinator
-            coordinator = TVGuideOriginalCoordinator(hass, entry, options)
+            from .guide_coordinator import TVGuideCoordinator
+            coordinator = TVGuideCoordinator(hass, entry, options)
             await coordinator.async_config_entry_first_refresh()
         elif url:
             coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""), feed_candidates(options), config_entry=entry)
@@ -63,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scheduler.reschedule()
         entry.async_on_unload(entry.add_update_listener(async_update_options))
     except (Exception, asyncio.CancelledError):
-        if getattr(coordinator, "is_original", False):
+        if getattr(coordinator, "is_multi_source", False):
             await coordinator.async_stop()
         if scheduler is not None:
             await scheduler.async_stop()
@@ -92,7 +92,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     options = {**entry.data, **entry.options}
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     expected_url = effective_feed(options)
-    if getattr(coordinator, "is_original", False):
+    if getattr(coordinator, "is_multi_source", False):
         if not options.get("feed_url") and coordinator.country == (options.get("country") or "de"):
             scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
             if scheduler is not None:
@@ -120,7 +120,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
         coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-        if getattr(coordinator, "is_original", False):
+        if getattr(coordinator, "is_multi_source", False):
             await coordinator.async_stop()
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if scheduler is not None:

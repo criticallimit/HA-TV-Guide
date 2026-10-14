@@ -20,3 +20,23 @@ The canonical dashboard configuration is:
 ```yaml
 type: custom:tv-guide-card
 ```
+
+## Repeatable resource measurements
+
+From the repository root run:
+
+```bash
+python tools/benchmark_tv_guide.py --iterations 30
+```
+
+The benchmark measures cached full-guide handling, unchanged-revision checks,
+coordinator snapshots, serialized response sizes, peak Python allocations and
+process peak RSS using local offline fixtures. No broadcaster requests are made.
+It is safe for comparison across successive commits on the *same* machine, but
+cannot predict Raspberry Pi 4 CPU or memory usage.
+
+For live performance, separately monitor the Home Assistant process RSS/CPU
+while opening the dashboard, switching times, refreshing channels and leaving
+the guide idle. Record request counts and data transfer before/after each change.
+Do not interpret the two-minute cache maintenance timer as two-minute network
+polling; downloads depend on cache expiry and selected providers.

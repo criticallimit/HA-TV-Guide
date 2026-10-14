@@ -22,7 +22,7 @@ POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
 _LOGGER = logging.getLogger(__name__)
 
 
-class OriginalRuntime:
+class GuideRuntime:
     """Entry-owned reference runtime, cache directory and stoppable worker pool."""
 
     def __init__(self, storage: Path, options: dict, locale: dict, wake):

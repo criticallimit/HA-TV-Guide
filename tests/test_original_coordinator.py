@@ -25,7 +25,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         event=types.ModuleType('homeassistant.helpers.event');event.async_track_time_interval=lambda *args:lambda:None
         self.imports=patch.dict(sys.modules,{PKG:pkg,PKG+'.coordinator':base,'homeassistant.const':const,'homeassistant.helpers.event':event})
         self.imports.start();self.addCleanup(self.imports.stop)
-        spec=importlib.util.spec_from_file_location(PKG+'.original_coordinator',ROOT/'original_coordinator.py')
+        spec=importlib.util.spec_from_file_location(PKG+'.guide_coordinator',ROOT/'guide_coordinator.py')
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
         self.tasks=[]
         def create(coro):
@@ -33,7 +33,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         async def executor(fn,*args):return fn(*args)
         self.hass=types.SimpleNamespace(async_add_executor_job=executor,async_create_task=create,bus=types.SimpleNamespace(async_listen_once=lambda *args:lambda:None))
         entry=types.SimpleNamespace(async_on_unload=lambda fn:None)
-        self.coordinator=module.TVGuideOriginalCoordinator(self.hass,entry,{'country':'de'})
+        self.coordinator=module.TVGuideCoordinator(self.hass,entry,{'country':'de'})
         self.coordinator.backend=types.SimpleNamespace()
 
     async def test_country_switch_clears_previous_success_and_captures_active_status(self):

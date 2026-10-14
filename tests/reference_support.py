@@ -14,11 +14,11 @@ package.__path__ = [str(ROOT)]
 sys.modules[PACKAGE] = package
 if os.environ.get('TVG_TEST_TMP'):
     tempfile.tempdir = os.environ['TVG_TEST_TMP']
-spec = importlib.util.spec_from_file_location(PACKAGE + '.original_runtime', ROOT / 'original_runtime.py')
+spec = importlib.util.spec_from_file_location(PACKAGE + '.guide_runtime', ROOT / 'guide_runtime.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 folder = tempfile.TemporaryDirectory()
-backend = module.OriginalRuntime(Path(folder.name)/'reference', {'country':'de'}, {'language':'de'}, lambda:None)
+backend = module.GuideRuntime(Path(folder.name)/'reference', {'country':'de'}, {'language':'de'}, lambda:None)
 app = backend.runtime
 atexit.register(folder.cleanup)
 atexit.register(backend.close)
