@@ -46,6 +46,21 @@ async def main():
                 assert 'feed_url' not in entry.data
                 await hass.async_block_till_done()
                 assert entry.state.value == 'loaded', entry.state
+                from homeassistant.helpers import entity_registry as er
+                registry = er.async_get(hass)
+                for domain, unique_id in (
+                    ('sensor', 'tv_guide_native_next_reminder'),
+                    ('sensor', 'tv_guide_native_saved_bookmarks_count'),
+                    ('sensor', 'tv_guide_native_saved_reminders_count'),
+                    ('sensor', 'tv_guide_native_epg_last_successful_refresh'),
+                    ('binary_sensor', 'tv_guide_native_refresh_running'),
+                ):
+                    entity_id = registry.async_get_entity_id(domain, 'tv_guide', unique_id)
+                    assert entity_id is not None, unique_id
+                    entity = registry.async_get(entity_id)
+                    assert entity.config_entry_id == entry.entry_id
+                    assert entity.disabled_by is None
+                    assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
                 assert '/tv_guide/frontend/tv-guide-native-card.js?v=4' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
@@ -73,11 +88,6 @@ async def main():
                 await request('personal-channels','POST',{'order':keys,'countries':['de','at']})
                 assert (await request('personal-channels'))['order'] == keys
                 settings = await request('settings')
-                assert settings['sensor_bookmark_count'] is True
-                await request('settings','POST',{**settings,'sensor_bookmark_count':False})
-                assert (await request('settings'))['sensor_bookmark_count'] is False
-                await request('settings','POST',{**settings,'sensor_bookmark_count':True})
-                assert (await request('settings'))['sensor_bookmark_count'] is True
                 await request('settings','POST',{**settings,'columns_desktop':4})
                 await hass.async_block_till_done()
                 assert (await request('settings'))['columns_desktop'] == 4

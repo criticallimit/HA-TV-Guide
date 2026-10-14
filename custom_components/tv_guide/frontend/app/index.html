@@ -140,27 +140,7 @@
         <div class="settings-test"><button id="testNotification" class="secondary-action" type="button"><span data-i18n="Benachrichtigung testen">Benachrichtigung testen</span></button><span id="testNotificationStatus" role="status"></span></div>
       </details>
       <details class="settings-section settings-disclosure">
-        <summary><span data-i18n="Auf dem Dashboard">Auf dem Dashboard</span></summary>
-        <section class="lovelace-setup">
-          <div class="lovelace-setup-head"><p><span data-i18n="Die TV-Guide-Karte ist geladen und steht im Kartenwähler zur Verfügung.">Die TV-Guide-Karte ist geladen und steht im Kartenwähler zur Verfügung.</span></p><span id="lovelaceCardState" class="lovelace-state"><span data-i18n="Wird geprüft …">Wird geprüft …</span></span></div>
-          <div class="lovelace-resource-row"><code id="lovelaceResourceUrl">/tv_guide/frontend/tv-guide-native-card.js</code><button id="copyLovelaceResource" class="secondary-action" type="button"><span data-i18n="Kopieren">Kopieren</span></button></div>
-
-          <div class="lovelace-setup-actions"><button id="openLovelaceResources" class="secondary-action" type="button"><span data-i18n="Ressourcen öffnen">Ressourcen öffnen</span></button><button id="checkLovelaceCard" class="secondary-action" type="button"><span data-i18n="Erneut prüfen">Erneut prüfen</span></button></div>
-          <p id="lovelaceSetupStatus" class="channel-settings-status" aria-live="polite"></p>
-        </section>
-      </details>
-      <details class="settings-section settings-disclosure">
         <summary><span data-i18n="Erweitert">Erweitert</span></summary>
-        <fieldset class="sensor-settings">
-          <legend data-i18n="Verfügbare Sensoren">Verfügbare Sensoren</legend>
-          <p data-i18n="Optional für eigene Automationen. Änderungen werden mit Speichern übernommen.">Optional für eigene Automationen. Änderungen werden mit Speichern übernommen.</p>
-          <label><span class="sensor-text"><span data-i18n="Nächste Erinnerung">Nächste Erinnerung</span><small id="sensorNextHelp" data-i18n="Zeitpunkt der nächsten Benachrichtigung.">Zeitpunkt der nächsten Benachrichtigung.</small></span><input type="checkbox" role="switch" aria-describedby="sensorNextHelp" data-sensor-option="sensor_next_reminder"></label>
-          <label><span class="sensor-text"><span data-i18n="Gemerkte Sendungen">Gemerkte Sendungen</span><small id="sensorBookmarksHelp" data-i18n="Anzahl der noch nicht beendeten gemerkten Sendungen.">Anzahl der noch nicht beendeten gemerkten Sendungen.</small></span><input type="checkbox" role="switch" aria-describedby="sensorBookmarksHelp" data-sensor-option="sensor_bookmark_count"></label>
-          <label><span class="sensor-text"><span data-i18n="Ausstehende Erinnerungen">Ausstehende Erinnerungen</span><small id="sensorRemindersHelp" data-i18n="Anzahl der noch ausstehenden Benachrichtigungen.">Anzahl der noch ausstehenden Benachrichtigungen.</small></span><input type="checkbox" role="switch" aria-describedby="sensorRemindersHelp" data-sensor-option="sensor_reminder_count"></label>
-          <label><span class="sensor-text"><span data-i18n="Letzte EPG-Aktualisierung">Letzte EPG-Aktualisierung</span><small id="sensorUpdateHelp" data-i18n="Zeitpunkt der zuletzt geladenen Programmdaten.">Zeitpunkt der zuletzt geladenen Programmdaten.</small></span><input type="checkbox" role="switch" aria-describedby="sensorUpdateHelp" data-sensor-option="sensor_last_update"></label>
-          <label><span class="sensor-text"><span data-i18n="EPG-Aktualisierung läuft">EPG-Aktualisierung läuft</span><small id="sensorRefreshingHelp" data-i18n="Zeigt an, ob Programmdaten aktualisiert werden.">Zeigt an, ob Programmdaten aktualisiert werden.</small></span><input type="checkbox" role="switch" aria-describedby="sensorRefreshingHelp" data-sensor-option="sensor_refresh_running"></label>
-          <small data-i18n="Beim Ausschalten wird der Sensorzustand entfernt. Es wird kein Gerät angelegt.">Beim Ausschalten wird der Sensorzustand entfernt. Es wird kein Gerät angelegt.</small>
-        </fieldset>
         <div class="app-settings-grid"><label class="app-settings-wide"><span data-i18n="EPG-Aktualisierung">EPG-Aktualisierung</span><select id="settingRefresh"><option value="30" data-i18n="30 Minuten">30 Minuten</option><option value="60" data-i18n="1 Stunde">1 Stunde</option><option value="120" data-i18n="2 Stunden">2 Stunden</option><option value="180" data-i18n="3 Stunden">3 Stunden</option><option value="360" data-i18n="6 Stunden">6 Stunden</option><option value="720" data-i18n="12 Stunden">12 Stunden</option><option value="1440" data-i18n="24 Stunden">24 Stunden</option></select></label></div>
       </details>
     </div>
@@ -195,6 +175,6 @@
   <script src="guide-core.js?v=cleanup-1"></script>
   <script src="channel-picker.js?v=personal-1"></script>
   <script src="native-transport.js"></script>
-  <script src="app.js?v=sensors-ui-1"></script>
+  <script src="app.js?v=native-settings-2"></script>
 </body>
 </html>

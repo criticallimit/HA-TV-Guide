@@ -79,17 +79,10 @@ const settingColumns = document.getElementById("settingColumns");
 const settingMaxChannels = document.getElementById("settingMaxChannels");
 const settingTheme = document.getElementById("settingTheme");
 const settingRefresh = document.getElementById("settingRefresh");
-const sensorSettings = [...document.querySelectorAll("[data-sensor-option]")];
 const settingNotificationService = document.getElementById("settingNotificationService");
 const saveAppSettings = document.getElementById("saveAppSettings");
 const cancelAppSettings = document.getElementById("cancelAppSettings");
 const appSettingsStatus = document.getElementById("appSettingsStatus");
-const lovelaceCardState = document.getElementById("lovelaceCardState");
-const lovelaceResourceUrl = document.getElementById("lovelaceResourceUrl");
-const copyLovelaceResource = document.getElementById("copyLovelaceResource");
-const openLovelaceResources = document.getElementById("openLovelaceResources");
-const checkLovelaceCard = document.getElementById("checkLovelaceCard");
-const lovelaceSetupStatus = document.getElementById("lovelaceSetupStatus");
 
 const THEME_VARS = [
   "--primary-background-color",
@@ -569,167 +562,6 @@ async function testConfiguredNotification() {
   }
 }
 
-function lovelaceCardRegistered() {
-  const hosts = [window, window.parent, window.top];
-  for (const host of hosts) {
-    try {
-      if (host?.customElements?.get("tv-guide-native-card")) return true;
-      if (Array.isArray(host?.customCards) &&
-          host.customCards.some(card => card?.type === "tv-guide-native-card")) return true;
-    } catch {}
-  }
-  return false;
-}
-
-function getHomeAssistantConnection() {
-  const docs = [];
-  try { docs.push(window.document); } catch {}
-  try { if (window.parent?.document) docs.push(window.parent.document); } catch {}
-  try { if (window.top?.document) docs.push(window.top.document); } catch {}
-
-  for (const doc of docs) {
-    try {
-      const root = doc.querySelector("home-assistant");
-      const connection = root?.hass?.connection;
-      if (connection?.sendMessagePromise) return connection;
-    } catch {}
-  }
-  return null;
-}
-
-async function lovelaceResourceRegistered() {
-  const connection = getHomeAssistantConnection();
-  if (!connection) return null;
-
-  try {
-    const resources = await connection.sendMessagePromise({type:"lovelace/resources"});
-    if (!Array.isArray(resources)) return false;
-    return resources.some(resource => {
-      const url = String(resource?.url || "").split("?")[0];
-      return url === "/tv_guide/frontend/tv-guide-native-card.js";
-    });
-  } catch {
-    return null;
-  }
-}
-
-async function checkLovelaceSetup() {
-  lovelaceCardState.textContent = t("Wird geprüft …");
-  lovelaceCardState.className = "lovelace-state";
-  lovelaceSetupStatus.textContent = "";
-
-  let assetReady = false;
-  try {
-    const res = await window.fetch("/tv_guide/frontend/tv-guide-native-card.js?t=" + Date.now(), {
-      method:"GET",
-      cache:"no-store"
-    });
-    assetReady = res.ok;
-  } catch {}
-
-  const cardLoaded = lovelaceCardRegistered();
-  const resourceRegistered = await lovelaceResourceRegistered();
-
-  if (cardLoaded) {
-    lovelaceCardState.textContent = "Bereit";
-    lovelaceCardState.className = "lovelace-state ready";
-    lovelaceSetupStatus.textContent = t("Die TV-Guide-Karte ist geladen und steht im Kartenwähler zur Verfügung.");
-    return;
-  }
-
-  if (resourceRegistered === true) {
-    lovelaceCardState.textContent = t("Ressource eingetragen");
-    lovelaceCardState.className = "lovelace-state pending";
-    lovelaceSetupStatus.textContent = t("Die Ressource ist bereits in Home Assistant eingetragen. Lade die Home-Assistant-Oberfläche jetzt einmal vollständig neu; danach sollte TV Guide im Kartenwähler erscheinen.");
-    return;
-  }
-
-  if (assetReady && resourceRegistered === false) {
-    lovelaceCardState.textContent = t("Ressource fehlt");
-    lovelaceCardState.className = "lovelace-state pending";
-    lovelaceSetupStatus.textContent = t("Die Kartendatei ist installiert, aber noch nicht als Home-Assistant-Ressource eingetragen.");
-    return;
-  }
-
-  if (assetReady) {
-    lovelaceCardState.textContent = t("Datei bereit");
-    lovelaceCardState.className = "lovelace-state pending";
-    lovelaceSetupStatus.textContent = t("Die TV-Guide-Karte ist geladen und steht im Kartenwähler zur Verfügung.");
-  } else {
-    lovelaceCardState.textContent = t("Noch nicht bereit");
-    lovelaceCardState.className = "lovelace-state error";
-    lovelaceSetupStatus.textContent = t("TV Guide konnte nicht geladen werden.");
-  }
-}
-
-async function copyLovelaceResourceUrl() {
-  const value = lovelaceResourceUrl.textContent.trim();
-
-  const clipboardTargets = [];
-  try { if (window.top?.navigator?.clipboard?.writeText) clipboardTargets.push(window.top.navigator.clipboard); } catch {}
-  try { if (window.parent?.navigator?.clipboard?.writeText) clipboardTargets.push(window.parent.navigator.clipboard); } catch {}
-  try { if (navigator.clipboard?.writeText) clipboardTargets.push(navigator.clipboard); } catch {}
-
-  for (const clipboard of clipboardTargets) {
-    try {
-      await clipboard.writeText(value);
-      lovelaceSetupStatus.textContent = t("Ressourcen-URL kopiert.");
-      return;
-    } catch {}
-  }
-
-  const docs = [];
-  try { if (window.top?.document) docs.push(window.top.document); } catch {}
-  try { if (window.parent?.document) docs.push(window.parent.document); } catch {}
-  docs.push(document);
-
-  for (const doc of docs) {
-    try {
-      const textarea = doc.createElement("textarea");
-      textarea.value = value;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.left = "-9999px";
-      textarea.style.top = "0";
-      textarea.style.opacity = "0";
-      doc.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      textarea.setSelectionRange(0, value.length);
-      const ok = doc.execCommand("copy");
-      textarea.remove();
-
-      if (ok) {
-        lovelaceSetupStatus.textContent = t("Ressourcen-URL kopiert.");
-        return;
-      }
-    } catch {}
-  }
-
-  try {
-    const range = document.createRange();
-    range.selectNodeContents(lovelaceResourceUrl);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    lovelaceSetupStatus.textContent = t("Automatisches Kopieren wird vom Browser blockiert. Die Ressourcen-URL ist markiert; bitte einmal manuell kopieren.");
-  } catch {
-    lovelaceSetupStatus.textContent = t("Automatisches Kopieren wird vom Browser blockiert. Bitte die Ressourcen-URL manuell kopieren.");
-  }
-}
-
-function openLovelaceResourcesPage() {
-  try {
-    if (window.parent !== window) {
-      window.parent.location.href = "/config/lovelace/resources";
-    } else {
-      window.location.href = "/config/lovelace/resources";
-    }
-  } catch {
-    lovelaceSetupStatus.textContent = t("Öffnen nicht möglich. Bitte Einstellungen → Dashboards → Ressourcen manuell öffnen.");
-  }
-}
-
 async function loadNotificationServiceChoices(currentService, isCurrent = () => true) {
   const fallback = currentService || "persistent_notification.create";
   const url = new URL("api/notification-services", window.location.href);
@@ -789,14 +621,12 @@ async function openAppSettings() {
     settingMaxChannels.value = String(settings.max_channels ?? 0);
     settingTheme.value = settings.theme_mode || "auto";
     settingRefresh.value = String(settings.refresh_minutes || 180);
-    sensorSettings.forEach(input => { input.checked = settings[input.dataset.sensorOption] === true; input.disabled = false; });
     await loadNotificationServiceChoices(
       settings.notification_service || "persistent_notification.create", isCurrent
     );
     if (!isCurrent()) return;
     appSettingsStatus.textContent = "";
     saveAppSettings.disabled = false;
-    await checkLovelaceSetup();
   } catch (err) {
     if (isCurrent()) appSettingsStatus.textContent = t(err.message);
   }
@@ -821,7 +651,6 @@ async function persistAppSettings() {
         theme_mode:settingTheme.value,
         refresh_minutes:Number(settingRefresh.value),
         notification_service:settingNotificationService.value.trim(),
-        ...Object.fromEntries(sensorSettings.map(input => [input.dataset.sensorOption, input.checked]))
       })
     });
     const payload = await res.json();
@@ -1115,9 +944,6 @@ showBookmarks.addEventListener("click", () => {
 });
 testNotification.addEventListener("click", testConfiguredNotification);
 showAppSettings.addEventListener("click", openAppSettings);
-copyLovelaceResource.addEventListener("click", copyLovelaceResourceUrl);
-openLovelaceResources.addEventListener("click", openLovelaceResourcesPage);
-checkLovelaceCard.addEventListener("click", checkLovelaceSetup);
 saveAppSettings.addEventListener("click", persistAppSettings);
 cancelAppSettings.addEventListener("click", () => appSettingsDialog.close());
 showChannelSettings.addEventListener("click", openChannelSettings);

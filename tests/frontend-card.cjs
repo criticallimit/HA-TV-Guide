@@ -193,7 +193,7 @@ const server = http.createServer((req,res) => {
       if(endpoint==='guide')response=model;
       else if(endpoint==='personal-channels'&&method==='GET')response={channels:model.channels.map(ch=>({...ch,id:'de:'+ch.id})),order:model.main_channel_ids.map(id=>'de:'+id),countries:['de'],supported_countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
       else if(endpoint==='personal-channels')response={ok:true,order:body.order,countries:body.countries};
-      else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de',sensor_bookmark_count:model.ui.sensor_bookmark_count??true};
+      else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de'};
       else if(endpoint==='settings'){Object.assign(model.ui,body);response={ok:true};}
       else throw new Error('Unexpected original runtime route');
       return {response:structuredClone(response)};
@@ -208,13 +208,15 @@ const server = http.createServer((req,res) => {
   await frame.locator('#showAppSettings').click();
   await frame.locator('#saveAppSettings').waitFor({state:'visible'});
   await frame.locator('#saveAppSettings:not([disabled])').waitFor();
-  await frame.locator('details:has([data-sensor-option="sensor_bookmark_count"]) > summary').click();
-  await frame.locator('[data-sensor-option="sensor_bookmark_count"]').uncheck();
+  assert.equal(await frame.locator('[data-sensor-option], .lovelace-setup').count(),0);
+  assert.equal(await frame.locator('summary').filter({hasText:'Auf dem Dashboard'}).count(),0);
+  await frame.locator('details:has(#settingRefresh) > summary').click();
+  await frame.locator('#settingRefresh').selectOption('360');
   await frame.locator('details:has(#testNotification) > summary').click();
   await frame.locator('#settingNotificationService').selectOption('notify.mobile_app_test');
   await frame.locator('#saveAppSettings').click();
   await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
-  assert.equal(await native.evaluate(()=>model.ui.sensor_bookmark_count),false);
+  assert.equal(await native.evaluate(()=>model.ui.refresh_minutes),360);
   await frame.locator('#appSettingsDialog').waitFor({state:'hidden'});
   await frame.locator('#showAppSettings').click();
   await frame.locator('#saveAppSettings:not([disabled])').waitFor();
@@ -222,7 +224,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('#testNotification').click();
   await native.waitForFunction(()=>calls.some(call=>call.domain==='notify'&&call.service==='mobile_app_test'));
   await frame.locator('#cancelAppSettings').click();
-  console.log('PASS settings sensor switch and test notification use native HA actions');
+  console.log('PASS automatic setup settings omit manual controls; refresh and native test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
   await native.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-native-panel.js',type:'module'});
