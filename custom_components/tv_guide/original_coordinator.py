@@ -3,6 +3,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.helpers.event import async_track_time_interval
 
 from .coordinator import TVGuideEPGCoordinator
 from .original_runtime import OriginalRuntime
@@ -20,37 +21,51 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
         self.backend = None
         self._closed = False
         self._sync_pending = False
+        self._sync_requested = False
+        self._sync_lock = asyncio.Lock()
+        self._cancel_preload = None
         self._loop = asyncio.get_running_loop()
         entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.async_stop))
 
     def _wake(self):
-        self._loop.call_soon_threadsafe(self._schedule_sync)
+        if not self._closed:
+            self._loop.call_soon_threadsafe(self._schedule_sync)
 
     def _schedule_sync(self):
-        if self._closed or self._sync_pending or self.backend is None:
+        if self._closed or self.backend is None:
+            return
+        self._sync_requested = True
+        if self._sync_pending:
             return
         self._sync_pending = True
         self.hass.async_create_task(self._async_sync())
 
     async def _async_sync(self):
-        try:
-            records = await self._snapshot()
-            if not self._closed:
-                self.async_set_updated_data(records)
-        finally:
-            self._sync_pending = False
+        async with self._sync_lock:
+            try:
+                while not self._closed:
+                    self._sync_requested = False
+                    records = await self._snapshot()
+                    if not self._closed:
+                        self.async_set_updated_data(records)
+                    if not self._sync_requested:
+                        break
+            finally:
+                self._sync_pending = False
 
     async def _snapshot(self):
-        records, catalogue, channels = await self.hass.async_add_executor_job(self.backend.snapshot)
-        store = self.backend.runtime.STORE
-        self.country = store.country
+        records, catalogue, channels, status = await self.hass.async_add_executor_job(self.backend.state_snapshot)
+        self.country = status['country']
         self.canonical_channels, self.channels = catalogue, channels
-        self.refresh_running = any(item.refresh_running for item in self.backend.runtime.COUNTRY_STORES.values())
-        self.source_attempts = list(store.source_metrics)
+        self.refresh_running = status['refresh_running']
+        self.source_attempts = status['source_attempts']
         self.active_source = "multi-source"
-        if store.last_loaded:
-            self.last_successful_refresh = datetime.fromisoformat(store.last_loaded)
-        self.update_interval = timedelta(minutes=store.options.get("refresh_minutes", 180))
+        try:
+            loaded = datetime.fromisoformat(status['last_loaded']) if status['last_loaded'] else None
+        except (TypeError, ValueError):
+            loaded = None
+        self.last_successful_refresh = loaded if loaded is not None and loaded.tzinfo is not None else None
+        self.update_interval = timedelta(minutes=status['refresh_minutes'])
         self._notify_refresh()
         return records
 
@@ -62,9 +77,14 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
             self.backend = await self.hass.async_add_executor_job(OriginalRuntime, storage, self.options, locale, self._wake)
             # Setup must not wait for all broadcaster endpoints to finish.
             await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
+            self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(seconds=120))
         else:
             await self.hass.async_add_executor_job(self.backend.refresh_active)
         return await self._snapshot()
+
+    async def _async_preload(self, _now):
+        if not self._closed and self.backend is not None:
+            await self.hass.async_add_executor_job(self.backend.preload_next)
 
     async def async_original_request(self, endpoint, method="GET", body=None):
         if self._closed:
@@ -75,5 +95,8 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
 
     async def async_stop(self, event=None):
         self._closed = True
+        if self._cancel_preload is not None:
+            self._cancel_preload()
+            self._cancel_preload = None
         if self.backend is not None:
             await self.hass.async_add_executor_job(self.backend.close)

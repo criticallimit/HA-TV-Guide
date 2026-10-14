@@ -9,11 +9,9 @@ from .state_values import owned_state
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Register one native bridge binary sensor."""
-    entities = [TVGuideRefreshSensor()]
+    """Register a native refresh entity, or the legacy bridge in bridge mode."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-    if coordinator is not None:
-        entities.append(TVGuideNativeRefreshSensor(coordinator))
+    entities = [TVGuideNativeRefreshSensor(coordinator)] if coordinator is not None else [TVGuideRefreshSensor()]
     async_add_entities(entities)
 
 

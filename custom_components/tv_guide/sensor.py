@@ -1,11 +1,8 @@
-"""Native sensors mirroring explicitly owned TV Guide add-on states.
-
-This migration bridge does not contact EPG providers or the add-on HTTP API.
-"""
+"""Native programme and saved-item sensors, with a legacy read-only bridge."""
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from datetime import datetime, timezone
-from .next_reminder import next_pending_reminder
+from .next_reminder import next_pending_reminder, pending_reminders
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_state_change_event
@@ -15,9 +12,9 @@ from .state_values import owned_state, parse_count, parse_timestamp
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Create four read-only, registry-backed bridge sensors."""
-    entities = [TVGuideSensor(key, *definition) for key, definition in SENSORS.items()]
+    """Create native entities; bridge entities belong only to bridge-only mode."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    entities = [] if coordinator is not None else [TVGuideSensor(key, *definition) for key, definition in SENSORS.items()]
     if coordinator is not None:
         entities.extend([TVGuideProgrammeCount(coordinator), TVGuideChannelsCount(coordinator), TVGuideLastRefresh(coordinator)])
     saved = hass.data.get(DOMAIN + "_saved", {}).get(entry.entry_id)
@@ -163,7 +160,9 @@ class TVGuideSavedCount(SensorEntity):
 
     @property
     def native_value(self):
-        return len(getattr(self._saved, self._kind))
+        if self._kind == 'reminders':
+            return len(pending_reminders(self._saved.reminders))
+        return len(self._saved.bookmarks)
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()

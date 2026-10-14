@@ -29,12 +29,16 @@ class OriginalRuntime:
                 if assets.resolve() not in target.parents:
                     raise ValueError("Invalid bundled reference path")
                 target.parent.mkdir(parents=True, exist_ok=True)
-                if not target.exists():
-                    target.write_bytes(archive.read(name))
+                data = archive.read(name)
+                if not target.exists() or target.read_bytes() != data:
+                    temporary = target.with_suffix(target.suffix + '.tmp')
+                    temporary.write_bytes(data)
+                    temporary.replace(target)
         self.closed = False
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide-native")
         self._jobs = {}
+        self._preload_index = 0
         self._wake = wake
         name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
         self._module_name = name
@@ -111,6 +115,30 @@ class OriginalRuntime:
         if future is not None:
             future.result()
 
+    def preload_next(self):
+        """Warm one inactive country per HA timer tick, keeping active work first."""
+        with self._lock:
+            if self.closed:
+                return
+            with self.runtime.SETTINGS_LOCK:
+                if any(store.refresh_running for store in self.runtime.COUNTRY_STORES.values()):
+                    return
+                countries = list(self.runtime.COUNTRIES)
+                for _ in countries:
+                    country = countries[self._preload_index % len(countries)]
+                    self._preload_index += 1
+                    if country != self.runtime.STORE.country:
+                        break
+                store = self.runtime.COUNTRY_STORES.get(country)
+                if store is None:
+                    store = self.runtime.EPGStore(country)
+                    self.runtime.COUNTRY_STORES[country] = store
+                if store._cache_fresh():
+                    self.runtime.prune_country_stores()
+                    return
+                store.refresh_running = True
+            return self.start_background(store.refresh)
+
     def request(self, endpoint: str, method: str, body=None):
         """Dispatch the original route code in-process, without opening HTTP ports."""
         if method == "GET" and endpoint == "refresh":
@@ -157,6 +185,19 @@ class OriginalRuntime:
         catalogue = [{"id": channel["id"], "name": channel["name"], "available": bool(channel.get("programs")),
                       "xmltv_id": channel["id"]} for channel in channels if channel.get("preset")]
         return records, catalogue, [{"id": ch["id"], "name": ch["name"]} for ch in channels]
+
+    def state_snapshot(self):
+        """Capture data and active-country status together, outside HA's loop."""
+        with self._lock, self.runtime.SETTINGS_LOCK:
+            store = self.runtime.STORE
+            records, catalogue, channels = self.snapshot()
+            return records, catalogue, channels, {
+                'country': store.country,
+                'refresh_running': store.refresh_running,
+                'source_attempts': list(store.source_metrics),
+                'last_loaded': store.last_loaded,
+                'refresh_minutes': store.options.get('refresh_minutes', 180),
+            }
 
     def close(self):
         with self._lock:

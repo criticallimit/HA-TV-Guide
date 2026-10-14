@@ -147,5 +147,49 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.assertTrue(self.backend.closed)
         self.assertIsNone(self.submit(lambda: self.fail('Must not run after unload')))
 
+    def test_reference_data_is_repaired_on_restart(self):
+        path=self.runtime.BASE/'data/countries.json'
+        original=path.read_bytes()
+        path.write_text('{}',encoding='utf-8')
+        self.backend.close()
+        replacement=type(self.backend)(self.runtime.OPTIONS_FILE.parent,{'country':'de'},{'language':'de'},lambda:None)
+        try:self.assertEqual(path.read_bytes(),original)
+        finally:replacement.close()
+
+    def test_preload_warms_one_inactive_country_with_owned_worker(self):
+        calls=[]
+        def refresh(store):
+            calls.append((store.country,threading.current_thread().name))
+            store.refresh_running=False
+        with patch.object(self.runtime.EPGStore,'_cache_fresh',return_value=False),patch.object(self.runtime.EPGStore,'refresh',autospec=True,side_effect=refresh):
+            job=self.backend.preload_next()
+            job.result(timeout=5)
+        self.assertEqual(len(calls),1)
+        self.assertNotEqual(calls[0][0],'de')
+        self.assertTrue(calls[0][1].startswith('tv-guide-native'))
+
+    def test_preload_defers_while_active_country_is_refreshing(self):
+        self.runtime.STORE.refresh_running=True
+        with patch.object(self.runtime.EPGStore,'refresh') as refresh:
+            self.assertIsNone(self.backend.preload_next())
+            refresh.assert_not_called()
+
+    def test_state_snapshot_reports_only_active_country_refresh(self):
+        inactive=self.runtime.EPGStore('at')
+        inactive.refresh_running=True
+        self.runtime.COUNTRY_STORES['at']=inactive
+        *_,status=self.backend.state_snapshot()
+        self.assertEqual(status['country'],'de')
+        self.assertFalse(status['refresh_running'])
+
+    def test_every_curated_main_channel_has_both_local_logo_variants(self):
+        for country in self.runtime.COUNTRIES:
+            catalog=self.runtime.CHANNELS if country=='de' else self.runtime.COUNTRY_CATALOGS[country]
+            for channel in catalog['channels']:
+                logos=self.backend.logo_urls({**channel,'id':country+':'+channel['id'],'source_channel_id':channel['id']})
+                for logo in logos:
+                    self.assertTrue(logo.startswith('/tv_guide/frontend/app/logos/'),(country,channel['id']))
+                    self.assertTrue((ROOT/'frontend/app/logos'/logo.rsplit('/',1)[1]).is_file())
+
 
 if __name__=='__main__':unittest.main()

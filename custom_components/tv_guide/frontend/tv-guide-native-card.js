@@ -78,9 +78,6 @@ class TVGuideNativeCard extends HTMLElement {
     this._config = {height: 1000};
     this._hass = null;
     this._started = false;
-    this._startGeneration = 0;
-    this._session = "";
-    this._sessionTimer = null;
     this._iframe = null;
     this._themeProperties = new Set();
     this._themeFingerprint = "";
@@ -88,7 +85,6 @@ class TVGuideNativeCard extends HTMLElement {
     this._themeReadyListening = false;
     this._themeObserver = null;
     this._themeSyncFrame = null;
-    this._themeRetryTimer = null;
     this._themeReadyHandler = (event) => {
       if (
         event.origin === window.location.origin &&
@@ -279,16 +275,11 @@ class TVGuideNativeCard extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this._startGeneration++;
     this._detachThemeReadyListener();
     this._themeObserver?.disconnect();
     this._themeObserver = null;
     if (this._themeSyncFrame !== null) window.cancelAnimationFrame(this._themeSyncFrame);
     this._themeSyncFrame = null;
-    if (this._themeRetryTimer !== null) window.clearTimeout(this._themeRetryTimer);
-    this._themeRetryTimer = null;
-    if (this._sessionTimer) window.clearInterval(this._sessionTimer);
-    this._sessionTimer = null;
     this._started = false;
     this._iframe?.remove();
     this._iframe = null;
@@ -357,16 +348,6 @@ class TVGuideNativeCard extends HTMLElement {
     `;
   }
 
-  _setError(message) {
-    // Promise.all can reject while the ingress-session request is still pending.
-    // Invalidate that request before it can overwrite a working session cookie.
-    this._startGeneration++;
-    this._session = "";
-    this._started = false;
-    this._iframe = null;
-    this._renderShell(message || this._t("TV Guide konnte nicht geladen werden."));
-  }
-
   async _response(service, service_data={}) {
     const result = await this._hass.callWS({type:"call_service",domain:"tv_guide",service,service_data,return_response:true});
     if (!result?.response) throw new Error("TV Guide response unavailable");
@@ -407,12 +388,18 @@ class TVGuideNativeCard extends HTMLElement {
         }
         response = {ok:true,...await this._response("get_saved_programmes")};
       } else if (method === "GET" && endpoint === "notification-services") {
-        response = {services:[{service:"persistent_notification.create",label:"Home Assistant"},...Object.keys(this._hass.services?.notify || {}).map(name => ({service:"notify."+name,label:name.startsWith("mobile_app_") ? "Mobilgerät · "+name : name,type:name.startsWith("mobile_app_") ? "mobile_app" : "notify"}))]};
+        const mobile = Object.keys(this._hass.services?.notify || {}).filter(name => name.startsWith("mobile_app_")).map(name => {
+          const device = name.slice(11).replaceAll("_"," ");
+          return {service:"notify."+name,label:"Mobilgerät · "+(device ? device[0].toUpperCase()+device.slice(1) : name),type:"mobile_app"};
+        }).sort((a,b) => a.label.localeCompare(b.label));
+        response = {services:[{service:"persistent_notification.create",label:"Home Assistant",type:"home_assistant"},...mobile]};
       } else if (method === "POST" && endpoint === "test-notification" && body.test === true) {
         const settings = await this._response("get_ui_settings");
         const [domain, service] = settings.notification_service.split(".");
         if (!(domain === "notify" || (domain === "persistent_notification" && service === "create"))) throw new Error("Invalid notification destination");
-        await this._hass.callService(domain,service,{title:"TV Guide",message:"TV Guide – Test"});
+        const t = frame.contentWindow.TVGuideI18n?.t || (message => message);
+        const time = new Intl.DateTimeFormat(body.language || "en",{hour:"2-digit",minute:"2-digit",hour12:false,...(this._hass.config?.time_zone ? {timeZone:this._hass.config.time_zone} : {})}).format(new Date(Date.now()+60000));
+        await this._hass.callService(domain,service,{title:t("TV Guide – Erinnerung"),message:t("{channel}: „{title}“ beginnt um {time} Uhr.",{channel:"TV Guide",title:t("Testbenachrichtigung"),time})});
         response = {ok:true,service:settings.notification_service};
       } else throw new Error("Unsupported native TV Guide operation");
       if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-native-response",id:request.id,response},window.location.origin);

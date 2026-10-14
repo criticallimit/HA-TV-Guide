@@ -12,6 +12,7 @@ pkg=types.ModuleType(PKG);pkg.__path__=[str(ROOT)]
 core=types.ModuleType('homeassistant.core');core.SupportsResponse=types.SimpleNamespace(ONLY='only')
 exc=types.ModuleType('homeassistant.exceptions');exc.HomeAssistantError=type('HomeAssistantError',(Exception,),{})
 vol=types.ModuleType('voluptuous');vol.Schema=lambda value:value;vol.Required=vol.Optional=lambda key,**kwargs:key
+vol.In=lambda choices:choices
 with patch.dict(sys.modules,{PKG:pkg,'homeassistant.core':core,'homeassistant.exceptions':exc,'voluptuous':vol}):
     for name in ('const','catalogs','ui_payload','ui_services'):
         spec=importlib.util.spec_from_file_location(PKG+'.'+name,ROOT/(name+'.py'))
@@ -56,5 +57,25 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
     async def test_unload_removes_all_native_ui_actions(self):
         adapter.async_remove_ui_services(self.hass)
         self.assertEqual(self.handlers,{})
+
+    async def test_original_settings_persist_normalized_values_and_notification_destination(self):
+        settings={'country':'at','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
+        async def request(endpoint,method='GET',body=None):
+            if method=='POST':
+                settings.update(body)
+                settings['country']=settings['country'].lower()
+                return {'ok':True}
+            return dict(settings)
+        scheduler=types.SimpleNamespace(notification_service='persistent_notification.create')
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_original=True,async_original_request=request)}
+        self.hass.data['tv_guide_reminder_schedulers']={'entry':scheduler}
+        adapter.async_register_ui_services(self.hass)
+        await self.call('set_ui_settings',{'options':{'country':'AT','notification_service':'notify.mobile_app_test'}})
+        self.assertEqual(self.entry.options['country'],'at')
+        self.assertEqual(scheduler.notification_service,'notify.mobile_app_test')
+        self.assertEqual(self.entry.options['backend_mode'],'original')
+        with self.assertRaises(exc.HomeAssistantError):
+            await self.call('set_ui_settings',{'options':{'notification_service':'shell.execute'}})
+        self.assertEqual(scheduler.notification_service,'notify.mobile_app_test')
 
 if __name__=='__main__':unittest.main()

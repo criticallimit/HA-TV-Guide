@@ -48,7 +48,7 @@ const server = http.createServer((req,res) => {
   await native.addScriptTag({path:path.join(root,'tv-guide-native-card.js')});
   await native.evaluate(data=>{
     window.calls=[];window.model=structuredClone(data);window.saved={bookmarks:[],reminders:[]};window.fail='';
-    window.hass={language:'de',locale:{language:'de'},config:{time_zone:'Europe/Berlin'},themes:{darkMode:false,themes:{}},services:{notify:{mobile_app_test:{}}},connection:{},
+    window.hass={language:'de',locale:{language:'de'},config:{time_zone:'Europe/Berlin'},themes:{darkMode:false,themes:{}},services:{notify:{mobile_app_test:{},send_message:{}}},connection:{},
       async callWS(message){
         calls.push(message);if(fail===message.service)throw new Error('Simulated service failure');
         let response;
@@ -213,6 +213,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('details:has(#settingRefresh) > summary').click();
   await frame.locator('#settingRefresh').selectOption('360');
   await frame.locator('details:has(#testNotification) > summary').click();
+  assert.equal(await frame.locator('#settingNotificationService option[value="notify.send_message"]').count(),0);
   await frame.locator('#settingNotificationService').selectOption('notify.mobile_app_test');
   await frame.locator('#saveAppSettings').click();
   await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
@@ -223,6 +224,9 @@ const server = http.createServer((req,res) => {
   await frame.locator('details:has(#testNotification) > summary').click();
   await frame.locator('#testNotification').click();
   await native.waitForFunction(()=>calls.some(call=>call.domain==='notify'&&call.service==='mobile_app_test'));
+  const notification=await native.evaluate(()=>calls.find(call=>call.domain==='notify'&&call.service==='mobile_app_test').service_data);
+  assert.equal(notification.title,'TV Guide – Erinnerung');
+  assert.match(notification.message,/Testbenachrichtigung/);
   await frame.locator('#cancelAppSettings').click();
   console.log('PASS automatic setup settings omit manual controls; refresh and native test notification work');
   assert.deepEqual(errors,[]);

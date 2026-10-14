@@ -12,3 +12,5 @@ Install the complete `custom_components/tv_guide` directory, restart HA and add 
 8. Verify the original add-on files, personal settings, saved records and entity IDs remain untouched. Native storage is independent.
 
 The real-HA CI smoke uses the official stable HA image and fixture provider data. Offline/browser tests verify adapters and presentation; live provider availability and notification targets must be checked on your installation. Remaining detail work includes extra-station logo assets and explicit migration of old saved data. Check that the settings dialogue omits manual dashboard setup and sensor switches, while the sidebar, card module and native entities are provided automatically.
+
+9. Check inactive-country cache warming after two-minute idle intervals; active downloads take priority. Sent reminders must stop contributing to the pending count, and switching to an uncached country must clear the previous last-update timestamp. Native mode should create no add-on bridge entities.

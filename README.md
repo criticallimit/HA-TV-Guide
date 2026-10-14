@@ -1,6 +1,6 @@
 # TV Guide – Native Home Assistant Integration
 
-Development package 0.4.2 for a first Home Assistant test. The original `criticallimit/TV-Guide` add-on stays unchanged. This integration hosts its programme engine, country catalogues and original card UI inside Home Assistant.
+Development package 0.4.3 for a first Home Assistant test. The original `criticallimit/TV-Guide` add-on stays unchanged. This integration hosts its programme engine, country catalogues and original card UI inside Home Assistant.
 
 ## Install and test
 
@@ -20,7 +20,8 @@ The integration starts with cached data or an empty catalogue. Downloads/enrichm
 - Original main and personal sender views, all-country picker, mixed-country selection, ordering and reset.
 - Original programme descriptions, subtitles, categories and artwork URLs.
 - Original settings, language, theme, columns, refresh interval and time/date selection.
-- Original card appearance, fonts and main-channel logos.
+- Original card appearance, fonts and all curated main-channel logos.
+- Automatic inactive-country cache preloading through an owned HA timer, with active-country priority.
 - Native saved programmes, reminders, test notifications and HA notification targets.
 - Registry-backed count/status entities and a programme calendar; existing add-on entity IDs remain separate.
 
@@ -30,11 +31,11 @@ The original engine's download/cache policies apply in default mode, including i
 
 ## Native actions
 
-`tv_guide.native_request` provides whitelisted original guide/settings/personal-channel/status operations over HA's authenticated service connection. Native `get_native_guide`, `get_native_channels`, `get_ui_settings`, `get_programmes`, `get_channels`, `get_saved_programmes`, `save_bookmark`, `save_reminder` and `remove_saved_programme` remain available. The dashboard uses native save/notification actions and the event-driven HA reminder scheduler.
+`tv_guide.native_request` provides whitelisted original guide/settings/personal-channel/status operations over HA's authenticated service connection. Native `get_native_guide`, `get_native_channels`, `get_ui_settings`, `get_programmes`, `get_channels`, `get_saved_programmes`, `save_bookmark`, `save_reminder` and `remove_saved_programme` remain available. The dashboard uses native save/notification actions and the event-driven HA reminder scheduler. Pending-reminder counts omit sent and grace-expired items; timestamp attributes retain the original due time. Bridge-only entities are omitted in native mode.
 
 ## Validation and first-test boundaries
 
-134 offline Python tests include inherited public-schedule, programme-title and UK regressions. Twelve Chromium workflows cover original pixel comparisons and the full-engine route. CI additionally runs Hassfest and a real Home Assistant container smoke test for setup, native actions, platforms, reload and unload. Provider downloads are replaced by fixture data in that smoke test; check the latest CI result before treating it as passed.
+170 offline Python tests include inherited public-schedule, programme-title, UK, Norwegian, source-outage, cache-memory and JSON-persistence regressions. Twelve Chromium workflows cover original pixel comparisons and the full-engine route. CI additionally runs Hassfest and a real Home Assistant container smoke test for setup, native actions, platforms, reload and unload. Provider downloads are replaced by fixture data in that smoke test; check the latest CI result before treating it as passed.
 
 Live backend checks on 14 October 2026 successfully merged DE (71,995 programmes, all 50 main stations) and GB (68,398 programmes, all 20 main stations). These checks ran the native-owned engine outside HA; the real HA smoke remains fixture-backed. Some optional German teletext pages failed local TLS certificate checks, while the other sources supplied complete main-station coverage. A live installation test is still needed; use [the test checklist](docs/NATIVE_CARD_TESTING.md). Additional station logo assets outside the bundled main set currently use text-logo fallback. The sidebar, card module and native sensors are provided automatically. The settings dialogue has no manual dashboard setup or sensor switches. Old saved data requires an explicit migration; it is not imported automatically. Power loss before durable sent-state storage can still cause a reminder to be delivered again after restart. HACS publication validation currently fails for missing repository topics and manifest reads while the repository is private; manual installation is available.
 

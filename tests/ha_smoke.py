@@ -48,6 +48,7 @@ async def main():
                 assert entry.state.value == 'loaded', entry.state
                 from homeassistant.helpers import entity_registry as er
                 registry = er.async_get(hass)
+                assert not any(item.unique_id.startswith('tv_guide_bridge_') for item in registry.entities.values() if item.config_entry_id==entry.entry_id)
                 for domain, unique_id in (
                     ('sensor', 'tv_guide_native_next_reminder'),
                     ('sensor', 'tv_guide_native_saved_bookmarks_count'),
@@ -63,7 +64,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
-                assert '/tv_guide/frontend/tv-guide-native-card.js?v=4' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-native-card.js?v=5' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 store = coordinator.backend.runtime.STORE
                 now = datetime.now(timezone.utc)
@@ -97,6 +98,14 @@ async def main():
                 await hass.services.async_call('tv_guide','save_reminder',{**fields,'minutes':10},blocking=True)
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
                 assert len(saved['bookmarks']) == len(saved['reminders']) == 1
+                count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_native_saved_reminders_count')
+                assert hass.states.get(count_id).state=='1'
+                native_saved=hass.data['tv_guide_saved'][entry.entry_id]
+                native_saved.reminders[0]['sent']=True
+                await native_saved.async_save()
+                assert hass.states.get(count_id).state=='0'
+                native_saved.reminders[0]['sent']=False
+                await native_saved.async_save()
                 assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
                 hass.config_entries.async_update_entry(entry,version=1)
                 assert await hass.config_entries.async_reload(entry.entry_id)

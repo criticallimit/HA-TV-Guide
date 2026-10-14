@@ -8,7 +8,7 @@ from homeassistant.components import frontend
 from .const import DOMAIN
 
 CARD_URL = "/tv_guide/frontend/tv-guide-native-card.js"
-MODULE_URL = CARD_URL + "?v=4"
+MODULE_URL = CARD_URL + "?v=5"
 PANEL_PATH = "tv-guide-native"
 
 
@@ -25,7 +25,7 @@ async def async_register_frontend(hass):
             frontend.async_register_built_in_panel(hass, "custom", sidebar_title="TV Guide",
                 sidebar_icon="mdi:television-guide", frontend_url_path=PANEL_PATH,
                 config={"_panel_custom":{"name":"tv-guide-native-panel",
-                    "module_url":"/tv_guide/frontend/tv-guide-native-panel.js?v=4",
+                    "module_url":"/tv_guide/frontend/tv-guide-native-panel.js?v=5",
                     "embed_iframe":False,"trust_external":False}})
             hass.data[DOMAIN + "_panel_registered"] = True
         frontend.add_extra_js_url(hass, MODULE_URL)

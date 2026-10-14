@@ -4,7 +4,7 @@ Only HA-TV-Guide implements this port. TV-Guide is pinned read-only reference ma
 
 ## Default programme engine
 
-Version 0.3.0 hosts the original programme backend in `original_backend/`, including all source adapters, provider definitions, timeline merging, country caches and mixed-country personal lists. The bundled reference data archive contains the original country/provider/logo metadata and locale catalogues. `OriginalRuntime` supplies entry-owned storage paths and dispatches whitelisted route methods directly, without an HTTP listener. Supervisor locale/options/notification functions and server/daemon-worker entry points are replaced; native HA owns these functions.
+Version 0.4.3 hosts the original programme backend in `original_backend/`, including all source adapters, provider definitions, timeline merging, country caches and mixed-country personal lists. The bundled reference data archive contains the original country/provider/logo metadata and locale catalogues. `OriginalRuntime` supplies entry-owned storage paths and dispatches whitelisted route methods directly, without an HTTP listener. Supervisor locale/options/notification functions and server/daemon-worker entry points are replaced; native HA owns these functions.
 
 `TVGuideOriginalCoordinator` initializes the backend in HA's executor, restores cached data and starts initial source work asynchronously. Original freshness checks submit work to an owned two-worker pool. Source completion wakes the coordinator through the event loop, updating cached calendar/status/action data. Native authenticated `native_request` calls execute original route logic in the executor. Unload closes submissions and drains workers. The original provider policies remain unchanged in this mode; the separate custom-feed coordinator preserves its strict transport and limits.
 
@@ -23,3 +23,9 @@ Repeated refresh requests share one queued/running job per country store. Period
 ## Automatic installation
 
 Config flow version 2 immediately creates an entry from HA country/language with no user fields or options form. Locale fallback rules are pure and tested. Version 1 entries without an explicit custom feed are migrated automatically; legacy explicit feeds are retained. The frontend dependency loads a native sidebar panel and extra card module on setup, removing owned UI registrations on unload. Static code registration remains idempotent across reloads. The sidebar panel passes HA state to the original-style card; no manual resource registration is required.
+
+## Port audit fixes
+
+An owned HA interval timer checks one inactive country every 120 seconds, deferring while country refreshes are busy. Fresh caches are reused; stale caches use the same deduplicated worker pool and are pruned from memory after refresh. Unload cancels the timer and drains workers. Data and active-country status are captured together outside HA's event loop; country switches clear absent last-update timestamps, malformed timestamps report unknown, and worker wakes arriving during synchronization request another snapshot. Extracted bundled reference data is repaired/updated atomically on restart.
+
+Both settings action paths persist normalized engine values and update the reminder destination. Native reminder count/success/time semantics match the original sensors, while unused bridge entities are not created in native mode. Test notification text uses the original frontend translations and HA timezone. Notification choices match the original Home Assistant/mobile-app targets.
