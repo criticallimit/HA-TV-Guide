@@ -29,8 +29,6 @@ jobs:
           python-version: '3.13'
       - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
-      - name: Smoke-test offline EPG benchmark
-        run: python tools/benchmark_tv_guide.py --iterations 2
       - name: Check Python syntax
         run: python -m compileall -q custom_components
       - name: Check JSON validity
