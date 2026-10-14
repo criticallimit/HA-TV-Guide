@@ -37,7 +37,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
         hass.data.setdefault(DOMAIN + "_saved", {})[entry.entry_id] = saved
         scheduler = TVGuideReminderScheduler(
-            hass, saved, hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock())
+            hass, saved, hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock()),
+            options.get("notification_service", "persistent_notification.create")
         )
         hass.data.setdefault(DOMAIN + "_reminder_schedulers", {})[entry.entry_id] = scheduler
 
@@ -70,8 +71,14 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     expected_url = effective_feed(options)
     if coordinator is not None and coordinator.url == expected_url and coordinator.country == options.get("country", ""):
+        scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
+        if scheduler is not None:
+            scheduler.notification_service = options.get("notification_service", "persistent_notification.create")
         return
     if coordinator is None and not expected_url:
+        scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
+        if scheduler is not None:
+            scheduler.notification_service = options.get("notification_service", "persistent_notification.create")
         return
     await hass.config_entries.async_reload(entry.entry_id)
 
