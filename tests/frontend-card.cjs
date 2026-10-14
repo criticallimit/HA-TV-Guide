@@ -113,8 +113,9 @@ const server = http.createServer((req,res) => {
   await frame.locator('#cancelAppSettings').click();
   console.log('PASS original sender picker and settings dialogue route to native storage');
 
+  const guideReadsBefore = await native.evaluate(() => calls.filter(call => call.service === 'get_native_guide' || (call.service === 'native_request' && call.service_data?.endpoint === 'guide')).length);
   await frame.locator('[data-mode="2015"]').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='get_native_guide'&&call.service_data.at?.includes('18:15')));
+  await frame.locator('[data-mode="2015"].active').waitFor();
   await original.locator('[data-mode="2015"]').click();
   await frame.locator('[data-channel-view="main"]').click();
   await frame.locator('body').evaluate(()=>document.activeElement?.blur());
@@ -122,7 +123,7 @@ const server = http.createServer((req,res) => {
   const evening=await card.locator('iframe').screenshot();
   const eveningReference=await original.screenshot({fullPage:false});
   assert.ok(evening.equals(eveningReference),'Evening view must retain original appearance');
-  console.log('PASS 20:15 view retains pixel parity and requests the native time window');
+  console.log('PASS 20:15 view retains pixel parity with immediate local navigation');
   for (const mode of ['now','1800','2200']) {
     await frame.locator(`[data-mode="${mode}"]`).click();
     await original.locator(`[data-mode="${mode}"]`).click();
@@ -135,14 +136,16 @@ const server = http.createServer((req,res) => {
   await frame.locator('#customDate').fill('2026-10-14');
   await frame.locator('#customTime').fill('21:30');
   await frame.locator('#applyCustomTime').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='get_native_guide'&&call.service_data.at?.includes('19:30')));
+  await frame.locator('[data-mode="other"].active').waitFor();
   await frame.locator('[data-channel-view="custom"]').click();
   await frame.locator('[data-channel-view="custom"].active').waitFor();
   assert.equal(await frame.locator('.channel-card').count(),5);
   await frame.locator('[data-channel-view="main"]').click();
   await frame.locator('[data-mode="2015"]').click();
   await original.locator('[data-mode="2015"]').click();
-  console.log('PASS every header time button, custom date/time and main/personal view');
+  const guideReadsAfter = await native.evaluate(() => calls.filter(call => call.service === 'get_native_guide' || (call.service === 'native_request' && call.service_data?.endpoint === 'guide')).length);
+  assert.equal(guideReadsAfter, guideReadsBefore, 'Time-only navigation must not request the EPG again');
+  console.log('PASS every header time button and custom time without extra backend queries');
 
   await frame.locator('[data-channel-id="ard"] [data-program-start]').first().click();
   await native.evaluate(()=>fail='save_bookmark');
