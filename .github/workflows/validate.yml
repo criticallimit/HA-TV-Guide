@@ -63,16 +63,19 @@ jobs:
           from pathlib import Path
 
           source = Path("custom_components/tv_guide/frontend/app")
+          fixture = Path("tests/reference-frontend")
           reference = json.loads((source / "REFERENCE.json").read_text(encoding="utf-8"))
           assert reference["repository"] == "criticallimit/TV-Guide"
           assert reference["commit"] == "7871c4af8951c1f05ed012d028786181b1974b11"
           for name, expected in reference["source_sha256"].items():
-              actual = hashlib.sha256((source / name).read_bytes()).hexdigest()
+              actual = hashlib.sha256((fixture / name).read_bytes()).hexdigest()
               if actual != expected:
-                  raise SystemExit(f"Original frontend reference changed: {name}")
+                  raise SystemExit(f"Pinned original frontend fixture changed: {name}")
           target = Path("reference-addon/tv-guide/www")
           target.parent.mkdir(parents=True, exist_ok=True)
           shutil.copytree(source, target)
+          for name in reference["source_sha256"]:
+              shutil.copy2(fixture / name, target / name)
           print("Pinned original frontend verified and staged for pixel comparison")
           PY
       - name: Compare native card with original frontend in Chromium
