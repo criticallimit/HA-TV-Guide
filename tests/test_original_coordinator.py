@@ -49,6 +49,20 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(c.refresh_running)
         self.assertEqual(c.update_interval.total_seconds(),3600)
 
+    async def test_unchanged_refresh_state_does_not_notify_again(self):
+        coordinator = self.coordinator
+        notifications = []
+        coordinator._notify_refresh = lambda: notifications.append(coordinator.refresh_running)
+        status = {'country': 'de', 'last_loaded': None, 'refresh_running': False,
+                  'source_attempts': [], 'refresh_minutes': 180}
+        coordinator.backend.state_snapshot = lambda: ([], [], [], dict(status))
+        await coordinator._snapshot()
+        await coordinator._snapshot()
+        self.assertEqual(notifications, [False])
+        status['refresh_running'] = True
+        await coordinator._snapshot()
+        self.assertEqual(notifications, [False, True])
+
     async def test_completion_wake_during_snapshot_is_not_lost(self):
         entered=asyncio.Event();release=asyncio.Event();calls=[]
         async def snapshot():
