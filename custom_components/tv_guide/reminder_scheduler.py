@@ -68,9 +68,9 @@ class TVGuideReminderScheduler:
             now = datetime.now(timezone.utc)
             if now >= start + timedelta(minutes=5):
                 return
-            time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")
-            message = f'{item["channel"]}: „{item["title"]}“ beginnt um {time_text} Uhr.'
             try:
+                time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")
+                message = f'{item["channel"]}: „{item["title"]}“ beginnt um {time_text} Uhr.'
                 domain, service = self.notification_service.split(".", 1)
                 payload = {"title": "TV Guide – Erinnerung", "message": message}
                 if domain == "persistent_notification":
