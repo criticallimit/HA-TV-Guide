@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://criticallimit.github.io/HA-TV-Guide/sitemap.xml
