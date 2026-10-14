@@ -779,7 +779,11 @@ function setMode(nextMode) {
   if (nextMode === "now") selectedDate = startOfDay(new Date());
   document.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === nextMode));
-  loadGuide().catch(() => {});
+  // The native guide response contains complete channel timelines. Re-render
+  // an already loaded guide locally instead of waiting for a Home Assistant
+  // websocket round trip on every time-tab click.
+  if (guide) render();
+  else loadGuide().catch(() => {});
 }
 
 function initCustomDate() {
@@ -862,7 +866,8 @@ applyCustomTime.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === "other"));
   customTimeDialog.close();
-  loadGuide().catch(() => {});
+  if (guide) render();
+  else loadGuide().catch(() => {});
 });
 
 cancelCustomTime.addEventListener("click", () => customTimeDialog.close());
