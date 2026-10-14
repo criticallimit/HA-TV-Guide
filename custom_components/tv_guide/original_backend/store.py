@@ -241,7 +241,11 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             return False
         # Reject expired caches before traversing thousands of programme rows.
         # The time window scan remains necessary for a still-fresh file.
-        age = time.time() - self.parsed_cache_file.stat().st_mtime
+        try:
+            age = time.time() - self.parsed_cache_file.stat().st_mtime
+        except OSError:
+            # The cache can disappear between exists() and stat() on cleanup.
+            return False
         if age >= self.options["refresh_minutes"] * 60:
             return False
         if not any(channel.get("programs") for channel in self.channels):
