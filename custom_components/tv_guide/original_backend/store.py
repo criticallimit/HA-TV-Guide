@@ -246,8 +246,8 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             return False
         if age >= self.options["refresh_minutes"] * 60:
             return False
-        if not any(channel.get("programs") for channel in self.channels):
-            return False
+        # The following time-window check also rejects empty programme lists.
+        # Avoid traversing all channels twice on each freshness check.
         now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
         if not any(
             self.runtime.datetime.fromisoformat(item["start"]) <= now < self.runtime.datetime.fromisoformat(item["end"])
