@@ -11,7 +11,7 @@ const stations = [['ard','Das Erste'],['zdf','ZDF'],['arte','arte'],['3sat','3sa
 const fixture = {
   country:'de', ui:{language:'de',default_view:'now',columns_desktop:5,max_channels:0,theme_mode:'auto',refresh_minutes:180,notification_service:'persistent_notification.create'}, refresh_running:false,
   main_channel_ids:stations.map(item=>item[0]), custom_channel_ids:stations.map(item=>item[0]),
-  channels:stations.map(([id,name],index) => ({id,name,source_country:'de',available:true, logo_normalized_light:`/tv_guide/frontend/app/logos/de-${id}-light.svg`,logo_normalized_dark:`/tv_guide/frontend/app/logos/de-${id}-dark.svg`,programs:Array.from({length:7},(_,i)=>({id:`native_${id}_${i}`,title:['Nachrichten','Film am Abend','Wissen und Kultur','Dokumentation','Spätprogramm','Nachtmagazin','Morgenprogramm'][i],start:new Date(Date.parse(fixed)+(i-1)*3600000).toISOString(),end:new Date(Date.parse(fixed)+i*3600000+1800000).toISOString(),desc:'Beschreibung der Sendung.',category:'Information',subtitle:''}))})),
+  channels:stations.map(([id,name],index) => ({id,name,source_country:'de',available:true, logo_normalized_light:`/tv_guide/frontend/app/logos/de-${id}-light.svg`,logo_normalized_dark:`/tv_guide/frontend/app/logos/de-${id}-dark.svg`,programs:Array.from({length:7},(_,i)=>({id:`guide_${id}_${i}`,title:['Nachrichten','Film am Abend','Wissen und Kultur','Dokumentation','Spätprogramm','Nachtmagazin','Morgenprogramm'][i],start:new Date(Date.parse(fixed)+(i-1)*3600000).toISOString(),end:new Date(Date.parse(fixed)+i*3600000+1800000).toISOString(),desc:'Beschreibung der Sendung.',category:'Information',subtitle:''}))})),
 };
 const server = http.createServer((req,res) => {
   const url = new URL(req.url,'http://localhost');
@@ -44,7 +44,7 @@ const server = http.createServer((req,res) => {
   const errors=[];native.on('pageerror',e=>{errors.push(e.message);console.error('Browser error',e.message);});
   const requests=[];native.on('request',r=>{requests.push(r.url());if(process.env.TVG_DEBUG)console.log('Resource',r.url());});
   console.log('Pages ready');
-  await native.goto(base);console.log('Native host ready');
+  await native.goto(base);console.log('TV Guide host ready');
   await native.addScriptTag({path:path.join(root,'tv-guide-card.js')});
   await native.waitForFunction(()=>customElements.get('tv-guide-card'));
   assert.equal(await native.evaluate(()=>window.customCards.find(c=>c.type==='tv-guide-card')?.name),'TV Guide');
@@ -55,9 +55,9 @@ const server = http.createServer((req,res) => {
       async callWS(message){
         calls.push(message);if(fail===message.service)throw new Error('Simulated service failure');
         let response;
-        if(message.service==='get_native_guide')response=model;
+        if(message.service==='get_guide')response=model;
         else if(message.service==='get_saved_programmes')response=saved;
-        else if(message.service==='get_native_channels')response={channels:model.channels,order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]};
+        else if(message.service==='get_channels')response={channels:model.channels,order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]};
         else if(message.service==='get_ui_settings')response={...model.ui,country:'de'};
         else if(message.service==='set_ui_settings'){Object.assign(model.ui,message.service_data.options);response={ok:true};}
         else throw new Error('Unexpected service');
@@ -72,7 +72,7 @@ const server = http.createServer((req,res) => {
         }else if(service==='set_channels')model.custom_channel_ids=data.channels.length?data.channels:model.main_channel_ids;
       }};
     const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
-  },fixture);console.log('Native card mounted');
+  },fixture);console.log('TV Guide card mounted');
   const card=native.locator('tv-guide-card');
   const frame=card.locator('iframe').contentFrame();
   await frame.locator('.channel-card').first().waitFor({timeout:20000});
@@ -84,7 +84,7 @@ const server = http.createServer((req,res) => {
   const first=await card.locator('iframe').screenshot();
   const expected=await original.screenshot({fullPage:false});
   if(process.env.TVG_SCREENSHOT){fs.writeFileSync(process.env.TVG_SCREENSHOT,first);fs.writeFileSync(process.env.TVG_SCREENSHOT.replace('.png','-reference.png'),expected);}
-  assert.ok(first.equals(expected),'Native main view must be pixel-identical to the original add-on for the same data');
+  assert.ok(first.equals(expected),'TV Guide main view must be pixel-identical to the original add-on for the same data');
   console.log('PASS pixel-identical original card view on desktop (CSS, fonts, logos, rows, progress and toolbar)');
   assert.equal(await frame.locator('#bookmarkCount').textContent(),'0');
   assert.equal(await native.evaluate(()=>calls.some(call=>call.service==='save_bookmark'&&call.service_data.id==='old-cache-record')),false);
@@ -92,7 +92,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('[data-channel-id="zdf"] [data-program-start]').nth(2).click();
   await frame.locator('#bookmarkProgram').click();
   await native.waitForFunction(()=>saved.bookmarks.length===1);
-  assert.equal(await native.evaluate(()=>saved.bookmarks[0].id),'native_zdf_2');
+  assert.equal(await native.evaluate(()=>saved.bookmarks[0].id),'guide_zdf_2');
   await frame.locator('#reminderEnabled').check();
   await native.waitForFunction(()=>saved.reminders.length===1);
   assert.equal(await native.evaluate(()=>saved.reminders[0].minutes),10);
@@ -101,7 +101,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('#bookmarksBody [data-remove]').click();
   await native.waitForFunction(()=>saved.bookmarks.length===0&&saved.reminders.length===0);
   await frame.locator('#bookmarksDialog .close').click();
-  console.log('PASS original programme detail, bookmark/reminder controls and atomic removal using native actions');
+  console.log('PASS original programme detail, bookmark/reminder controls and atomic removal using TV Guide actions');
 
   await frame.locator('#showChannelSettings').click();
   await frame.locator('#channelSettingsList .channel-settings-row').first().waitFor();
@@ -113,9 +113,9 @@ const server = http.createServer((req,res) => {
   await frame.locator('#saveAppSettings').waitFor({state:'visible'});
   await native.waitForFunction(()=>calls.some(call=>call.service==='get_ui_settings'));
   await frame.locator('#cancelAppSettings').click();
-  console.log('PASS original sender picker and settings dialogue route to native storage');
+  console.log('PASS original sender picker and settings dialogue route to TV Guide storage');
 
-  const guideReadsBefore = await native.evaluate(() => calls.filter(call => call.service === 'get_native_guide' || (call.service === 'native_request' && call.service_data?.endpoint === 'guide')).length);
+  const guideReadsBefore = await native.evaluate(() => calls.filter(call => call.service === 'get_guide' || (call.service === 'guide_request' && call.service_data?.endpoint === 'guide')).length);
   await frame.locator('[data-mode="2015"]').click();
   await frame.locator('[data-mode="2015"].active').waitFor();
   await original.locator('[data-mode="2015"]').click();
@@ -145,7 +145,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('[data-channel-view="main"]').click();
   await frame.locator('[data-mode="2015"]').click();
   await original.locator('[data-mode="2015"]').click();
-  const guideReadsAfter = await native.evaluate(() => calls.filter(call => call.service === 'get_native_guide' || (call.service === 'native_request' && call.service_data?.endpoint === 'guide')).length);
+  const guideReadsAfter = await native.evaluate(() => calls.filter(call => call.service === 'get_guide' || (call.service === 'guide_request' && call.service_data?.endpoint === 'guide')).length);
   assert.equal(guideReadsAfter, guideReadsBefore, 'Time-only navigation must not request the EPG again');
   console.log('PASS every header time button and custom time without extra backend queries');
 
@@ -158,7 +158,7 @@ const server = http.createServer((req,res) => {
   assert.equal(await native.evaluate(()=>calls.every(call=>call.type!=='supervisor/api')),true);
   assert.equal(requests.some(url=>url.includes('/app/api/')),false);
   const before=await native.evaluate(()=>calls.length);
-  await native.evaluate(()=>window.postMessage({type:'tv-guide-native-request',id:'spoof',endpoint:'settings',method:'POST',body:{country:'fr'}},location.origin));
+  await native.evaluate(()=>window.postMessage({type:'tv-guide-request',id:'spoof',endpoint:'settings',method:'POST',body:{country:'fr'}},location.origin));
   await native.waitForTimeout(100);
   assert.equal(await native.evaluate(()=>calls.length),before);
   assert.deepEqual(errors,[]);
@@ -223,9 +223,9 @@ const server = http.createServer((req,res) => {
   await native.setViewportSize({width:1100,height:1000});
   await native.evaluate(()=>{
     const previous=hass.callWS.bind(hass);
-    hass.services.tv_guide={native_request:{}};
+    hass.services.tv_guide={guide_request:{}};
     hass.callWS=async message=>{
-      if(message.service!=='native_request')return previous(message);
+      if(message.service!=='guide_request')return previous(message);
       calls.push(message);
       const {endpoint,method,body}=message.service_data;
       let response;
@@ -242,7 +242,7 @@ const server = http.createServer((req,res) => {
   await frame.locator('#showChannelSettings').click();
   await frame.locator('#channelSettingsList .channel-settings-row').first().waitFor();
   await frame.locator('#saveChannelSettings').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='personal-channels'&&call.service_data.method==='POST'));
+  await native.waitForFunction(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.endpoint==='personal-channels'&&call.service_data.method==='POST'));
   await frame.locator('#channelSettingsDialog').waitFor({state:'hidden'});
   await frame.locator('#showAppSettings').click();
   await frame.locator('#saveAppSettings').waitFor({state:'visible'});
@@ -255,7 +255,7 @@ const server = http.createServer((req,res) => {
   assert.equal(await frame.locator('#settingNotificationService option[value="notify.send_message"]').count(),0);
   await frame.locator('#settingNotificationService').selectOption('notify.mobile_app_test');
   await frame.locator('#saveAppSettings').click();
-  await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
+  await native.waitForFunction(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
   assert.equal(await native.evaluate(()=>model.ui.refresh_minutes),360);
   await frame.locator('#appSettingsDialog').waitFor({state:'hidden'});
   await frame.locator('#showAppSettings').click();
@@ -287,7 +287,7 @@ const server = http.createServer((req,res) => {
   assert.ok(await native.locator('tv-guide-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=390));
   assert.equal(await native.evaluate(()=>{const card=document.createElement('tv-guide-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
   assert.deepEqual(errors,[]);
-  console.log('PASS automatic sidebar panel loads the native guide and adapts to mobile');
+  console.log('PASS automatic sidebar panel loads the guide and adapts to mobile');
 
   const countryInfo=JSON.parse(fs.readFileSync(path.join(reference,'..','data','countries.json'),'utf8'));
   const languageFor={at:'de',be:'fr',dk:'da',fr:'fr',de:'de',nl:'nl',no:'nb',se:'sv',ch:'it',gb:'en'};
@@ -302,7 +302,7 @@ const server = http.createServer((req,res) => {
     await host.clock.setFixedTime(new Date(fixed));await ref.clock.setFixedTime(new Date(fixed));
     await host.goto(base);await host.addScriptTag({path:path.join(root,'tv-guide-card.js')});
     await host.evaluate(data=>{
-      const hass={language:data.ui.language,locale:{language:data.ui.language},themes:{darkMode:false,themes:{}},services:{tv_guide:{native_request:{}}},async callWS(message){return {response:message.service==='get_saved_programmes'?{bookmarks:[],reminders:[]}:data};}};
+      const hass={language:data.ui.language,locale:{language:data.ui.language},themes:{darkMode:false,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){return {response:message.service==='get_saved_programmes'?{bookmarks:[],reminders:[]}:data};}};
       const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
     },data);
     const countryCard=host.locator('tv-guide-card'),countryFrame=countryCard.locator('iframe').contentFrame();
