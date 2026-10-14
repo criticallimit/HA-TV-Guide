@@ -1,10 +1,20 @@
 """Offline XMLTV reader tests."""
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from xmltv import parse_xmltv, parse_xmltv_time  # noqa: E402
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("xmltv")
+parse_xmltv = _module.parse_xmltv
+parse_xmltv_time = _module.parse_xmltv_time
 
 
 class XMLTVTests(unittest.TestCase):
@@ -14,6 +24,12 @@ class XMLTVTests(unittest.TestCase):
         self.assertIsNone(parse_xmltv_time("20261013201500"))
         self.assertIsNone(parse_xmltv_time("wrong"))
 
+    def test_dates_outside_utc_range_are_skipped_without_losing_valid_programmes(self):
+        self.assertIsNone(parse_xmltv_time('99991231233000 -0100'))
+        self.assertIsNone(parse_xmltv_time('00010101000000 +0100'))
+        data=b'<tv><programme channel="bad" start="99991231233000 -0100" stop="99991231234500 -0100"><title>Invalid</title></programme><programme channel="good" start="20300101120000 +0000" stop="20300101130000 +0000"><title>Valid</title></programme></tv>'
+        self.assertEqual([row['title'] for row in parse_xmltv(data)],['Valid'])
+
     def test_programmes(self):
         xml = b'<tv><programme channel="channel.one" start="20261013201500 +0200" stop="20261013220000 +0200"><title lang="de">Film</title><desc>Beschreibung</desc></programme></tv>'
         result = parse_xmltv(xml)
@@ -21,6 +37,11 @@ class XMLTVTests(unittest.TestCase):
         self.assertEqual(result[0]["channel"], "channel.one")
         self.assertEqual(result[0]["title"], "Film")
         self.assertEqual(result[0]["description"], "Beschreibung")
+
+    def test_utf16_cannot_bypass_dtd_rejection(self):
+        xml = '<!DOCTYPE tv [<!ENTITY x "expanded">]><tv><programme channel="a" start="20261014190000 +0000" stop="20261014200000 +0000"><title>&x;</title></programme></tv>'
+        with self.assertRaises(ValueError):
+            parse_xmltv(xml.encode('utf-16'))
 
     def test_invalid(self):
         self.assertEqual(parse_xmltv(b'<tv><programme channel="a"/></tv>'), [])

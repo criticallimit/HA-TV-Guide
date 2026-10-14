@@ -19,6 +19,7 @@ for name in ("reminder_times", "next_reminder"):
     spec.loader.exec_module(module)
 
 next_pending_reminder = sys.modules[f"{PKG}.next_reminder"].next_pending_reminder
+pending_reminders = sys.modules[f"{PKG}.next_reminder"].pending_reminders
 
 
 class NextReminderTests(unittest.TestCase):
@@ -37,6 +38,19 @@ class NextReminderTests(unittest.TestCase):
             {"id": "expired", "start": "2026-10-13T19:00:00+02:00", "minutes": 10},
         ]
         self.assertEqual(next_pending_reminder(data, now), (None, None))
+
+    def test_overdue_sensor_retains_original_due_time(self):
+        now=datetime(2026,10,14,18,0,tzinfo=timezone.utc)
+        record={'id':'due','start':(now+timedelta(minutes=2)).isoformat(),'minutes':10}
+        when,item=next_pending_reminder([record],now)
+        self.assertEqual(when,now-timedelta(minutes=8))
+        self.assertIs(item,record)
+
+    def test_pending_count_omits_sent_and_grace_expired_reminders(self):
+        now=datetime(2026,10,14,18,0,tzinfo=timezone.utc)
+        records=[{'id':str(i),'start':(now+timedelta(minutes=offset)).isoformat(),'minutes':10,'sent':sent}
+                 for i,(offset,sent) in enumerate([(10,False),(20,True),(-6,False)])]
+        self.assertEqual(len(pending_reminders(records,now)),1)
 
 
 if __name__ == "__main__":

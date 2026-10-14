@@ -31,6 +31,24 @@ spec.loader.exec_module(module)
 
 
 class SavedProgrammeTests(unittest.TestCase):
+    def test_dates_outside_the_representable_utc_range_are_not_restored(self):
+        for start,end in [('9999-12-31T23:30:00-01:00','9999-12-31T23:45:00-01:00'),('0001-01-01T00:00:00+01:00','2040-01-01T01:00:00+00:00')]:
+            item={'id':'bad-time','start':start,'end':end,'minutes':10}
+            self.assertEqual(module.normalize_items([item]),[])
+            self.assertEqual(module.normalize_items([item],reminders=True),[])
+
+    def test_long_country_qualified_channel_id_survives_storage(self):
+        now=datetime.now(timezone.utc)+timedelta(hours=1)
+        channel_id='de:'+'x'*160
+        item={'id':'long','channelId':channel_id,'start':now.isoformat(),'end':(now+timedelta(hours=1)).isoformat()}
+        self.assertEqual(module.normalize_items([item])[0]['channelId'],channel_id)
+
+    def test_minute_selector_strings_are_supported_but_fractional_values_are_rejected(self):
+        for value in (5,10,15,30,'5','10','15','30'):
+            self.assertEqual(module.normalize_reminder_minutes(value),int(value))
+        for value in (True,10.5,10.0,'10.5','11',None):
+            with self.assertRaises(ValueError):module.normalize_reminder_minutes(value)
+
     def test_original_field_names_and_deduplication(self):
         now = datetime.now(timezone.utc)
         base = {
@@ -68,6 +86,28 @@ class SavedProgrammeTests(unittest.TestCase):
             self.assertEqual(len(saved._store.writes), 2)
 
         import asyncio
+        asyncio.run(run())
+
+    def test_saved_records_sort_by_instant_across_timezone_offsets(self):
+        now = datetime.now(timezone.utc) + timedelta(days=1)
+        early = {"id":"early","start":now.astimezone(timezone(timedelta(hours=3))).isoformat(),"end":(now+timedelta(hours=2)).isoformat()}
+        late = {"id":"late","start":(now+timedelta(hours=1)).isoformat(),"end":(now+timedelta(hours=2)).isoformat()}
+        self.assertEqual([item["id"] for item in module.normalize_items([late,early])], ["early","late"])
+
+    def test_subscriber_failure_cannot_turn_successful_storage_into_failed_action(self):
+        import asyncio
+        async def run():
+            saved=module.TVGuideSavedProgrammes.__new__(module.TVGuideSavedProgrammes)
+            events=[]
+            class Store:
+                async def async_save(self,data):events.append("committed")
+            saved._store=Store();saved.bookmarks=[];saved.reminders=[];saved._subscribers=set()
+            def bad():raise RuntimeError("unloaded entity")
+            saved.subscribe(bad)
+            saved.subscribe(lambda:events.append("other subscriber"))
+            await saved.async_save()
+            self.assertIn("committed",events)
+            self.assertIn("other subscriber",events)
         asyncio.run(run())
 
     def test_expired_and_invalid_rejected(self):

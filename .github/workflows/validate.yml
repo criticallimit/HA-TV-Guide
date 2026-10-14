@@ -6,20 +6,19 @@ on:
   pull_request:
 
 jobs:
+  ha-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test setup, actions, reload and unload in real Home Assistant
+        run: docker run --rm -v "$PWD:/repo:ro" --entrypoint python ghcr.io/home-assistant/home-assistant:stable /repo/tests/ha_smoke.py
+
   hassfest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: home-assistant/actions/hassfest@master
-
-  hacs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: HACS validation
-        uses: hacs/action@main
-        with:
-          category: integration
 
   syntax:
     runs-on: ubuntu-latest
@@ -37,7 +36,63 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          for path in list(Path("custom_components").rglob("*.json")) + [Path("hacs.json")]:
+          for path in Path("custom_components").rglob("*.json"):
               json.loads(path.read_text(encoding="utf-8"))
               print("OK", path)
           PY
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: npm install --no-save --package-lock=false playwright@1.62.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Check native card syntax
+        run: node --check custom_components/tv_guide/frontend/tv-guide-native-card.js
+      - name: Verify and stage pinned read-only reference frontend
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import shutil
+          from pathlib import Path
+
+          source = Path("custom_components/tv_guide/frontend/app")
+          fixture = Path("tests/reference-frontend")
+          reference = json.loads((source / "REFERENCE.json").read_text(encoding="utf-8"))
+          assert reference["repository"] == "criticallimit/TV-Guide"
+          assert reference["commit"] == "7871c4af8951c1f05ed012d028786181b1974b11"
+          # Git blob object IDs taken directly from the pinned original commit.
+          # REFERENCE.json has stale SHA-256 values; verify exact original blobs.
+          import subprocess
+          original_blobs = {
+              "index.html": "f4538c6afd893be51782b1bd74bf9492f93c7afe",
+              "styles.css": "782f7e4e78296cbf58676bf96d46d97fb4af395a",
+              "guide-core.js": "51e96a574f4ef168efbe78dd6a7856084273aa69",
+              "channel-picker.js": "171605c74c0ab97bf05bd88c303a81478f755f0e",
+              "translations.js": "2a8da2d3eb1554d300d145798effbed5443590c6",
+              "i18n.js": "b85a2d39aff934dd37b500715ed9aa19d2b4813c",
+              "app.js": "ec043728056ab7e0252b0f553bfc4a66eb6343ca",
+          }
+          assert set(original_blobs) == set(reference["source_sha256"])
+          for name, expected in original_blobs.items():
+              actual = subprocess.check_output(["git", "hash-object", str(fixture / name)], text=True).strip()
+              if actual != expected:
+                  raise SystemExit(f"Pinned original frontend fixture changed: {name}")
+          target = Path("reference-addon/tv-guide/www")
+          target.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copytree(source, target)
+          for name in reference["source_sha256"]:
+              shutil.copy2(fixture / name, target / name)
+          shutil.copytree(Path("tests/reference-data"), target.parent / "data")
+          print("Pinned original frontend verified and staged for pixel comparison")
+          PY
+      - name: Compare native card with original frontend in Chromium
+        env:
+          TVG_REFERENCE: reference-addon
+        run: node tests/frontend-card.cjs

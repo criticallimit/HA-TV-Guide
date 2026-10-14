@@ -29,7 +29,7 @@ save_bookmark:
         text:
 save_reminder:
   name: Save reminder
-  description: Store a programme reminder. Notification delivery is not yet implemented.
+  description: Store a programme reminder for delivery through the configured Home Assistant notification service.
   fields:
     id:
       required: true
@@ -80,6 +80,7 @@ remove_saved_programme:
           options:
             - bookmark
             - reminder
+            - programme
 get_programmes:
   name: Get TV programmes
   description: Return cached XMLTV programmes for a timezone-aware interval, without downloading the feed.
@@ -112,12 +113,54 @@ get_channels:
 
 set_channels:
   name: Set selected TV channels
-  description: Save an ordered list of canonical or XMLTV channel IDs. An empty list means all channels.
+  description: Save an ordered list of active-country canonical or XMLTV channel IDs for the calendar and native programme queries. An empty list means all channels.
   fields:
     channels:
       required: true
       example:
         - ard
         - zdf
+      selector:
+        object:
+
+get_saved_programmes:
+  name: Get saved TV programmes
+  description: Return active native bookmarks and reminders, including sent status.
+
+get_native_guide:
+  name: Get native TV Guide view
+  description: Return the original TV Guide presentation model. An optional timestamp limits each sender to seven overlapping or upcoming programmes.
+  fields:
+    at:
+      description: Optional ISO timestamp including its timezone.
+      selector:
+        text:
+get_native_channels:
+  name: Get native personal channel picker
+  description: Return current-feed sender choices and saved ordering for the native card.
+get_ui_settings:
+  name: Get native TV Guide display settings
+  description: Return persisted native display and notification settings.
+set_ui_settings:
+  name: Set native TV Guide display settings
+  description: Validate and persist native card display options and notification destination.
+  fields:
+    options:
+      required: true
+      selector:
+        object:
+native_request:
+  name: Original TV Guide operation
+  description: Authenticated in-process operations for the original multi-provider guide engine.
+  fields:
+    endpoint:
+      required: true
+      selector:
+        text:
+    method:
+      selector:
+        select:
+          options: [GET, POST]
+    body:
       selector:
         object:

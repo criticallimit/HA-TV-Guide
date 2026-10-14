@@ -11,19 +11,25 @@ from .xmltv import parse_xmltv
 from .channel_catalog import parse_channel_catalog
 from .catalogs import resolve_catalogue_channels
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
     """Maintain one shared EPG snapshot, refreshing at most every 3 hours."""
 
-    def __init__(self, hass, url: str, country: str = ""):
+    def __init__(self, hass, url: str, country: str = "", source_urls=None, *, config_entry=None):
         super().__init__(
             hass,
             logger=logging.getLogger(__name__),
             name="TV Guide EPG",
             update_interval=timedelta(hours=3),
+            config_entry=config_entry,
         )
         self.url = url
         self.country = country
+        self.source_urls = tuple(source_urls) if source_urls else (url,)
+        self.active_source: str | None = None
+        self.source_attempts: list[dict[str, str]] = []
         self.refresh_running = False
         self._refresh_listeners = set()
         self.last_successful_refresh: datetime | None = None
@@ -36,26 +42,41 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
 
     def _notify_refresh(self):
         for callback in tuple(self._refresh_listeners):
-            callback()
+            try:
+                callback()
+            except Exception:
+                _LOGGER.exception("TV Guide refresh-state subscriber failed")
 
     async def _async_update_data(self) -> list[dict]:
         self.refresh_running = True
         self._notify_refresh()
         try:
-            async with public_epg_session() as session:
-                payload = await fetch_programmes(session, self.url)
-            decoded = await self.hass.async_add_executor_job(decompress_feed, payload)
-            programmes = await self.hass.async_add_executor_job(parse_xmltv, decoded)
-            channels = await self.hass.async_add_executor_job(parse_channel_catalog, decoded)
-            canonical_channels = await self.hass.async_add_executor_job(
-                resolve_catalogue_channels, self.country, channels
-            )
-            self.channels = channels
-            self.canonical_channels = canonical_channels
-            self.last_successful_refresh = datetime.now(timezone.utc)
-            return programmes
-        except Exception as exc:
-            raise UpdateFailed(f"EPG update failed: {type(exc).__name__}") from exc
+            self.source_attempts = []
+            last_error = None
+            for url in self.source_urls:
+                try:
+                    async with public_epg_session() as session:
+                        payload = await fetch_programmes(session, url)
+                    decoded = await self.hass.async_add_executor_job(decompress_feed, payload)
+                    programmes = await self.hass.async_add_executor_job(parse_xmltv, decoded)
+                    now = datetime.now(timezone.utc)
+                    if not any(datetime.fromisoformat(item["stop"]) > now for item in programmes):
+                        raise ValueError("Feed contains no current or future programmes")
+                    channels = await self.hass.async_add_executor_job(parse_channel_catalog, decoded)
+                    canonical_channels = await self.hass.async_add_executor_job(
+                        resolve_catalogue_channels, self.country, channels
+                    )
+                except Exception as exc:
+                    last_error = exc
+                    self.source_attempts.append({"source": url, "result": type(exc).__name__})
+                    continue
+                self.source_attempts.append({"source": url, "result": "success"})
+                self.channels = channels
+                self.canonical_channels = canonical_channels
+                self.active_source = url
+                self.last_successful_refresh = now
+                return programmes
+            raise UpdateFailed(f"EPG sources failed: {type(last_error).__name__}") from last_error
         finally:
             self.refresh_running = False
             self._notify_refresh()

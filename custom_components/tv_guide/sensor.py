@@ -1,91 +1,24 @@
-"""Native sensors mirroring explicitly owned TV Guide add-on states.
-
-This migration bridge does not contact EPG providers or the add-on HTTP API.
-"""
+"""Sensors backed exclusively by this integration's own data."""
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
 from datetime import datetime, timezone
-from .next_reminder import next_pending_reminder
+from .next_reminder import next_pending_reminder, pending_reminders
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback
-from homeassistant.helpers.event import async_track_state_change_event
 
-from .const import DOMAIN, SENSORS, SOURCE
-from .state_values import owned_state, parse_count, parse_timestamp
+from .const import DOMAIN
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Create four read-only, registry-backed bridge sensors."""
-    entities = [TVGuideSensor(key, *definition) for key, definition in SENSORS.items()]
+    """Create entities from the native coordinator and saved records."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    entities = []
     if coordinator is not None:
         entities.extend([TVGuideProgrammeCount(coordinator), TVGuideChannelsCount(coordinator), TVGuideLastRefresh(coordinator)])
     saved = hass.data.get(DOMAIN + "_saved", {}).get(entry.entry_id)
     if saved is not None:
         entities.extend([TVGuideSavedCount(saved, "bookmarks"), TVGuideSavedCount(saved, "reminders"), TVGuideNextReminder(saved)])
     async_add_entities(entities)
-
-
-class TVGuideSensor(SensorEntity):
-    """Reflect an add-on-owned state without reusing its entity ID."""
-
-    _attr_has_entity_name = False
-    _attr_should_poll = False
-
-    def __init__(self, key, source_entity, name, icon, timestamp):
-        self._key = key
-        self._source_entity = source_entity
-        self._timestamp = timestamp
-        self._attr_unique_id = f"{DOMAIN}_bridge_{key}"
-        self._attr_name = f"TV Guide Native {name}"
-        self._attr_icon = icon
-        if timestamp:
-            self._attr_device_class = SensorDeviceClass.TIMESTAMP
-        self._state = None
-
-    @property
-    def available(self):
-        """Only report values published by the original add-on."""
-        return self._state is not None and self.native_value is not None
-
-    @property
-    def native_value(self):
-        """Return the validated state value."""
-        if self._state is None:
-            return None
-        raw = self._state.state
-        if raw in ("unknown", "unavailable", ""):
-            return None
-        return parse_timestamp(raw) if self._timestamp else parse_count(raw)
-
-    @property
-    def extra_state_attributes(self):
-        """Expose reminder metadata without overwriting native sensor fields."""
-        if self._state is None or self._key != "next_reminder":
-            return None
-        fields = ("reminder_id", "channel", "channel_id", "title", "programme_start", "minutes_before")
-        return {field: self._state.attributes[field] for field in fields if field in self._state.attributes}
-
-    @callback
-    def _update_from_source(self):
-        """Ignore entities that are not owned by the TV Guide add-on."""
-        candidate = self.hass.states.get(self._source_entity)
-        if candidate is not None and owned_state(candidate.attributes, SOURCE):
-            self._state = candidate
-        else:
-            self._state = None
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self):
-        """Subscribe to changes instead of polling."""
-        await super().async_added_to_hass()
-        @callback
-        def on_change(event):
-            self._update_from_source()
-        self.async_on_remove(
-            async_track_state_change_event(self.hass, [self._source_entity], on_change)
-        )
-        self._update_from_source()
 
 
 class TVGuideProgrammeCount(CoordinatorEntity, SensorEntity):
@@ -150,7 +83,7 @@ class TVGuideChannelsCount(CoordinatorEntity, SensorEntity):
 
 
 class TVGuideSavedCount(SensorEntity):
-    """Count saved native items without depending on the old add-on."""
+    """Count saved native items from the native saved store."""
 
     _attr_should_poll = False
 
@@ -163,7 +96,9 @@ class TVGuideSavedCount(SensorEntity):
 
     @property
     def native_value(self):
-        return len(getattr(self._saved, self._kind))
+        if self._kind == 'reminders':
+            return len(pending_reminders(self._saved.reminders))
+        return len(self._saved.bookmarks)
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()
@@ -217,7 +152,7 @@ class TVGuideNextReminder(SensorEntity):
 
 
 class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
-    """Last successful native EPG refresh; does not use add-on data."""
+    """Last successful native EPG refresh; from the native coordinator."""
 
     _attr_name = "TV Guide last native EPG update"
     _attr_unique_id = "tv_guide_native_epg_last_successful_refresh"
@@ -230,3 +165,11 @@ class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         return self.coordinator.last_successful_refresh
+
+    @property
+    def extra_state_attributes(self):
+        """Report the successful snapshot source and latest bounded attempts."""
+        return {
+            "active_source": self.coordinator.active_source,
+            "source_attempts": [dict(item) for item in self.coordinator.source_attempts],
+        }

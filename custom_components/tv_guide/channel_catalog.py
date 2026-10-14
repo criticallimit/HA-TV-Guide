@@ -14,6 +14,8 @@ def parse_channel_catalog(payload: bytes) -> list[dict[str, str]]:
     """Parse bounded channel metadata, preserving feed order and IDs."""
     if len(payload) > MAX_XML_SIZE:
         raise ValueError("XMLTV feed exceeds maximum size")
+    if b"\x00" in payload:
+        raise ValueError("XMLTV must use an ASCII-compatible encoding")
     if b"<!DOCTYPE" in payload.upper() or b"<!ENTITY" in payload.upper():
         raise ValueError("DTD and entity declarations are not allowed")
     channels: list[dict[str, str]] = []

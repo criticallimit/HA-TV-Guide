@@ -1,10 +1,19 @@
 """Offline tests for DNS rebinding policy."""
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from dns_policy import validate_resolved_addresses  # noqa: E402
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("dns_policy")
+validate_resolved_addresses = _module.validate_resolved_addresses
 
 
 class DNSPolicyTests(unittest.TestCase):

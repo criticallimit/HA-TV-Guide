@@ -1,41 +1,12 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "title": "TV Guide",
-        "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
-        "data": {
-          "country": "Country (optional)",
-          "feed_url": "Custom XMLTV feed URL (optional)",
-          "channels": "Channel IDs (comma-separated; blank = all)"
-        }
-      }
-    },
     "abort": {
       "already_configured": "TV Guide is already configured."
     },
-    "error": {
-      "invalid_url": "Enter a valid public HTTPS URL.",
-      "invalid_country": "Invalid country",
-      "invalid_channels": "Invalid channel selection (maximum 200 channels)"
-    }
-  },
-  "options": {
     "step": {
-      "init": {
-        "title": "TV Guide",
-        "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
-        "data": {
-          "country": "Country (optional)",
-          "feed_url": "Custom XMLTV feed URL (optional)",
-          "channels": "Channel IDs (comma-separated; blank = all)"
-        }
+      "user": {
+        "title": "TV Guide"
       }
-    },
-    "error": {
-      "invalid_url": "Enter a valid public HTTPS URL.",
-      "invalid_country": "Invalid country",
-      "invalid_channels": "Invalid channel selection (maximum 200 channels)"
     }
   }
 }

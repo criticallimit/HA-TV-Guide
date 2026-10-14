@@ -17,6 +17,12 @@ COUNTRY_FEEDS = {
     "gb": "https://www.open-epg.com/files/unitedkingdom.xml.gz",
 }
 
+# Only alternatives already configured in the reference add-on.
+COUNTRY_FALLBACKS = {
+    "de": ("https://epgshare01.online/epgshare01/epg_ripper_DE1.xml.gz",),
+    "gb": ("https://epgshare01.online/epgshare01/epg_ripper_UK1.xml.gz",),
+}
+
 
 def effective_feed(config: dict) -> str | None:
     """Manual URL overrides country baseline; otherwise no EPG fetch."""
@@ -24,3 +30,13 @@ def effective_feed(config: dict) -> str | None:
     if manual:
         return manual
     return COUNTRY_FEEDS.get(config.get("country", ""))
+
+
+def feed_candidates(config: dict) -> tuple[str, ...]:
+    """Return ordered country sources; an explicit custom URL stands alone."""
+    primary = effective_feed(config)
+    if not primary:
+        return ()
+    if config.get("feed_url"):
+        return (primary,)
+    return (primary, *COUNTRY_FALLBACKS.get(config.get("country", ""), ()))

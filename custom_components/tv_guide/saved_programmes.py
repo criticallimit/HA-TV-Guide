@@ -1,17 +1,22 @@
-"""Persistent, addon-independent programme bookmarks and reminders.
+"""Persistent native programme bookmarks and reminders.
 
-Data model matches the old TV Guide API's IDs and field names for a later
-explicit migration. This module does not send notifications on its own.
+Records belong only to this integration's HA Store.
+This module does not send notifications on its own.
 """
 
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import logging
 
 from homeassistant.helpers.storage import Store
+from .reminder_times import normalize_reminder_minutes
+
+_LOGGER = logging.getLogger(__name__)
 
 STORAGE_VERSION = 1
 MAX_ITEMS = 1000
+MAX_CHANNEL_ID_LENGTH = 200
 
 
 def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
@@ -30,23 +35,25 @@ def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
         try:
             start = datetime.fromisoformat(item["start"])
             end = datetime.fromisoformat(item["end"])
-        except (KeyError, ValueError, TypeError):
+            if start.tzinfo is not None:
+                start.astimezone(timezone.utc)
+            if end.tzinfo is not None:
+                end.astimezone(timezone.utc)
+        except (KeyError, ValueError, TypeError, OverflowError):
             continue
         if start.tzinfo is None or end.tzinfo is None or start >= end or end <= now:
             continue
         if reminders:
             try:
-                minutes = int(item.get("minutes", 10))
+                minutes = normalize_reminder_minutes(item.get("minutes", 10))
             except (ValueError, TypeError):
-                continue
-            if minutes not in (5, 10, 15, 30):
                 continue
         else:
             minutes = None
         result = {
             "id": record_id,
             "channel": str(item.get("channel") or "")[:120],
-            "channelId": str(item.get("channelId") or "")[:120],
+            "channelId": str(item.get("channelId") or "")[:MAX_CHANNEL_ID_LENGTH],
             "title": str(item.get("title") or "")[:240],
             "start": start.isoformat(),
             "end": end.isoformat(),
@@ -61,7 +68,7 @@ def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
                 result["sent_at"] = item["sent_at"][:64]
         accepted.append(result)
         seen.add(record_id)
-    accepted.sort(key=lambda value: value["start"])
+    accepted.sort(key=lambda value: datetime.fromisoformat(value["start"]).timestamp())
     return accepted
 
 
@@ -82,7 +89,7 @@ class TVGuideSavedProgrammes:
         self._subscribers.discard(callback)
 
     async def async_load(self):
-        """Load records without accessing old add-on files."""
+        """Load this integration's saved records."""
         data = await self._store.async_load() or {}
         if not isinstance(data, dict):
             data = {}
@@ -98,4 +105,7 @@ class TVGuideSavedProgrammes:
             "reminders": self.reminders,
         })
         for callback in tuple(self._subscribers):
-            callback()
+            try:
+                callback()
+            except Exception:
+                _LOGGER.exception("TV Guide saved-state subscriber failed after commit")

@@ -1,11 +1,21 @@
 """Offline tests for saved channel selection."""
 
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from channel_selection import filter_programmes, parse_channel_selection  # noqa: E402
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("channel_selection")
+filter_programmes = _module.filter_programmes
+parse_channel_selection = _module.parse_channel_selection
 
 
 class ChannelSelectionTests(unittest.TestCase):

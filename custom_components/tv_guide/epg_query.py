@@ -1,6 +1,8 @@
 """Query the already downloaded EPG snapshot using a native HA response action."""
 
-from datetime import datetime
+from datetime import datetime, timezone
+from functools import partial
+from hashlib import sha256
 import voluptuous as vol
 
 from homeassistant.core import SupportsResponse
@@ -13,13 +15,19 @@ from .channel_selection import parse_channel_selection
 SERVICE_GET_PROGRAMMES = "get_programmes"
 SERVICE_GET_CHANNELS = "get_channels"
 SERVICE_SET_CHANNELS = "set_channels"
-SET_CHANNELS_SCHEMA = vol.Schema({vol.Required("channels"): list[str]})
+SET_CHANNELS_SCHEMA = vol.Schema({vol.Required("channels"): [str]})
 QUERY_SCHEMA = vol.Schema({
     vol.Optional("channel_id", default=""): str,
     vol.Required("start"): str,
     vol.Required("end"): str,
     vol.Optional("limit", default=100): vol.All(vol.Coerce(int), vol.Range(min=1, max=500)),
 })
+
+
+def programme_id(channel_id: str, start: datetime) -> str:
+    """Stable native ID regardless of sender alias or timestamp offset."""
+    key = f"{channel_id}\n{start.astimezone(timezone.utc).isoformat()}"
+    return "native_" + sha256(key.encode("utf-8")).hexdigest()
 
 
 def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start, end, limit, selected=None):
@@ -48,6 +56,7 @@ def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start,
         if begins < end and finishes > start:
             result.append({
                 **programme,
+                "id": programme_id(programme["channel"], begins),
                 "channel_name": labels.get(programme["channel"], programme["channel"]),
             })
     result.sort(key=lambda programme: (datetime.fromisoformat(programme["start"]).timestamp(), programme["channel"]))
@@ -81,7 +90,11 @@ def async_register_epg_query(hass):
         try:
             start = datetime.fromisoformat(call.data["start"])
             end = datetime.fromisoformat(call.data["end"])
-        except (ValueError, TypeError) as exc:
+            if start.tzinfo is not None:
+                start.astimezone(timezone.utc)
+            if end.tzinfo is not None:
+                end.astimezone(timezone.utc)
+        except (ValueError, TypeError, OverflowError) as exc:
             raise HomeAssistantError("Invalid ISO 8601 timestamp") from exc
         if start.tzinfo is None or end.tzinfo is None or end <= start:
             raise HomeAssistantError("Time range must use timezone-aware start and end")
@@ -96,13 +109,14 @@ def async_register_epg_query(hass):
         entry_id = next(iter(coordinators))
         entry = hass.config_entries.async_get_entry(entry_id)
         options = {**entry.data, **entry.options} if entry else {}
-        records = query_programmes(
+        records = await hass.async_add_executor_job(partial(query_programmes,
             coordinator.data, coordinator.canonical_channels,
             coordinator.channels, channel_id=call.data["channel_id"],
-            start=start, end=end, limit=call.data["limit"],
+            start=start, end=end, limit=call.data["limit"] + 1,
             selected=options.get("channels", []),
-        )
-        return {"programmes": records, "count": len(records)}
+        ))
+        limit = call.data["limit"]
+        return {"programmes": records[:limit], "count": min(len(records), limit), "truncated": len(records) > limit}
 
     async def handle_channels(_call):
         coordinators = hass.data.get(DOMAIN, {})

@@ -19,6 +19,8 @@ async def fetch_programmes(session: ClientSession, url: str) -> bytes:
     try:
         async with session.get(url, timeout=ClientTimeout(total=60), allow_redirects=False) as response:
             response.raise_for_status()
+            if response.status != 200:
+                raise ConnectionError("XMLTV source did not return a complete feed")
             data = bytearray()
             async for part in response.content.iter_chunked(65536):
                 data.extend(part)
