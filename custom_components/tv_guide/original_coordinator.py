@@ -92,7 +92,11 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
         if self._closed:
             raise RuntimeError("TV Guide is unloading")
         result = await self.hass.async_add_executor_job(self.backend.request, endpoint, method, body)
-        await self._async_sync()
+        # Pure reads must not rebuild the entire HA coordinator snapshot before
+        # the already prepared EPG response reaches the frontend. Provider
+        # refreshes still notify through _wake; writes retain synchronous updates.
+        if method != "GET" or endpoint == "refresh":
+            await self._async_sync()
         return result
 
     async def async_stop(self, event=None):
