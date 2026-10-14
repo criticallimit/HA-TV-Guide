@@ -18,17 +18,17 @@ All ten countries have prepared main-channel lists, individual channel selection
 - Open **Now**, **18:00**, **20:15**, **22:00**, or choose another day and time.
 - Create **My channels** with your own selection and order. Combine channels from all supported countries in one personal list. Your selection stays when you change country.
 - Open a programme for details, save it and set a reminder 5, 10, 15 or 30 minutes before it starts.
-- Use native Home Assistant sensors, a binary sensor and a programme calendar for automations.
+- Use  Home Assistant sensors, a binary sensor and a programme calendar for automations.
 - Use **Danish, German, English, Dutch, French, Italian, Norwegian or Swedish**. The automatic setting follows your Home Assistant profile.
 
-## Install — native Home Assistant integration
+## Install
 
-TV Guide is a **native custom integration**, not a Supervisor add-on. No separate add-on server, HACS or manual Lovelace resource registration is required.
+TV Guide is a **Home Assistant custom integration** and runs directly in Home Assistant. No manual Lovelace resource registration is required.
 
 1. [Download the current integration](https://github.com/criticallimit/HA-TV-Guide/archive/refs/heads/main.zip).
 2. Extract the archive and copy `custom_components/tv_guide` to `/config/custom_components/tv_guide` on your Home Assistant installation.
 3. Restart Home Assistant, then open **Settings → Devices & services → Add integration → TV Guide**.
-4. The integration automatically uses your configured Home Assistant country and language at first setup. Open **TV Guide** in the sidebar or add `type: custom:tv-guide-native-card` to a dashboard.
+4. The integration automatically uses your configured Home Assistant country and language at first setup. Open **TV Guide** in the sidebar or add `type: custom:tv-guide--card` to a dashboard.
 
 The initial EPG download may take a few minutes. Subsequent views use bounded caches, and unmodified guide data is not transferred again.
 
@@ -45,7 +45,7 @@ Country and language are independent: Swiss schedules can be displayed with a Fr
 
 **Main channels** shows the prepared list for your TV country. Open **☰ Channels**, tick the countries you want to browse and search for a channel. Add channels to **My channels** and drag them or use the arrows to set their order. Unticking a country only hides its available channels; it keeps your selected channels. Remove a channel with **×**, then save. **Reset order** restores the main channels of the currently selected TV country. Your previous selection is carried over when you first save the new list.
 
-Settings are grouped into **Country & language**, **Display** and **Reminders**. Set the default view, appearance and channels per row under **Display**. A channel limit of **0** shows the entire selected list. Open **Advanced** to adjust the schedule refresh interval. Native sensors are created by Home Assistant automatically. Press **Save** to apply your changes.
+Settings are grouped into **Country & language**, **Display** and **Reminders**. Set the default view, appearance and channels per row under **Display**. A channel limit of **0** shows the entire selected list. Open **Advanced** to adjust the schedule refresh interval. sensors are created by Home Assistant automatically. Press **Save** to apply your changes.
 
 ## Save programmes and get reminders
 
@@ -60,29 +60,29 @@ Your saved programmes and channel lists are available on devices using the same 
 The integration automatically registers its Lovelace module. Add a manual dashboard card with:
 
 ```yaml
-type: custom:tv-guide-native-card
+type: custom:tv-guide--card
 height: 1000
 ```
 
-No `/local/tv-guide-card-loader.js` resource, add-on or Ingress configuration is needed.
+no additional resource configuration is needed.
 
 
 ## When something is missing
 
-**No programme for a channel:** Availability depends on public sources. Confirmed broadcaster data is preferred; other feeds fill gaps. Coverage and updates vary by channel and date. Additional schedules now cover Denmark through DR/TV 2, selected Austrian channels through Joyn Austria, and La Une/Tipik/La Trois through RTBF. Dutch RTL/SBS channels also have a TVgids.nl fallback. See [the original source notes](https://github.com/criticallimit/TV-Guide/blob/main/tv-guide/data/COUNTRY_SOURCES.md) for coverage and limitations.
+**No programme for a channel:** Availability depends on public sources. Confirmed broadcaster data is preferred; other feeds fill gaps. Coverage and updates vary by channel and date. Additional schedules now cover Denmark through DR/TV 2, selected Austrian channels through Joyn Austria, and La Une/Tipik/La Trois through RTBF. Dutch RTL/SBS channels also have a TVgids.nl fallback. See [country source notes](https://github.com/criticallimit/TV-Guide/blob/main/tv-guide/data/COUNTRY_SOURCES.md) for coverage and limitations.
 
 **Empty guide after an update or country change:** Let the download finish and reopen the guide after a few minutes.
 
 **No reminder:** Check the destination in settings and send a test notification. Mobile reminders need a device connected to the Home Assistant app.
 
-## Native Home Assistant entities
+## Home Assistant entities
 
-The integration creates native Home Assistant registry entities (rather than add-on REST-published states): last EPG update, saved programme count, reminder count, next reminder, update-running binary sensor and programme calendar. Names are translated into supported Home Assistant languages. Entities are linked to the integration and removed when it is deleted. Their identifiers depend on the Home Assistant entity registry and may vary if customized.
+The integration creates  Home Assistant registry entities (managed by Home Assistant): last EPG update, saved programme count, reminder count, next reminder, update-running binary sensor and programme calendar. Names are translated into supported Home Assistant languages. Entities are linked to the integration and removed when it is deleted. Their identifiers depend on the Home Assistant entity registry and may vary if customized.
 
 
 ## Updates and help
 
-For this development version, update by copying the latest `custom_components/tv_guide` directory over the installed integration and restarting Home Assistant. **There is no published release or add-on store update yet.**
+For this development version, update by copying the latest `custom_components/tv_guide` directory over the installed integration and restarting Home Assistant. **Updates are currently installed manually.**
 
 [Report an issue](https://github.com/criticallimit/HA-TV-Guide/issues) with the country, channel, date and time.
 
@@ -91,5 +91,5 @@ For this development version, update by copying the latest `custom_components/tv
 
 TV Guide is an independent open-source project. The project-authored code is licensed under the MIT License. Television channel names, trademarks, logos, programme data, programme descriptions and other third-party material are **not** relicensed under MIT and remain subject to the rights and terms of their respective owners and providers.
 
-See [original third-party notices](https://github.com/criticallimit/TV-Guide/blob/main/THIRD_PARTY_NOTICES.md) for source, trademark and third-party rights information.
+See [third-party notices](https://github.com/criticallimit/TV-Guide/blob/main/THIRD_PARTY_NOTICES.md) for source, trademark and third-party rights information.
 
