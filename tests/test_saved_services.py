@@ -1,4 +1,4 @@
-"""Native saved-list action adapter tests with isolated HA service/store doubles."""
+"""TV Guide saved-list action adapter tests with isolated HA service/store doubles."""
 import asyncio
 from datetime import datetime, timedelta, timezone
 import importlib.util
@@ -59,7 +59,7 @@ class SavedServiceTests(unittest.IsolatedAsyncioTestCase):
         self.hass = types.SimpleNamespace(data={"tv_guide_saved":{"entry":self.saved}}, services=Registry(), config=types.SimpleNamespace(language="de"))
         await services_module.async_register_saved_services(self.hass)
         now = datetime.now(timezone.utc)
-        self.record = {"id":"native_test", "title":"Film", "channel":"Das Erste", "channel_id":"DasErste.de", "start":(now+timedelta(hours=1)).isoformat(), "end":(now+timedelta(hours=2)).isoformat()}
+        self.record = {"id":"guide_test", "title":"Film", "channel":"Das Erste", "channel_id":"DasErste.de", "start":(now+timedelta(hours=1)).isoformat(), "end":(now+timedelta(hours=2)).isoformat()}
 
     async def call(self, name, data=None):
         return await self.hass.services.handlers[name](types.SimpleNamespace(service=name, data=data or {}))
@@ -73,7 +73,7 @@ class SavedServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response["reminders"][0]["minutes"], 15)
         self.assertEqual(self.saved.saves, 2)
         self.assertEqual(self.hass.services.response["get_saved_programmes"], "only")
-        await self.call("remove_saved_programme", {"id":"native_test","kind":"bookmark"})
+        await self.call("remove_saved_programme", {"id":"guide_test","kind":"bookmark"})
         self.assertEqual((await self.call("get_saved_programmes"))["bookmarks"], [])
         self.assertEqual(len(self.saved.reminders), 1)
         services_module.async_remove_saved_services(self.hass)
