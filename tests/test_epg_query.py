@@ -54,13 +54,21 @@ channel_payload = sys.modules[f"{PKG}.epg_query"].channel_payload
 class QueryTests(unittest.TestCase):
     def test_response_action_reports_truncation_and_stable_ids(self):
         import asyncio
+        import threading
         from types import SimpleNamespace
+        threads = []
+        async def executor(fn, *args):
+            def run():
+                threads.append(threading.get_ident())
+                return fn(*args)
+            return await asyncio.to_thread(run)
         handlers = {}
         coordinator = SimpleNamespace(
             data=[{"channel":"ard", "start":"2026-10-13T19:00:00+00:00", "stop":"2026-10-13T20:00:00+00:00", "title":str(i)} for i in range(501)],
             canonical_channels=[], channels=[], country="",
         )
         hass = SimpleNamespace(
+            async_add_executor_job=executor,
             data={"tv_guide":{"entry":coordinator}},
             services=SimpleNamespace(async_register=lambda domain,name,handler,**kwargs: handlers.update({name:handler})),
             config_entries=SimpleNamespace(async_get_entry=lambda entry_id: SimpleNamespace(data={},options={})),
@@ -72,6 +80,8 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(response["count"], 500)
         self.assertEqual(len(response["programmes"]), 500)
         self.assertTrue(response["programmes"][0]["id"].startswith("native_"))
+        self.assertEqual(len(threads), 1)
+        self.assertNotEqual(threads[0], threading.get_ident())
 
     def test_stable_programme_ids_use_feed_id_and_utc_instant(self):
         make_id = sys.modules[f"{PKG}.epg_query"].programme_id

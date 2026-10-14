@@ -149,14 +149,16 @@ class TVGuideNativeCard extends HTMLElement {
     }
     const background = vars["--primary-background-color"] || "";
     let darkMode = Boolean(this._hass?.themes?.darkMode);
-    const hex = background.match(/^#([0-9a-f]{6})$/i);
+    const hex = background.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
     const rgb = background.match(/rgba?\((\d+)\D+(\d+)\D+(\d+)/i);
     let channels = null;
     if (hex) {
+      const expanded = hex[1].length === 3
+        ? [...hex[1]].map(character => character + character).join("") : hex[1];
       channels = [
-        parseInt(hex[1].slice(0, 2), 16),
-        parseInt(hex[1].slice(2, 4), 16),
-        parseInt(hex[1].slice(4, 6), 16)
+        parseInt(expanded.slice(0, 2), 16),
+        parseInt(expanded.slice(2, 4), 16),
+        parseInt(expanded.slice(4, 6), 16)
       ];
     } else if (rgb) {
       channels = [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];

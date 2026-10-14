@@ -172,6 +172,32 @@ const server = http.createServer((req,res) => {
   assert.ok((await card.locator('iframe').screenshot()).equals(await original.screenshot({fullPage:false})),'Dark theme must match the add-on');
   console.log('PASS pixel-identical dark theme and original dark logo variants');
 
+  await native.evaluate(()=>{
+    hass.themes.themes={Dirk:{'primary-background-color':'#fff','primary-text-color':'#111',modes:{dark:{'primary-color':'#123456'},light:{'primary-color':'#654321'}}},'A <B> & "C"':{}};
+    document.querySelector('tv-guide-native-card').hass={...hass};
+    const editor=customElements.get('tv-guide-native-card').getConfigElement();
+    editor.hass=hass;editor.setConfig({type:'custom:tv-guide-native-card',height:1000});
+    editor.addEventListener('config-changed',event=>document.querySelector('tv-guide-native-card').setConfig(event.detail.config));
+    document.body.append(editor);
+  });
+  const themeSelect=native.locator('tv-guide-native-card-editor').locator('#theme');
+  assert.deepEqual(await themeSelect.locator('option').allTextContents(),['Home Assistant / Dashboard','A <B> & "C"','Dirk']);
+  await themeSelect.selectOption('Dirk');
+  await frame.locator('html[data-ha-theme="light"]').waitFor();
+  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card')._config.theme),'Dirk');
+  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card')._config.height),1000);
+  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-native-card')).getPropertyValue('--primary-color').trim()),'#123456');
+  assert.equal(await frame.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--primary-background-color').trim()),'#fff');
+  await native.evaluate(()=>{hass.themes.darkMode=false;document.querySelector('tv-guide-native-card').hass={...hass};});
+  assert.equal(await native.evaluate(()=>getComputedStyle(document.querySelector('tv-guide-native-card')).getPropertyValue('--primary-color').trim()),'#654321');
+  await themeSelect.selectOption('');
+  await frame.locator('html[data-ha-theme="dark"]').waitFor();
+  assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card').style.getPropertyValue('--primary-background-color')),'');
+  assert.equal(await native.evaluate(()=>Object.hasOwn(document.querySelector('tv-guide-native-card')._config,'theme')&&document.querySelector('tv-guide-native-card')._config.theme!==''),false);
+  await native.evaluate(()=>{document.querySelector('tv-guide-native-card-editor').remove();hass.themes.darkMode=true;document.querySelector('tv-guide-native-card').hass={...hass};});
+  assert.deepEqual(errors,[]);
+  console.log('PASS visual theme picker preserves card configuration, applies mode values and restores dashboard inheritance');
+
   await native.setViewportSize({width:390,height:1000});await original.setViewportSize({width:390,height:1000});
   await native.waitForTimeout(100);
   await frame.locator('body').evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});

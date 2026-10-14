@@ -1,6 +1,7 @@
 """Query the already downloaded EPG snapshot using a native HA response action."""
 
 from datetime import datetime, timezone
+from functools import partial
 from hashlib import sha256
 import voluptuous as vol
 
@@ -104,12 +105,12 @@ def async_register_epg_query(hass):
         entry_id = next(iter(coordinators))
         entry = hass.config_entries.async_get_entry(entry_id)
         options = {**entry.data, **entry.options} if entry else {}
-        records = query_programmes(
+        records = await hass.async_add_executor_job(partial(query_programmes,
             coordinator.data, coordinator.canonical_channels,
             coordinator.channels, channel_id=call.data["channel_id"],
             start=start, end=end, limit=call.data["limit"] + 1,
             selected=options.get("channels", []),
-        )
+        ))
         limit = call.data["limit"]
         return {"programmes": records[:limit], "count": min(len(records), limit), "truncated": len(records) > limit}
 

@@ -70,7 +70,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
-                assert '/tv_guide/frontend/tv-guide-native-card.js?v=7' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-native-card.js?v=8' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -87,6 +87,10 @@ async def main():
                         assert b'../assets/' not in artwork
                     async with client.get('http://127.0.0.1:8123/tv_guide/logo/not-a-logo') as response:
                         assert response.status==404
+                    from zipfile import BadZipFile
+                    with patch.object(coordinator.backend._logos,'render',side_effect=BadZipFile('Damaged fixture')):
+                        async with client.get('http://127.0.0.1:8123/tv_guide/logo/'+source) as response:
+                            assert response.status==404
                 store = coordinator.backend.runtime.STORE
                 now = datetime.now(timezone.utc)
                 store.refresh_running = False
@@ -104,6 +108,11 @@ async def main():
                 guide = await request('guide')
                 programme = guide['channels'][0]['programs'][0]
                 assert programme['icon'].endswith('programme.jpg')
+                queried = await hass.services.async_call('tv_guide','get_programmes',
+                    {'start':now.isoformat(),'end':(now+timedelta(hours=3)).isoformat(),'limit':1},
+                    blocking=True,return_response=True)
+                assert queried['count']==1
+                assert queried['programmes'][0]['title']=='Native HA test programme'
                 picker = await request('personal-channels')
                 assert len(picker['supported_countries']) == 10
                 keys = [next(ch['id'] for ch in picker['channels'] if ch['id'].startswith(code+':')) for code in ('de','at')]

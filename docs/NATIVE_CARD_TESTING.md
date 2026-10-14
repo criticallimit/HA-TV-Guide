@@ -18,3 +18,5 @@ The real-HA CI smoke uses the official stable HA image and fixture provider data
 10. Select an additional channel with a matching library asset. Both logo themes should load through /tv_guide/logo/ without any external image request. Unknown logo paths must return 404. Native bookmark counts must ignore stale browser caches and unrelated similarly named entities.
 
 11. Leave the guide closed beyond its configured refresh interval and confirm active data refreshes through the maintenance timer. Request a forced refresh while normal work is running; it must not be lost. Check calendar channel selection and overlapping time ranges with a large cached programme set.
+
+12. Choose an installed HA theme in the Lovelace visual card editor. Test light/dark theme mode values, then reset to Home Assistant / Dashboard. The card height and other YAML settings must survive the selection.

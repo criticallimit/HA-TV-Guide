@@ -1,4 +1,4 @@
-import "./tv-guide-native-card.js?v=7";
+import "./tv-guide-native-card.js?v=8";
 
 class TVGuideNativePanel extends HTMLElement {
   constructor() {

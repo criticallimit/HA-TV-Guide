@@ -43,3 +43,7 @@ The two-minute maintenance timer checks active and retained country caches befor
 Restored native cache records are checked for valid aware date ranges and metadata containers before use. Good rows survive a partially damaged cache. Calendar label lookup happens once per snapshot/range, avoiding a catalogue scan for every programme. Main logos use their own country prefix when another country is active. Browser pixel comparisons now include all ten countries and all eight interface languages.
 
 The sidebar sizes the guide to available viewport height in portrait and landscape. Card heights are finite, bounded values; invalid configuration values fall back to 1000 pixels.
+
+## Follow-up review
+
+Named card themes retain the original visual editor, HA mode values and dashboard inheritance. Short CSS hex colours also determine light/dark appearance correctly. Native programme response actions scan and sort snapshots in the HA executor instead of blocking the event loop. The public logo route handles corrupt ZIP bundles as missing images rather than leaking HTTP 500 errors.
