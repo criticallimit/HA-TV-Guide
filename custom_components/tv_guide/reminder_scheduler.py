@@ -36,8 +36,9 @@ class TVGuideReminderScheduler:
 
     def reschedule(self):
         """Replace timers, including after updating a reminder or a restart."""
+        if self._stopped:
+            return
         self._cancel_timers()
-        self._stopped = False
         now = datetime.now(timezone.utc)
         for reminder in self.saved.reminders:
             when = next_reminder_time(reminder, now)
