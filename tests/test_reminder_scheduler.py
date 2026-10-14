@@ -72,10 +72,12 @@ class SchedulerTests(unittest.TestCase):
         start = datetime.now(timezone.utc) + timedelta(minutes=9)
         record = {"id": "test", "start": start.isoformat(), "minutes": 10, "channel": "ARD", "title": "Nachrichten"}
         saved = Saved(record)
+        async def executor(fn,*args):return fn(*args)
         hass = types.SimpleNamespace(
             config=types.SimpleNamespace(time_zone="Europe/Berlin"),
             services=Services(fail),
             async_create_task=asyncio.create_task,
+            async_add_executor_job=executor,
         )
         return Scheduler(hass, saved, asyncio.Lock()), saved, hass
 

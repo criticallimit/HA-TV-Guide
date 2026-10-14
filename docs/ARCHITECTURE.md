@@ -12,7 +12,7 @@ Version 0.3.0 hosts the original programme backend in `original_backend/`, inclu
 
 The original HTML/CSS, renderer, fonts, translations and main logos are served by the native integration. Same-origin postMessage routes calls through the embedding card's existing authenticated HA connection. Original-mode guide and sender/settings routes use the reference engine; saved records and notifications use the existing native HA actions and timer scheduler. Full timelines retain artwork URLs and enable original date selection. A stable native programme ID is derived from canonical channel and UTC start.
 
-Native bookmarks/reminders use HA Store and the event-driven scheduler. All previous commit/rollback, stale-timer, expiry and sent-persistence protections remain. Provider caches, preferences and settings live under an entry-owned `.storage/tv_guide_native` directory. Original add-on data is never read or changed. Sensor switches in the legacy settings dialogue stay disabled; HA's entity registry owns native entities.
+Native bookmarks/reminders use HA Store and the event-driven scheduler. All previous commit/rollback, stale-timer, expiry and sent-persistence protections remain. Provider caches, preferences and settings live under an entry-owned `.storage/tv_guide_native` directory. Original add-on data is never read or changed. Sensor switches in the settings dialogue control the matching native HA registry entities.
 
 ## Verification and remaining detail work
 

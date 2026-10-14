@@ -8,6 +8,7 @@ from homeassistant.exceptions import HomeAssistantError
 from .const import DOMAIN
 from .catalogs import resolve_catalogue_channels
 from .ui_payload import build_guide, personal_payload, ui_settings, normalize_ui_settings
+from .sensor_controls import sensor_settings, set_sensor_settings
 
 SERVICES=('get_native_guide','get_native_channels','get_ui_settings','set_ui_settings')
 
@@ -40,20 +41,30 @@ def async_register_ui_services(hass):
                 except (ValueError,RuntimeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
                 if call.service=='native_request' and call.data['endpoint']=='settings' and call.data.get('method')=='POST':
+                    set_sensor_settings(hass,entry.entry_id,call.data.get('body') or {})
                     settings=await coordinator.async_original_request('settings')
                     changes={key:settings[key] for key in ('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')}
                     hass.config_entries.async_update_entry(entry,options={**entry.options,**changes,'backend_mode':'original'})
                     scheduler=hass.data.get(DOMAIN+'_reminder_schedulers',{}).get(entry.entry_id)
                     if scheduler is not None:
                         scheduler.notification_service=settings['notification_service']
+                if call.data['endpoint']=='settings' and call.data.get('method','GET')=='GET':
+                    result.update(sensor_settings(hass,entry.entry_id))
                 return result
             endpoint={'get_ui_settings':'settings','get_native_guide':'guide','get_native_channels':'personal-channels'}.get(call.service)
             if endpoint:
-                return await coordinator.async_original_request(endpoint)
+                result=await coordinator.async_original_request(endpoint)
+                if endpoint=='settings':
+                    result.update(sensor_settings(hass,entry.entry_id))
+                return result
             if call.service=='set_ui_settings':
                 settings=await coordinator.async_original_request('settings')
                 normalize_ui_settings({'notification_service':call.data['options'].get('notification_service',settings['notification_service'])})
-                return await coordinator.async_original_request('settings','POST',{**settings,**call.data['options']})
+                result=await coordinator.async_original_request('settings','POST',{**settings,**call.data['options']})
+                set_sensor_settings(hass,entry.entry_id,call.data['options'])
+                changes={key:value for key,value in call.data['options'].items() if key in settings}
+                hass.config_entries.async_update_entry(entry,options={**entry.options,**changes})
+                return result
         if call.service=='get_ui_settings':
             return ui_settings(options)
         if call.service=='set_ui_settings':

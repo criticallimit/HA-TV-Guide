@@ -73,6 +73,11 @@ async def main():
                 await request('personal-channels','POST',{'order':keys,'countries':['de','at']})
                 assert (await request('personal-channels'))['order'] == keys
                 settings = await request('settings')
+                assert settings['sensor_bookmark_count'] is True
+                await request('settings','POST',{**settings,'sensor_bookmark_count':False})
+                assert (await request('settings'))['sensor_bookmark_count'] is False
+                await request('settings','POST',{**settings,'sensor_bookmark_count':True})
+                assert (await request('settings'))['sensor_bookmark_count'] is True
                 await request('settings','POST',{**settings,'columns_desktop':4})
                 await hass.async_block_till_done()
                 assert (await request('settings'))['columns_desktop'] == 4

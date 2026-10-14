@@ -1,6 +1,6 @@
 # TV Guide – Native Home Assistant Integration
 
-Development package 0.4.0 for a first Home Assistant test. The original `criticallimit/TV-Guide` add-on stays unchanged. This integration hosts its programme engine, country catalogues and original card UI inside Home Assistant.
+Development package 0.4.1 for a first Home Assistant test. The original `criticallimit/TV-Guide` add-on stays unchanged. This integration hosts its programme engine, country catalogues and original card UI inside Home Assistant.
 
 ## Install and test
 
@@ -34,9 +34,9 @@ The original engine's download/cache policies apply in default mode, including i
 
 ## Validation and first-test boundaries
 
-132 offline Python tests include inherited public-schedule, programme-title and UK regressions. Ten Chromium workflows cover original pixel comparisons and the full-engine route. CI additionally runs Hassfest and a real Home Assistant container smoke test for setup, native actions, platforms, reload and unload. Provider downloads are replaced by fixture data in that smoke test; check the latest CI result before treating it as passed.
+136 offline Python tests include inherited public-schedule, programme-title and UK regressions. Twelve Chromium workflows cover original pixel comparisons and the full-engine route. CI additionally runs Hassfest and a real Home Assistant container smoke test for setup, native actions, platforms, reload and unload. Provider downloads are replaced by fixture data in that smoke test; check the latest CI result before treating it as passed.
 
-Live backend checks on 14 October 2026 successfully merged DE (71,995 programmes, all 50 main stations) and GB (68,398 programmes, all 20 main stations). These checks ran the native-owned engine outside HA; the real HA smoke remains fixture-backed. Some optional German teletext pages failed local TLS certificate checks, while the other sources supplied complete main-station coverage. A live installation test is still needed; use [the test checklist](docs/NATIVE_CARD_TESTING.md). Additional station logo assets outside the bundled main set currently use text-logo fallback. Legacy sensor switches are disabled because native entities are managed in HA's entity registry. Old saved data requires an explicit migration; it is not imported automatically. Power loss before durable sent-state storage can still cause a reminder to be delivered again after restart. HACS publication validation currently fails for missing repository topics and manifest reads while the repository is private; manual installation is available.
+Live backend checks on 14 October 2026 successfully merged DE (71,995 programmes, all 50 main stations) and GB (68,398 programmes, all 20 main stations). These checks ran the native-owned engine outside HA; the real HA smoke remains fixture-backed. Some optional German teletext pages failed local TLS certificate checks, while the other sources supplied complete main-station coverage. A live installation test is still needed; use [the test checklist](docs/NATIVE_CARD_TESTING.md). Additional station logo assets outside the bundled main set currently use text-logo fallback. The original sensor switches now control only this integration's own native entities in HA's registry. Old saved data requires an explicit migration; it is not imported automatically. Power loss before durable sent-state storage can still cause a reminder to be delivered again after restart. HACS publication validation currently fails for missing repository topics and manifest reads while the repository is private; manual installation is available.
 
 ## Licence
 

@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from .reminder_times import next_reminder_time, retry_time
+from .notification_text import reminder_text
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -135,9 +136,8 @@ class TVGuideReminderScheduler:
                 return
             try:
                 time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")
-                message = f'{item["channel"]}: „{item["title"]}“ beginnt um {time_text} Uhr.'
                 domain, service = self.notification_service.split(".", 1)
-                payload = {"title": "TV Guide – Erinnerung", "message": message}
+                payload = await self.hass.async_add_executor_job(reminder_text, dict(item), time_text, getattr(self.hass.config,'language','de'))
                 if domain == "persistent_notification":
                     payload["notification_id"] = "tv_guide_" + sha256(reminder_id.encode("utf-8")).hexdigest()
                 await self.hass.services.async_call(

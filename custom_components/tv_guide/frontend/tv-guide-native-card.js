@@ -398,7 +398,10 @@ class TVGuideNativeCard extends HTMLElement {
             await this._hass.callService("tv_guide","remove_saved_programme",{id:body.id,kind:endpoint === "bookmarks" ? "programme" : "reminder"});
           } else if (body.action === "upsert") {
             const payload = {id:body.id,title:String(body.title || "").slice(0,240),channel:String(body.channel || "").slice(0,120),channel_id:body.channelId,start:body.start,end:body.end};
-            if (endpoint === "reminders") payload.minutes = body.minutes;
+            if (endpoint === "reminders") {
+              payload.minutes = body.minutes;
+              if (body.language) payload.language = body.language;
+            }
             await this._hass.callService("tv_guide",endpoint === "bookmarks" ? "save_bookmark" : "save_reminder",payload);
           } else throw new Error("Invalid saved-programme operation");
         }

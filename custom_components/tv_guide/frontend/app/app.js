@@ -654,11 +654,11 @@ async function checkLovelaceSetup() {
   if (assetReady) {
     lovelaceCardState.textContent = t("Datei bereit");
     lovelaceCardState.className = "lovelace-state pending";
-    lovelaceSetupStatus.textContent = t("Die Kartendatei ist installiert. Der Ressourcenstatus konnte aus der Ingress-Seite nicht sicher gelesen werden. Falls du sie bereits eingetragen hast, lade Home Assistant einmal vollständig neu.");
+    lovelaceSetupStatus.textContent = t("Die TV-Guide-Karte ist geladen und steht im Kartenwähler zur Verfügung.");
   } else {
     lovelaceCardState.textContent = t("Noch nicht bereit");
     lovelaceCardState.className = "lovelace-state error";
-    lovelaceSetupStatus.textContent = t("Die Kartendatei ist noch nicht unter /local erreichbar. Falls /local bisher nicht verwendet wurde, starte Home Assistant einmal neu und prüfe danach erneut.");
+    lovelaceSetupStatus.textContent = t("TV Guide konnte nicht geladen werden.");
   }
 }
 
@@ -789,7 +789,7 @@ async function openAppSettings() {
     settingMaxChannels.value = String(settings.max_channels ?? 0);
     settingTheme.value = settings.theme_mode || "auto";
     settingRefresh.value = String(settings.refresh_minutes || 180);
-    sensorSettings.forEach(input => { input.checked = true; input.disabled = true; });
+    sensorSettings.forEach(input => { input.checked = settings[input.dataset.sensorOption] === true; input.disabled = false; });
     await loadNotificationServiceChoices(
       settings.notification_service || "persistent_notification.create", isCurrent
     );

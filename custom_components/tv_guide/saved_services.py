@@ -26,7 +26,8 @@ BASE = {
     vol.Required("end"): str,
 }
 BOOKMARK_SCHEMA = vol.Schema(BASE)
-REMINDER_SCHEMA = vol.Schema({**BASE, vol.Optional("minutes", default=10): vol.In([5, 10, 15, 30])})
+REMINDER_SCHEMA = vol.Schema({**BASE, vol.Optional("minutes", default=10): vol.In([5, 10, 15, 30]),
+    vol.Optional("language"):vol.In(['auto','de','en','nl','fr','it','da','nb','sv'])})
 REMOVE_SCHEMA = vol.Schema({
     vol.Required("id"): vol.All(str, vol.Length(min=1, max=200)),
     vol.Required("kind"): vol.In(["bookmark", "reminder", "programme"]),
@@ -78,7 +79,7 @@ async def async_register_saved_services(hass):
                     "end": call.data["end"],
                 }
                 if action == SERVICE_REMINDER:
-                    item.update({"minutes": call.data["minutes"], "sent": False, "language": hass.config.language})
+                    item.update({"minutes": call.data["minutes"], "sent": False, "language": call.data.get('language') or hass.config.language})
                 try:
                     start = datetime.fromisoformat(item["start"])
                     end = datetime.fromisoformat(item["end"])
