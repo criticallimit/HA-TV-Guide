@@ -31,8 +31,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     platforms_started = False
     try:
         url = effective_feed(options)
-        if url:
-            coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""), feed_candidates(options))
+        if options.get("backend_mode") == "original" and not options.get("feed_url"):
+            from .original_coordinator import TVGuideOriginalCoordinator
+            coordinator = TVGuideOriginalCoordinator(hass, entry, options)
+            await coordinator.async_config_entry_first_refresh()
+        elif url:
+            coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""), feed_candidates(options), config_entry=entry)
             coordinator.update_interval = timedelta(minutes=options.get("refresh_minutes",180))
             await coordinator.async_config_entry_first_refresh()
 
@@ -58,6 +62,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scheduler.reschedule()
         entry.async_on_unload(entry.add_update_listener(async_update_options))
     except (Exception, asyncio.CancelledError):
+        if getattr(coordinator, "is_original", False):
+            await coordinator.async_stop()
         if scheduler is not None:
             await scheduler.async_stop()
         if platforms_started:
@@ -84,6 +90,15 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     options = {**entry.data, **entry.options}
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     expected_url = effective_feed(options)
+    if getattr(coordinator, "is_original", False):
+        if options.get("backend_mode") == "original" and not options.get("feed_url") and coordinator.country == (options.get("country") or "de"):
+            scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
+            if scheduler is not None:
+                scheduler.notification_service = options.get("notification_service", "persistent_notification.create")
+            coordinator.async_update_listeners()
+            return
+        await hass.config_entries.async_reload(entry.entry_id)
+        return
     if coordinator is not None and coordinator.url == expected_url and coordinator.source_urls == feed_candidates(options) and coordinator.country == options.get("country", "") and coordinator.update_interval == timedelta(minutes=options.get("refresh_minutes",180)):
         coordinator.async_update_listeners()
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
@@ -102,6 +117,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Release native resources after platforms unload."""
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
+        coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+        if getattr(coordinator, "is_original", False):
+            await coordinator.async_stop()
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if scheduler is not None:
             await scheduler.async_stop()

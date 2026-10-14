@@ -18,7 +18,7 @@ CONF_NOTIFICATION_SERVICE = "notification_service"
 COUNTRY_OPTIONS = {"": "No predefined country", **{code: code.upper() for code in COUNTRY_FEEDS}}
 
 
-def _feed_schema(current_url: str = "", current_country: str = "", current_channels: str = "", current_notification_service: str = "persistent_notification.create") -> vol.Schema:
+def _feed_schema(current_url: str = "", current_country: str = "de", current_channels: str = "", current_notification_service: str = "persistent_notification.create") -> vol.Schema:
     """Allow an empty URL to continue using only the add-on bridge."""
     return vol.Schema({
         vol.Optional(CONF_COUNTRY, default=current_country): vol.In(COUNTRY_OPTIONS),
@@ -41,7 +41,7 @@ def _validated_feed(user_input: dict[str, Any]) -> tuple[dict[str, str], dict[st
     notification_service = user_input.get(CONF_NOTIFICATION_SERVICE, "persistent_notification.create").strip()
     if notification_service != "persistent_notification.create" and not (notification_service.startswith("notify.") and bool(notification_service[7:]) and notification_service[7:].isascii() and notification_service[7:].replace("_", "").isalnum()):
         return {}, {CONF_NOTIFICATION_SERVICE: "invalid_notification_service"}
-    data = {CONF_COUNTRY: country, CONF_FEED_URL: "", CONF_CHANNELS: selected, CONF_NOTIFICATION_SERVICE: notification_service}
+    data = {CONF_COUNTRY: country, CONF_FEED_URL: "", CONF_CHANNELS: selected, CONF_NOTIFICATION_SERVICE: notification_service, "backend_mode": "xmltv" if url else "original"}
     if not url:
         return data, {}
     try:

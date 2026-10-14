@@ -44,7 +44,7 @@ class Entries:
 
 class Coordinator:
     fail = False
-    def __init__(self, hass, url, country, source_urls):
+    def __init__(self, hass, url, country, source_urls, *, config_entry=None):
         self.url, self.country = url, country
         self.source_urls = source_urls
         self.updates = 0

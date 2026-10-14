@@ -30,6 +30,30 @@ def async_register_ui_services(hass):
 
     async def handle(call):
         entry,options=entry_and_options()
+        coordinator=hass.data.get(DOMAIN,{}).get(entry.entry_id)
+        if getattr(coordinator,'is_original',False):
+            if call.service=='native_request':
+                try:
+                    if call.data['endpoint']=='settings' and call.data.get('method')=='POST':
+                        normalize_ui_settings({'notification_service':(call.data.get('body') or {}).get('notification_service','persistent_notification.create')})
+                    result=await coordinator.async_original_request(call.data['endpoint'],call.data.get('method','GET'),call.data.get('body'))
+                except (ValueError,RuntimeError) as exc:
+                    raise HomeAssistantError(str(exc)) from exc
+                if call.service=='native_request' and call.data['endpoint']=='settings' and call.data.get('method')=='POST':
+                    settings=await coordinator.async_original_request('settings')
+                    changes={key:settings[key] for key in ('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')}
+                    hass.config_entries.async_update_entry(entry,options={**entry.options,**changes,'backend_mode':'original'})
+                    scheduler=hass.data.get(DOMAIN+'_reminder_schedulers',{}).get(entry.entry_id)
+                    if scheduler is not None:
+                        scheduler.notification_service=settings['notification_service']
+                return result
+            endpoint={'get_ui_settings':'settings','get_native_guide':'guide','get_native_channels':'personal-channels'}.get(call.service)
+            if endpoint:
+                return await coordinator.async_original_request(endpoint)
+            if call.service=='set_ui_settings':
+                settings=await coordinator.async_original_request('settings')
+                normalize_ui_settings({'notification_service':call.data['options'].get('notification_service',settings['notification_service'])})
+                return await coordinator.async_original_request('settings','POST',{**settings,**call.data['options']})
         if call.service=='get_ui_settings':
             return ui_settings(options)
         if call.service=='set_ui_settings':
@@ -56,7 +80,12 @@ def async_register_ui_services(hass):
     for service in SERVICES:
         schema=vol.Schema({vol.Optional('at'):str}) if service=='get_native_guide' else vol.Schema({vol.Required('options'):dict}) if service=='set_ui_settings' else vol.Schema({})
         hass.services.async_register(DOMAIN,service,handle,schema=schema,supports_response=SupportsResponse.ONLY)
+    if any(getattr(item,'is_original',False) for item in hass.data.get(DOMAIN,{}).values()):
+        hass.services.async_register(DOMAIN,'native_request',handle,
+            schema=vol.Schema({vol.Required('endpoint'):str,vol.Optional('method',default='GET'):vol.In(['GET','POST']),vol.Optional('body'):dict}),
+            supports_response=SupportsResponse.ONLY)
 
 def async_remove_ui_services(hass):
+    hass.services.async_remove(DOMAIN,'native_request')
     for service in SERVICES:
         hass.services.async_remove(DOMAIN,service)

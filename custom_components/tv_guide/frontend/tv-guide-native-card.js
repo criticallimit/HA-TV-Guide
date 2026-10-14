@@ -381,7 +381,9 @@ class TVGuideNativeCard extends HTMLElement {
       const method = request.method;
       const body = request.body || {};
       let response;
-      if (method === "GET" && endpoint === "guide") response = await this._response("get_native_guide", request.at ? {at:request.at} : {});
+      if (this._hass.services?.tv_guide?.native_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
+        response = await this._response("native_request",{endpoint,method,...(method === "POST" ? {body} : {})});
+      } else if (method === "GET" && endpoint === "guide") response = await this._response("get_native_guide", request.at ? {at:request.at} : {});
       else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_native_channels");
       else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");
       else if (method === "POST" && endpoint === "settings") {

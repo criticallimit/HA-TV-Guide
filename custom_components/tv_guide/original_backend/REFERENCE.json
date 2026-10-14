@@ -1,0 +1,29 @@
+{
+  "repository": "criticallimit/TV-Guide",
+  "commit": "7871c4af8951c1f05ed012d028786181b1974b11",
+  "source_sha256": {
+    "api.py": "86f0fe3eda6cb0ef07d73e92ac5e6b2f7190ca371b02799ddf4bd3b5b7e41309",
+    "cache_catalogue.py": "c14f9ef019e4eefab92d5f6c27e3683398dcb5bd01539b89c40adb8517960fd2",
+    "french_sources.py": "89b4bee62ad28e6e052b80b6d6ae88464e8e4893d561bdb79c0ada1070509e3a",
+    "ha_sensors.py": "920813cf570e1451d9617b6c87974494b3ff199a1fc8e5c8c3de36e6db71c3a4",
+    "json_files.py": "6daee467f2aea893d64a1bd9f0e59075780912e9e12d35bbf0a84d1e3f4c31f4",
+    "personal_channels.py": "e83373b7398704811ea429cb78fdce8a55f3a487bff90b840b17adf59211d701",
+    "programme_values.py": "54f88d51c9cea4fcf6723c1a2219d710aa384d15854c64ef4d8e8cfc6706ccac",
+    "providers.py": "8752a31edc4d6f4474b26016cc47f4ce7f9f3c74bc3c1aae5ec8a7e27e1dd709",
+    "public_schedules.py": "570c0c0096bae134cc187bedca2d6e11cb6ddc91c99adc0c9ebb5acdb34b98f3",
+    "regional_sources.py": "fb542d5fe6e001eb8a161839a4ee1f60d4aba47ba4307b85a9222a7d7092ce3b",
+    "services.py": "f0bfc08abaf28b902e52970768b698cdefce6bc887b8ce9f55b4b901c9c06148",
+    "sources.py": "d59e162a4e3730c291fd2863b9cdc865f1c572b22161eb280d0b9c7c0fd5eb0d",
+    "store.py": "a06991a0b0328c3f52ad7cd8ea72911755c144bbcc49899a2e4366a03410b2bc",
+    "timeline.py": "03ffb1184a9fda7a7a9d6efadede97e17d39832b5d1ce5aa73887bf0f8fe5e22",
+    "__init__.py": "ab78cc89441c9098f7074e321db94943e8bcc2fda57b6b18947b298f47151052"
+  },
+  "adaptations": [
+    "Entry-owned .storage paths",
+    "HA locale instead of Supervisor",
+    "HA action notifications and native timer scheduler",
+    "Tracked worker pool instead of daemon workers",
+    "In-process authenticated route adapter instead of HTTP server",
+    "Existing main logo bundle; text fallback for extra station assets"
+  ]
+}

@@ -20,7 +20,7 @@ with patch.dict(sys.modules,{PKG:pkg,'homeassistant.core':core,'homeassistant.ex
 
 class UIServicesTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.handlers={};self.entry=types.SimpleNamespace(data={'country':'de'},options={})
+        self.handlers={};self.entry=types.SimpleNamespace(entry_id='entry',data={'country':'de'},options={})
         self.updates=[]
         async def executor(fn,*args):return fn(*args)
         def update(entry,**kwargs):entry.options=kwargs['options'];self.updates.append(entry.options)

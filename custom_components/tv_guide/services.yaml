@@ -148,3 +148,18 @@ set_ui_settings:
       required: true
       selector:
         object:
+native_request:
+  name: Original TV Guide operation
+  description: Authenticated in-process operations for the original multi-provider guide engine.
+  fields:
+    endpoint:
+      required: true
+      selector:
+        text:
+    method:
+      selector:
+        select:
+          options: [GET, POST]
+    body:
+      selector:
+        object:

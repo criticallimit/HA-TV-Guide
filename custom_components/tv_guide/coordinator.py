@@ -15,12 +15,13 @@ from .catalogs import resolve_catalogue_channels
 class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
     """Maintain one shared EPG snapshot, refreshing at most every 3 hours."""
 
-    def __init__(self, hass, url: str, country: str = "", source_urls=None):
+    def __init__(self, hass, url: str, country: str = "", source_urls=None, *, config_entry=None):
         super().__init__(
             hass,
             logger=logging.getLogger(__name__),
             name="TV Guide EPG",
             update_interval=timedelta(hours=3),
+            config_entry=config_entry,
         )
         self.url = url
         self.country = country

@@ -1,17 +1,14 @@
-# Native card manual test checklist
+# First Home Assistant test
 
-Use a test Home Assistant installation with a backup. Keep the original add-on and its files unchanged.
+Install the complete `custom_components/tv_guide` directory, restart HA and add TV Guide. Choose a country and leave the custom feed URL empty. For an existing preview entry, open Configure and submit these settings. Register `/tv_guide/frontend/tv-guide-native-card.js?v=3` as a module and add `type: custom:tv-guide-native-card` (`height: 1000`). Keep the existing add-on available as the comparison reference.
 
-1. Install the integration folder, restart HA, configure a permitted small HTTPS XMLTV feed and confirm the integration loads. Record HA version, source, programme count and setup outcome.
-2. Install the separate native JS resource following README. Add `custom:tv-guide-native-card` while retaining the old card. Confirm no Supervisor/Ingress request is made by the native card.
-3. Confirm programme labels and times against the native calendar, including Home Assistant's time zone. Move the window, use the original time tabs and Other times dialogue, and inspect seven rows per sender. Compare colours, fonts, logos and spacing with the original card at the same viewport and theme.
-4. Save a bookmark, refresh and verify it in the native bookmark list and count sensor. Remove it, refresh and confirm removal. Restart HA and confirm remaining saved records persist.
-5. Add reminders at each supported offset. Confirm sent status, native next-reminder sensor and exactly one notification on successful delivery. Restart before and after delivery. Repeat with a real configured `notify.*` target and test a unavailable target/retry window.
-6. In ☰ Sender, deselect, reorder and save. Reopen Configure and verify stored order. Confirm sender-only changes do not trigger a new EPG fetch. Check a canonical channel without a matching feed stays visible but yields no programmes. Reset Standardsortierung.
-7. Configure bridge-only mode with no source. Saved lists should remain accessible; sender cards should report missing programme data. Keep the original add-on sensors working.
-8. Reload/unload/re-enable the integration. Verify actions and timers do not duplicate; remove/reinsert the card and reconnect the browser. Test in mobile layout and both German/English HA profiles.
-9. Inspect logs and browser console for errors. Exercise a failed download and storage/notification failure in a disposable test environment. Test all intended country feeds for the preview size limits before relying on them.
+1. Confirm the integration loads immediately, creates native sensors/calendar and reports background refresh. Allow several minutes for the original provider adapters to finish. Inspect Settings → System → Logs if programme data stays empty.
+2. Compare main cards, now/18:00/20:15/22:00, another date/time, desktop/mobile and light/dark with the add-on using the same country/time. Provider data can change between downloads.
+3. Open a programme with available artwork. Check title, episode/subtitle, description, category, image and real start/end times.
+4. Open Sender. Select channels from DE and AT (or another pair), reorder and save. Reopen the picker, inspect the personal view and wait for the selected country caches to load. Reset the list.
+5. Change country, language, columns and default time in card settings; confirm they survive integration reload and HA restart.
+6. Save/remove a bookmark and future reminder. Check native counts, next reminder and persistence after restart. Choose a real mobile notification target, send a test and check actual delivery at the selected reminder offset.
+7. Reload, unload and enable the integration while a source is loading. Running provider requests are drained before unload completes; source timeouts can delay this. Confirm services/workers/timers do not duplicate.
+8. Verify the original add-on files, personal settings, saved records and entity IDs remain untouched. Native storage is independent.
 
-Automated checks do not substitute for this running-HA verification. No old bookmark/reminder migration or provider fallback is included. The original presentation and main-channel logo subset are included, with fixture-based screenshot parity tests.
-
-Frontend protocol references: [HA custom cards](https://developers.home-assistant.io/docs/frontend/custom-ui/custom-card/) and [WebSocket service responses](https://developers.home-assistant.io/docs/api/websocket/).
+The real-HA CI smoke uses the official stable HA image and fixture provider data. Offline/browser tests verify adapters and presentation; live provider availability and notification targets must be checked on your installation. Remaining detail work includes extra-station logo assets and explicit migration of old saved data. Native entities are controlled through HA's entity registry.

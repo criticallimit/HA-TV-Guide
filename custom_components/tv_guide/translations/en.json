@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "TV Guide",
-        "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
+        "description": "Choose a country and leave the feed URL empty to use the original add-on programme engine. A custom URL selects the standalone XMLTV mode.",
         "data": {
           "country": "Country (optional)",
           "feed_url": "Custom XMLTV feed URL (optional)",
@@ -24,7 +24,7 @@
     "step": {
       "init": {
         "title": "TV Guide",
-        "description": "Optionally choose a country XMLTV baseline or enter a custom HTTPS URL, which takes priority. Without either, EPG downloads are disabled.",
+        "description": "Choose a country and leave the feed URL empty to use the original add-on programme engine. A custom URL selects the standalone XMLTV mode.",
         "data": {
           "country": "Country (optional)",
           "feed_url": "Custom XMLTV feed URL (optional)",

@@ -161,5 +161,35 @@ const server = http.createServer((req,res) => {
   await frame.locator('.channel-card').first().waitFor();
   assert.deepEqual(errors,[]);
   console.log('PASS native card detach/reinsert rebuilds the original frontend');
+  await native.setViewportSize({width:1100,height:1000});
+  await native.evaluate(()=>{
+    const previous=hass.callWS.bind(hass);
+    hass.services.tv_guide={native_request:{}};
+    hass.callWS=async message=>{
+      if(message.service!=='native_request')return previous(message);
+      calls.push(message);
+      const {endpoint,method,body}=message.service_data;
+      let response;
+      if(endpoint==='guide')response=model;
+      else if(endpoint==='personal-channels'&&method==='GET')response={channels:model.channels.map(ch=>({...ch,id:'de:'+ch.id})),order:model.main_channel_ids.map(id=>'de:'+id),countries:['de'],supported_countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
+      else if(endpoint==='personal-channels')response={ok:true,order:body.order,countries:body.countries};
+      else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de'};
+      else if(endpoint==='settings')response={ok:true};
+      else throw new Error('Unexpected original runtime route');
+      return {response:structuredClone(response)};
+    };
+    document.querySelector('tv-guide-native-card').hass=hass;
+  });
+  await frame.locator('#showChannelSettings').click();
+  await frame.locator('#channelSettingsList .channel-settings-row').first().waitFor();
+  await frame.locator('#saveChannelSettings').click();
+  await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='personal-channels'&&call.service_data.method==='POST'));
+  await frame.locator('#channelSettingsDialog').waitFor({state:'hidden'});
+  await frame.locator('#showAppSettings').click();
+  await frame.locator('#saveAppSettings').waitFor({state:'visible'});
+  await frame.locator('#saveAppSettings').click();
+  await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
+  assert.deepEqual(errors,[]);
+  console.log('PASS full reference engine route for country picker and persisted settings');
   await browser.close();server.close();
 })().catch(error=>{console.error(error);server.close();process.exit(1);});

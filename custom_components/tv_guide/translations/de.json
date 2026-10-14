@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "TV Guide",
-        "description": "Optional Land für eine XMLTV-Basisquelle wählen oder eigene HTTPS-Adresse eingeben. Eine eigene Adresse hat Vorrang. Ohne beides erfolgen keine EPG-Downloads.",
+        "description": "Land auswählen und die Feed-URL leer lassen: Quellen und Funktionen des Add-ons verwenden. Eine eigene URL aktiviert den einfachen XMLTV-Modus.",
         "data": {
           "country": "Land (optional)",
           "feed_url": "Eigene XMLTV-Feed-Adresse (optional)",
@@ -24,7 +24,7 @@
     "step": {
       "init": {
         "title": "TV Guide",
-        "description": "Optional Land für eine XMLTV-Basisquelle wählen oder eigene HTTPS-Adresse eingeben. Eine eigene Adresse hat Vorrang. Ohne beides erfolgen keine EPG-Downloads.",
+        "description": "Land auswählen und die Feed-URL leer lassen: Quellen und Funktionen des Add-ons verwenden. Eine eigene URL aktiviert den einfachen XMLTV-Modus.",
         "data": {
           "country": "Land (optional)",
           "feed_url": "Eigene XMLTV-Feed-Adresse (optional)",

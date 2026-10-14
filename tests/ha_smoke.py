@@ -1,0 +1,92 @@
+"""Real HA startup, native actions, registry platforms, reload and unload smoke test.
+
+Run in the official Home Assistant image. Only provider downloads are replaced
+with deterministic programme data; the HA runtime and integration are real.
+"""
+import asyncio
+from datetime import datetime, timedelta, timezone
+import logging
+from pathlib import Path
+import shutil
+import sys
+import tempfile
+from unittest.mock import patch
+
+from homeassistant import loader
+from homeassistant.bootstrap import async_from_config_dict
+from homeassistant.const import __version__
+from homeassistant.core import HomeAssistant
+
+
+async def main():
+    logging.basicConfig(level=logging.INFO)
+    root = Path(__file__).resolve().parents[1]
+    with tempfile.TemporaryDirectory() as folder:
+        shutil.copytree(root / 'custom_components', Path(folder) / 'custom_components', ignore=shutil.ignore_patterns('__pycache__'))
+        sys.path.insert(0, folder)
+        hass = HomeAssistant(folder)
+        loader.async_setup(hass)
+        hass.config.skip_pip = True
+        try:
+            configured = await async_from_config_dict({
+                'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'DE'},
+                'http': {'server_host': '127.0.0.1', 'server_port': 8123},
+                'persistent_notification': {},
+            }, hass)
+            assert configured is not None
+            await hass.async_start()
+            from custom_components.tv_guide.original_runtime import OriginalRuntime
+            with patch.object(OriginalRuntime, 'start_background', lambda *args, **kwargs: None):
+                result = await hass.config_entries.flow.async_init('tv_guide', context={'source':'user'}, data={'country':'de'})
+                assert result['type'] == 'create_entry', result
+                entry = result['result']
+                await hass.async_block_till_done()
+                assert entry.state.value == 'loaded', entry.state
+                coordinator = hass.data['tv_guide'][entry.entry_id]
+                store = coordinator.backend.runtime.STORE
+                now = datetime.now(timezone.utc)
+                store.refresh_running = False
+                store.channels[0]['programs'] = [{
+                    'title':'Native HA test programme', 'start':(now+timedelta(hours=1)).isoformat(),
+                    'end':(now+timedelta(hours=2)).isoformat(), 'desc':'HA runtime fixture',
+                    'icon':'https://example.org/programme.jpg',
+                }]
+                store.channels[0]['available'] = True
+                await coordinator._async_sync()
+                async def request(endpoint, method='GET', body=None):
+                    return await hass.services.async_call('tv_guide','native_request',
+                        {'endpoint':endpoint,'method':method,**({'body':body} if body is not None else {})},
+                        blocking=True,return_response=True)
+                guide = await request('guide')
+                programme = guide['channels'][0]['programs'][0]
+                assert programme['icon'].endswith('programme.jpg')
+                picker = await request('personal-channels')
+                assert len(picker['supported_countries']) == 10
+                keys = [next(ch['id'] for ch in picker['channels'] if ch['id'].startswith(code+':')) for code in ('de','at')]
+                await request('personal-channels','POST',{'order':keys,'countries':['de','at']})
+                assert (await request('personal-channels'))['order'] == keys
+                settings = await request('settings')
+                await request('settings','POST',{**settings,'columns_desktop':4})
+                await hass.async_block_till_done()
+                assert (await request('settings'))['columns_desktop'] == 4
+                fields = {'id':programme['id'],'title':programme['title'],'channel':'Das Erste','channel_id':'ard',
+                          'start':programme['start'],'end':programme['end']}
+                await hass.services.async_call('tv_guide','save_bookmark',fields,blocking=True)
+                await hass.services.async_call('tv_guide','save_reminder',{**fields,'minutes':10},blocking=True)
+                saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
+                assert len(saved['bookmarks']) == len(saved['reminders']) == 1
+                assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
+                assert await hass.config_entries.async_reload(entry.entry_id)
+                await hass.async_block_till_done()
+                saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
+                assert len(saved['bookmarks']) == len(saved['reminders']) == 1
+                assert await hass.config_entries.async_unload(entry.entry_id)
+                assert not hass.services.has_service('tv_guide','native_request')
+                assert not hass.data['tv_guide']
+                print(f'PASS real Home Assistant {__version__}: setup, platforms, full guide, country picker, settings, saved actions, reload, unload',flush=True)
+        finally:
+            await hass.async_stop(force=True)
+
+
+if __name__=='__main__':
+    asyncio.run(main())
