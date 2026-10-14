@@ -1,6 +1,6 @@
 save_bookmark:
   name: Save programme
-  description: Save a TV programme to the native TV Guide bookmark list.
+  description: Save a TV programme to the TV Guide bookmark list.
   fields:
     id:
       required: true
@@ -67,7 +67,7 @@ save_reminder:
             - "30"
 remove_saved_programme:
   name: Remove saved programme
-  description: Remove an item from the native TV Guide bookmark or reminder list.
+  description: Remove an item from the TV Guide bookmark or reminder list.
   fields:
     id:
       required: true
@@ -113,7 +113,7 @@ get_channels:
 
 set_channels:
   name: Set selected TV channels
-  description: Save an ordered list of active-country canonical or XMLTV channel IDs for the calendar and native programme queries. An empty list means all channels.
+  description: Save an ordered list of active-country canonical or XMLTV channel IDs for the calendar and TV Guide programme queries. An empty list means all channels.
   fields:
     channels:
       required: true
@@ -125,33 +125,33 @@ set_channels:
 
 get_saved_programmes:
   name: Get saved TV programmes
-  description: Return active native bookmarks and reminders, including sent status.
+  description: Return active TV Guide bookmarks and reminders, including sent status.
 
-get_native_guide:
-  name: Get native TV Guide view
-  description: Return the original TV Guide presentation model. An optional timestamp limits each sender to seven overlapping or upcoming programmes.
+get_guide:
+  name: Get TV Guide view
+  description: Return the TV Guide presentation model. An optional timestamp limits each sender to seven overlapping or upcoming programmes.
   fields:
     at:
       description: Optional ISO timestamp including its timezone.
       selector:
         text:
-get_native_channels:
-  name: Get native personal channel picker
-  description: Return current-feed sender choices and saved ordering for the native card.
+get_channels:
+  name: Get TV Guide personal channel picker
+  description: Return current-feed sender choices and saved ordering for the TV Guide card.
 get_ui_settings:
-  name: Get native TV Guide display settings
-  description: Return persisted native display and notification settings.
+  name: Get TV Guide display settings
+  description: Return persisted TV Guide display and notification settings.
 set_ui_settings:
-  name: Set native TV Guide display settings
-  description: Validate and persist native card display options and notification destination.
+  name: Set TV Guide display settings
+  description: Validate and persist TV Guide card display options and notification destination.
   fields:
     options:
       required: true
       selector:
         object:
-native_request:
-  name: Original TV Guide operation
-  description: Authenticated in-process operations for the original multi-provider guide engine.
+guide_request:
+  name: TV Guide operation
+  description: Authenticated in-process operations for the TV Guide programme provider.
   fields:
     endpoint:
       required: true
