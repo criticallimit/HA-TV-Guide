@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TV Guide pour Home Assistant – programme TV et rappels</title>
+  <meta name="description" content="Votre programme TV dans Home Assistant : émissions en cours, listes de chaînes personnelles, favoris et rappels.">
+  <link rel="canonical" href="https://criticallimit.github.io/HA-TV-Guide/fr.html">
+  <link rel="alternate" hreflang="da" href="https://criticallimit.github.io/HA-TV-Guide/da.html">
+  <link rel="alternate" hreflang="de" href="https://criticallimit.github.io/HA-TV-Guide/">
+  <link rel="alternate" hreflang="en" href="https://criticallimit.github.io/HA-TV-Guide/en.html">
+  <link rel="alternate" hreflang="es" href="https://criticallimit.github.io/HA-TV-Guide/es.html">
+  <link rel="alternate" hreflang="fr" href="https://criticallimit.github.io/HA-TV-Guide/fr.html">
+  <link rel="alternate" hreflang="it" href="https://criticallimit.github.io/HA-TV-Guide/it.html">
+  <link rel="alternate" hreflang="nl" href="https://criticallimit.github.io/HA-TV-Guide/nl.html">
+  <link rel="alternate" hreflang="nb" href="https://criticallimit.github.io/HA-TV-Guide/nb.html">
+  <link rel="alternate" hreflang="sv" href="https://criticallimit.github.io/HA-TV-Guide/sv.html">
+  <link rel="alternate" hreflang="x-default" href="https://criticallimit.github.io/HA-TV-Guide/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr">
+  <meta property="og:title" content="TV Guide pour Home Assistant – programme TV et rappels">
+  <meta property="og:description" content="Qu’y a-t-il à la télévision aujourd’hui ? Vos programmes, vos chaînes et vos rappels directement dans Home Assistant.">
+  <meta property="og:url" content="https://criticallimit.github.io/HA-TV-Guide/fr.html">
+  <meta name="theme-color" content="#101c21">
+  <style>
+    :root{color-scheme:dark;--bg:#101c21;--text:#eef5f4;--muted:#b1c4c6;--accent:#8adecc;--line:#2c4148}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:17px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:var(--accent);text-underline-offset:4px}a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:5px}
+    .wrap{max-width:1060px;margin:auto;padding:0 28px}header{display:flex;align-items:center;justify-content:space-between;padding:26px 0;border-bottom:1px solid var(--line);gap:18px}.brand{font-weight:750;letter-spacing:.04em;color:var(--text);text-decoration:none}.header-right{display:flex;align-items:center;gap:20px}nav{display:flex;gap:24px;font-size:14px}
+    .language{position:relative;font-size:14px}.language summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;padding:7px 10px;border:1px solid var(--line);border-radius:8px;color:var(--text);min-width:126px}.language summary::-webkit-details-marker{display:none}.language summary::after{content:"▾";margin-left:auto;color:var(--muted)}.language[open] summary::after{content:"▴"}.flagwrap{width:22px;height:16px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px}.flagwrap img{display:block;max-width:22px;max-height:16px;border-radius:2px}.language-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:20;min-width:180px;padding:6px;background:#15262c;border:1px solid var(--line);border-radius:9px;box-shadow:0 12px 30px rgba(0,0,0,.35)}.language-menu a{display:flex;align-items:center;gap:10px;padding:8px 10px;color:var(--text);text-decoration:none;border-radius:6px}.language-menu a:hover,.language-menu a[aria-current="page"]{background:#20363d}
+    .hero{padding:80px 0 65px;max-width:830px}.eyebrow{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(38px,6vw,68px);line-height:1.1;letter-spacing:-.04em;margin:20px 0 26px}h1 span{color:var(--accent)}.intro{font-size:21px;color:var(--muted);max-width:690px}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:24px;margin-top:32px}.button{display:inline-block;padding:13px 22px;background:var(--accent);color:var(--bg);border-radius:9px;text-decoration:none;font-weight:750}.button:hover{background:#b0efdf}
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;border-top:1px solid var(--line);padding:38px 0 55px}.features h2{font-size:20px;margin:0 0 10px}.features p{color:var(--muted);margin:0}section.info{padding:40px 0;border-top:1px solid var(--line)}section.info h2{font-size:30px;letter-spacing:-.02em;margin:0 0 20px}ol{padding-left:24px}li{padding:5px 0}.note{color:var(--muted);font-size:15px}code{overflow-wrap:anywhere;color:var(--accent);font-size:14px}footer{border-top:1px solid var(--line);padding:28px 0 40px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px;color:var(--muted);font-size:14px}
+    @media(max-width:760px){header{align-items:flex-start;flex-wrap:wrap}.header-right{margin-left:auto;flex-wrap:wrap;justify-content:flex-end}nav{gap:14px}}
+    @media(max-width:650px){.wrap{padding:0 20px}.hero{padding:48px 0}.features{grid-template-columns:1fr;gap:30px}.intro{font-size:19px}section.info h2{font-size:26px}.header-right{width:100%;justify-content:space-between}.language-menu{left:0;right:auto}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"TV Guide for Home Assistant","description":"Home Assistant add-on for TV listings, personal channel lists, watchlists and reminders.","applicationCategory":"LifestyleApplication","operatingSystem":"Home Assistant OS / Supervised","url":"https://criticallimit.github.io/HA-TV-Guide/fr.html","downloadUrl":"https://github.com/criticallimit/HA-TV-Guide","inLanguage":"fr","isAccessibleForFree":true}</script>
+</head>
+<body>
+  <div class="wrap">
+    <header><a class="brand" href="./">TV GUIDE</a><div class="header-right"><nav aria-label="Navigation"><a href="screenshots.html">Screenshots</a><a href="#installation">Installation</a><a href="https://github.com/criticallimit/HA-TV-Guide">GitHub ↗</a></nav><details class="language"><summary aria-label="Language"><span class="flagwrap"><img src="flags/fr.svg" alt=""></span><span>Français</span></summary><div class="language-menu">
+<a href="da.html" lang="da"><span class="flagwrap"><img src="flags/dk.svg" alt=""></span><span>Dansk</span></a>
+<a href="./" lang="de"><span class="flagwrap"><img src="flags/de.svg" alt=""></span><span>Deutsch</span></a>
+<a href="en.html" lang="en"><span class="flagwrap"><img src="flags/gb.svg" alt=""></span><span>English</span></a>
+<a href="es.html" lang="es"><span class="flagwrap"><img src="flags/es.svg" alt=""></span><span>Español</span></a>
+<a href="it.html" lang="it"><span class="flagwrap"><img src="flags/it.svg" alt=""></span><span>Italiano</span></a>
+<a href="fr.html" lang="fr" aria-current="page"><span class="flagwrap"><img src="flags/fr.svg" alt=""></span><span>Français</span></a>
+<a href="nl.html" lang="nl"><span class="flagwrap"><img src="flags/nl.svg" alt=""></span><span>Nederlands</span></a>
+<a href="nb.html" lang="nb"><span class="flagwrap"><img src="flags/no.svg" alt=""></span><span>Norsk</span></a>
+<a href="sv.html" lang="sv"><span class="flagwrap"><img src="flags/se.svg" alt=""></span><span>Svenska</span></a>
+</div></details></div></header>
+    <main>
+      <section class="hero" aria-labelledby="title">
+        <div class="eyebrow">Programme TV pour Home Assistant</div>
+        <h1 id="title">Votre soirée télé.<br><span>En un coup d’œil.</span></h1>
+        <p class="intro">Que passe-t-il à la télévision en ce moment ? TV Guide intègre votre programme directement dans Home Assistant, avec vos chaînes, une liste de favoris et des rappels pour vos émissions préférées.</p>
+        <div class="actions"><a class="button" href="https://github.com/criticallimit/HA-TV-Guide/archive/refs/heads/main.zip">Ajouter à Home Assistant</a><a href="manuals/fr.html">Lire le guide ↗</a></div>
+      </section>
+      <div class="features">
+        <section><h2>Maintenant ou ce soir</h2><p>Accédez au programme en cours, à 18 h, à 20 h 15 ou à 22 h. Vous pouvez aussi choisir un autre jour disponible et l’heure souhaitée.</p></section>
+        <section><h2>Votre liste de chaînes personnelle</h2><p>Chaînes principales préparées pour l’Allemagne, l’Autriche, la Belgique, le Danemark, la France, la Norvège, les Pays-Bas, le Royaume-Uni, la Suède et la Suisse, ainsi que d’autres chaînes disponibles. Choisissez vos favorites et organisez-les comme vous le souhaitez.</p></section>
+        <section><h2>Rappels et automatisations</h2><p>Enregistrez des émissions, recevez des rappels dans Home Assistant et utilisez des capteurs facultatifs dans vos tableaux de bord et automatisations.</p></section>
+      </div>
+      <section class="info" id="installation"><h2>Configuré en quelques étapes</h2><p>Vous avez besoin de Home Assistant avec l’App/Add-on Store, par exemple Home Assistant OS.</p><ol><li>Ajoutez le dépôt avec le bouton ci-dessus. Vous pouvez aussi ouvrir <strong>Repositories</strong> dans le store et ajouter <code>https://github.com/criticallimit/HA-TV-Guide</code>.</li><li>Installez et démarrez <strong>TV Guide</strong>.</li><li>Activez <strong>Afficher dans la barre latérale</strong> et ouvrez <strong>TV Programme</strong>.</li></ol><p class="note">Au premier démarrage, le chargement des données du programme peut prendre quelques minutes. La disponibilité dépend des sources publiquement accessibles.</p></section>
+      <section class="info"><h2>S’intègre à votre maison</h2><p>Utilisez l’aperçu sur téléphone, tablette ou grand écran. L’affichage clair ou sombre peut suivre Home Assistant. L’en-tête reste accessible pendant le défilement.</p><p>Une carte TV Guide est également disponible pour votre tableau de bord. Vos listes de chaînes et émissions enregistrées sont conservées lors des redémarrages et mises à jour.</p><p><a href="https://github.com/criticallimit/HA-TV-Guide#auf-deinem-dashboard">Configurer la carte du tableau de bord ↗</a></p><h3>Automatisations avec TV Guide</h3><p>TV Guide peut fournir cinq capteurs facultatifs dans Home Assistant. Ils permettent de réagir au prochain rappel, aux émissions enregistrées ou à l’état de mise à jour de l’EPG et de créer vos propres automatisations.</p><ul><li><code>sensor.tv_guide_next_reminder</code> – prochain rappel programmé</li><li><code>sensor.tv_guide_bookmark_count</code> – nombre d’émissions enregistrées qui ne sont pas encore terminées</li><li><code>sensor.tv_guide_reminder_count</code> – nombre de rappels encore en attente</li><li><code>sensor.tv_guide_last_update</code> – heure de la dernière mise à jour EPG réussie</li><li><code>binary_sensor.tv_guide_refresh_running</code> – indique si les données EPG sont en cours d’actualisation</li></ul><p class="note">Les capteurs sont désactivés par défaut et peuvent être activés individuellement sous <strong>Paramètres → Avancé → Capteurs disponibles</strong>.</p></section>
+      <section class="info"><h2>Guide dans votre langue</h2><p><a href="manuals/da.html" lang="da">Dansk</a> · <a href="manuals/de.html" lang="de">Deutsch</a> · <a href="manuals/en.html" lang="en">English</a> · <a href="manuals/es.html" lang="es">Español</a> · <a href="manuals/nl.html" lang="nl">Nederlands</a> · <a href="manuals/fr.html" lang="fr">Français</a> · <a href="manuals/it.html" lang="it">Italiano</a> · <a href="manuals/nb.html" lang="nb">Norsk</a> · <a href="manuals/sv.html" lang="sv">Svenska</a></p></section>
+</main>
+    <footer><span>TV Guide · Un projet indépendant de criticallimit</span><span><a href="https://github.com/criticallimit/HA-TV-Guide">Projet</a> · <a href="https://github.com/criticallimit/HA-TV-Guide/issues">Aide et retours</a></span></footer>
+  </div>
+</body>
+</html>
