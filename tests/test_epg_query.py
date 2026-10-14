@@ -34,6 +34,7 @@ except ImportError:
 ha = types.ModuleType("homeassistant")
 ha.__path__ = []
 core = types.ModuleType("homeassistant.core")
+core.callback = lambda func: func
 core.SupportsResponse = type("SupportsResponse", (), {"ONLY": 1})
 exc = types.ModuleType("homeassistant.exceptions")
 exc.HomeAssistantError = type("HomeAssistantError", (Exception,), {})

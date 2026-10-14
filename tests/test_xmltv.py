@@ -32,6 +32,11 @@ class XMLTVTests(unittest.TestCase):
         self.assertEqual(result[0]["title"], "Film")
         self.assertEqual(result[0]["description"], "Beschreibung")
 
+    def test_utf16_cannot_bypass_dtd_rejection(self):
+        xml = '<!DOCTYPE tv [<!ENTITY x "expanded">]><tv><programme channel="a" start="20261014190000 +0000" stop="20261014200000 +0000"><title>&x;</title></programme></tv>'
+        with self.assertRaises(ValueError):
+            parse_xmltv(xml.encode('utf-16'))
+
     def test_invalid(self):
         self.assertEqual(parse_xmltv(b'<tv><programme channel="a"/></tv>'), [])
         with self.assertRaises(ValueError):

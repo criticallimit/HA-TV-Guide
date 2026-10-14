@@ -55,5 +55,13 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check native card syntax
         run: node --check custom_components/tv_guide/frontend/tv-guide-native-card.js
-      - name: Exercise native card in Chromium
+      - name: Check out read-only reference frontend
+        uses: actions/checkout@v4
+        with:
+          repository: criticallimit/TV-Guide
+          ref: 7871c4af8951c1f05ed012d028786181b1974b11
+          path: reference-addon
+      - name: Compare native card with original frontend in Chromium
+        env:
+          TVG_REFERENCE: reference-addon
         run: node tests/frontend-card.cjs

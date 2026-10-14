@@ -5,14 +5,14 @@
 ## Current capabilities
 
 - Optional standalone HTTPS XMLTV source, with ten experimental country baselines (DE, AT, CH, NL, BE, DK, NO, FR, SE and GB).
-- One shared EPG snapshot, normally refreshed every three hours, a read-only programme calendar, channel catalogue and native EPG status entities.
+- One shared EPG snapshot, normally refreshed every three hours (configurable in the native UI), a read-only programme calendar, channel catalogue and native EPG status entities.
 - Original ordered country channel catalogues, canonical sender ID mapping and persistent personal sender selection.
 - Native bookmarks and reminders in Home Assistant `.storage`; event-driven delivery through `persistent_notification.create` or a configured `notify.*` service.
 - Native bookmark/reminder count and next-reminder entities, independent of the add-on.
-- An experimental **TV Guide Native** dashboard card for programme browsing, sender selection/order, bookmarks and reminders, using Home Assistant's authenticated connection.
+- An experimental **TV Guide Native** dashboard card retaining the original add-on presentation for programme browsing, sender selection/order, bookmarks and reminders, using Home Assistant's authenticated connection.
 - Five optional state mirrors of the original add-on for the transitional bridge. These have separate unique IDs and names.
 
-This is not yet a complete replacement for the add-on: provider fallbacks/enrichment, the original television grid, logos/artwork, old saved-data migration and full UI parity are pending. Keep the add-on available while testing. No production readiness or live Home Assistant compatibility is implied by offline tests.
+This is not yet a complete replacement for the add-on: provider fallbacks/enrichment, provider-specific programme artwork, old saved-data migration and multi-country provider aggregation are pending. Keep the add-on available while testing. No production readiness or live Home Assistant compatibility is implied by offline tests.
 
 ## Manual integration installation
 
@@ -24,42 +24,45 @@ This is not yet a complete replacement for the add-on: provider fallbacks/enrich
 
 The initial feed is downloaded during setup. A failed download leaves the entry not ready for Home Assistant to retry. The download is limited to 12 MiB on the wire and 8 MiB after decompression, with at most 50,000 parsed programmes; large country feeds may exceed these preview limits. Only configure sources you are authorized to access.
 
-**Configure** allows changing country/feed, selected canonical or XMLTV IDs (maximum 200) and notification destination. Changing only sender selection/order or notification destination does not redownload the feed. Changing the EPG source reloads the entry.
+**Configure** allows changing country/feed, selected canonical or XMLTV IDs (maximum 200) and notification destination. Changing only sender selection/order or notification destination does not redownload the feed. Changing the EPG source or refresh interval reloads the entry.
 
 Updating requires copying the new integration folder and restarting Home Assistant; a GitHub commit does not deploy to your installation.
 
 ## Install the native dashboard card
 
-The native card has a separate element and resource name so it can coexist with the add-on card.
+The native integration serves the complete bundled card itself. No copy to `/config/www` is required.
 
-1. Copy `custom_components/tv_guide/frontend/tv-guide-native-card.js` to `/config/www/tv-guide-native-card.js` (create `www` if necessary).
-2. Restart Home Assistant if you just created `www`.
-3. In **Settings → Dashboards → Resources** (advanced mode), add `/local/tv-guide-native-card.js?v=1` as **JavaScript module**.
-4. Add **TV Guide Native** from the card picker, or use a manual card:
+1. Install/update the integration folder and restart Home Assistant.
+2. Under **Settings → Dashboards → Resources** (advanced mode), add `/tv_guide/frontend/tv-guide-native-card.js?v=2` as **JavaScript module**.
+3. Add **TV Guide Native**, or configure a manual card:
 
 ```yaml
 type: custom:tv-guide-native-card
-title: TV Guide
+height: 1000
 ```
 
-Do not replace the add-on's `tv-guide-card.js` or its loader. On updates, copy the native resource again and change the `v=` suffix to refresh browser caches. Automatic resource registration and a sidebar panel are not implemented yet.
+Optional `theme` and height settings match the original card (height 500–2200). If you previously installed the preview `/local/tv-guide-native-card.js` resource, replace that resource URL with the new native URL. Keep the original add-on card and its loader unchanged. After updates, increment the `v=` suffix or refresh browser caches.
 
-The native card reads the cached EPG and does not request an EPG download. It offers a chronological schedule with sender filtering and 3/6/12/24-hour windows. **Earlier / Now / Later** move the time window; broadcast times use Home Assistant's configured time zone. At most 500 programmes are returned, with a visible notice when more match. Refresh explicitly reloads the card's data; automatic cross-client updates are pending.
+**Appearance follows the add-on.** The native card reuses the original HTML layout, CSS, programme renderer, sender picker, translations, Source Sans Pro fonts and theme-specific normalized main-channel logos. The turquoise toolbar, Jetzt / 18:00 / 20:15 / 22:00 / Andere Zeiten controls, sender columns, seven programme rows, current-programme progress, saved-list and programme-detail dialogues retain the original presentation. The initial independent timeline/list prototype has been replaced.
 
-**My channels** selects and reorders canonical senders and extra feed channels. A sender without EPG remains visible; it does not silently turn into an all-channel query. **All channels** resets the stored selection. An empty saved selection means all channels, not zero channels.
+A pinned original reference is recorded in `frontend/app/REFERENCE.json`. Browser tests compare screenshots for identical data: desktop, 20:15, dark theme and mobile match pixel for pixel. This verifies visual equivalence for those fixtures, not equivalence of provider data or every installation/theme.
 
-Programme actions save native bookmarks or reminders with 5/10/15/30-minute advance offsets. Saved lists show future/active programmes and allow removal. Existing reminders display their sent status. Programme IDs are derived from the feed channel ID and UTC start instant, so repeated card saves refer to the same native item. These IDs are not a promise of compatibility with old add-on bookmarks; migration is still separate.
+The inner view is served from the native integration and communicates only with its embedding card via checked same-origin messages. The card uses Home Assistant's authenticated connection; it makes no Supervisor, Ingress or add-on API requests and stores no separate access token. Only public static presentation code and logos are served over the HTTP asset path; saved programmes and EPG require native authenticated actions.
 
-The card follows Home Assistant's theme variables and supports German and English (English fallback). It accesses neither Supervisor Ingress nor the add-on HTTP API, and needs no separately stored access token.
+Native bookmark IDs remain stable across title/name changes. Removing a saved programme from the original-style list atomically removes its bookmark and associated reminder. Native browser caches use separate keys; automatic import of the add-on's browser/storage data is disabled.
+
+The sender picker currently covers the configured country's catalogue and the current feed's extra channels. Multi-country provider aggregation and the old add-on's source enrichment are pending. Display is bounded to 200 senders per list and seven rows per sender; other-time selection queries the cached native snapshot. Native registry-backed sensors are managed through Home Assistant's entity settings, so legacy sensor switches in the copied settings dialogue are disabled. UI settings persist language, view, theme mode, column count, maximum displayed senders, refresh interval and notification destination in config-entry options. Resource setup still requires the one manual dashboard registration.
 
 ## Native actions
 
+- `tv_guide.get_native_guide` / `get_native_channels`: bounded presentation snapshots for the original-style card, with no extra EPG download.
+- `tv_guide.get_ui_settings` / `set_ui_settings`: read and validate persisted native presentation options.
 - `tv_guide.get_programmes`: response-only cached programme query, with offset-aware `start`/`end`, optional `channel_id` and `limit` (1–500). Maximum range: seven days. Returns `programmes`, `count` and `truncated`; each record includes a stable native `id`.
 - `tv_guide.get_channels`: response-only catalogue including availability and saved sender order/selection.
 - `tv_guide.set_channels`: persist an ordered list in `channels`; `[]` means all.
 - `tv_guide.get_saved_programmes`: response-only `bookmarks` and `reminders`, filtering expired records without writing storage. Also available with no EPG source.
 - `tv_guide.save_bookmark` / `tv_guide.save_reminder`: accept `id`, `title`, `channel`, `channel_id`, offset-aware ISO `start` and `end`; reminders also accept `minutes`.
-- `tv_guide.remove_saved_programme`: accepts `id` and `kind` (`bookmark` or `reminder`).
+- `tv_guide.remove_saved_programme`: accepts `id` and `kind` (`bookmark`, `reminder`, or `programme` to remove both atomically).
 
 These actions currently require exactly one loaded entry/feed as applicable. A storage failure rolls back the saved-list action's in-memory changes. Reminder delivery failures remain pending and retry within the existing bounded delivery window; sent reminders are not rearmed on restart. Notification delivery itself still needs testing in a running Home Assistant.
 
@@ -71,14 +74,14 @@ Fresh native bookmark/reminder storage is empty. The integration does not read o
 
 ## Validation and remaining work
 
-Local validation for the native-card change: 50 Python offline tests passed; five Chromium workflow scenarios passed (including sender ordering, saved-item actions, service errors, unavailable EPG, feed-text escaping, language and reconnect). Tests use HA doubles; they do not run a real HA server. The suite now loads pure Python helpers without inserting the integration directory into `sys.path`, avoiding accidental shadowing of Python's `calendar` module.
+Local validation for the native-card change: 86 Python offline tests passed; eight Chromium workflow scenarios passed (including pixel comparisons, sender picker, saved-item actions, service errors, RPC source checks and reconnect). Tests use HA doubles; they do not run a real HA server. The suite now loads pure Python helpers without inserting the integration directory into `sys.path`, avoiding accidental shadowing of Python's `calendar` module.
 
 The branch has passed Python/JSON checks, Chromium card tests and Hassfest on GitHub Actions. HACS publication validation still requires repository topics; project branding is bundled under `brand/` using an unchanged copy of the original TV Guide project icon (not broadcaster logos).
 
 GitHub Actions runs offline tests, Python/JSON validation, HACS, Hassfest and Chromium card tests. Check the actual results for the branch/PR; local success does not establish CI success.
 
-Before replacing the add-on, test real HA installation/reload/unload, country feed sizes and availability, mobile-notification delivery, storage failures, and card setup on desktop/mobile. Provider fallback/enrichment, original UI parity and explicit old-data migration remain required. See [architecture](docs/ARCHITECTURE.md) and [manual test steps](docs/NATIVE_CARD_TESTING.md).
+Before replacing the add-on, test real HA installation/reload/unload, country feed sizes and availability, mobile-notification delivery, storage failures, and card setup on desktop/mobile. Provider fallback/enrichment, multi-country personal lists, programme artwork and explicit old-data migration remain required. See [architecture](docs/ARCHITECTURE.md) and [manual test steps](docs/NATIVE_CARD_TESTING.md).
 
 ## Licence
 
-MIT covers project-authored source code. External programme data, logos and broadcaster marks are not covered by it; consult the add-on's third-party notices. This native card does not bundle logo assets.
+MIT covers project-authored source code. External programme data, logos and broadcaster marks are not covered by it; consult the add-on's third-party notices. The native card bundles the original main-channel logo subset with the inherited notices and Source Sans Pro font licence; third-party assets remain outside the project source-code licence.

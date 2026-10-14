@@ -10,7 +10,7 @@ from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
-from .saved_programmes import normalize_items
+from .saved_programmes import MAX_ITEMS, normalize_items
 
 SERVICE_BOOKMARK = "save_bookmark"
 SERVICE_REMINDER = "save_reminder"
@@ -29,7 +29,7 @@ BOOKMARK_SCHEMA = vol.Schema(BASE)
 REMINDER_SCHEMA = vol.Schema({**BASE, vol.Optional("minutes", default=10): vol.In([5, 10, 15, 30])})
 REMOVE_SCHEMA = vol.Schema({
     vol.Required("id"): vol.All(str, vol.Length(min=1, max=200)),
-    vol.Required("kind"): vol.In(["bookmark", "reminder"]),
+    vol.Required("kind"): vol.In(["bookmark", "reminder", "programme"]),
 })
 
 
@@ -64,8 +64,9 @@ async def async_register_saved_services(hass):
             previous_bookmarks = [dict(item) for item in saved.bookmarks]
             previous_reminders = [dict(item) for item in saved.reminders]
             if action == SERVICE_REMOVE:
-                key = "bookmarks" if call.data["kind"] == "bookmark" else "reminders"
-                setattr(saved, key, [item for item in getattr(saved, key) if item["id"] != call.data["id"]])
+                keys = ("bookmarks","reminders") if call.data["kind"] == "programme" else ("bookmarks",) if call.data["kind"] == "bookmark" else ("reminders",)
+                for key in keys:
+                    setattr(saved, key, [item for item in getattr(saved, key) if item["id"] != call.data["id"]])
             else:
                 key = "bookmarks" if action == SERVICE_BOOKMARK else "reminders"
                 item = {
@@ -90,7 +91,11 @@ async def async_register_saved_services(hass):
                 normalized = normalize_items([item], reminders=action == SERVICE_REMINDER)
                 if not normalized:
                     raise HomeAssistantError("Invalid programme")
-                setattr(saved, key, [old for old in getattr(saved, key) if old["id"] != item["id"]] + normalized)
+                existing = normalize_items(getattr(saved, key), reminders=action == SERVICE_REMINDER)
+                remaining = [old for old in existing if old["id"] != item["id"]]
+                if len(remaining) >= MAX_ITEMS:
+                    raise HomeAssistantError(f"The saved list is limited to {MAX_ITEMS} programmes")
+                setattr(saved, key, remaining + normalized)
             try:
                 await saved.async_save()
             except Exception:

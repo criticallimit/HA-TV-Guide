@@ -31,6 +31,8 @@ def parse_xmltv(payload: bytes, *, limit: int = MAX_PROGRAMMES) -> list[dict]:
     """Return normalized programmes, with bounded input and no external entities."""
     if len(payload) > MAX_XML_SIZE:
         raise ValueError("XMLTV feed exceeds maximum size")
+    if b"\x00" in payload:
+        raise ValueError("XMLTV must use an ASCII-compatible encoding")
     if b"<!DOCTYPE" in payload.upper() or b"<!ENTITY" in payload.upper():
         raise ValueError("DTD and entity definitions are not supported")
     results: list[dict] = []
@@ -52,6 +54,8 @@ def parse_xmltv(payload: bytes, *, limit: int = MAX_PROGRAMMES) -> list[dict]:
                     "stop": stop.isoformat(),
                     "title": title,
                     "description": desc,
+                    "subtitle": (element.findtext("sub-title") or "")[:300],
+                    "category": (element.findtext("category") or "")[:160],
                 })
         element.clear()
         if len(results) >= min(limit, MAX_PROGRAMMES):

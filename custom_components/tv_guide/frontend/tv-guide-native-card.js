@@ -1,180 +1,447 @@
-/* Native TV Guide card. Uses only the authenticated Home Assistant connection. */
-const TVG_TEXT = {
-  de: {programme:"Programm", bookmarks:"Merkliste", reminders:"Erinnerungen", channels:"Meine Sender", refresh:"Aktualisieren", now:"Jetzt", earlier:"Früher", later:"Später", all:"Alle Sender", save:"Speichern", bookmark:"Merken", remind:"Erinnern", remove:"Entfernen", empty:"Keine Sendungen in diesem Zeitraum.", loading:"Wird geladen …", saved:"Gespeichert", sent:"Zugestellt", missing:"Kein EPG verfügbar. Bitte eine Quelle in TV Guide konfigurieren und erneut laden.", limit:"Maximal 500 Sendungen. Bitte einen Sender oder einen kürzeren Zeitraum wählen.", unavailable:"Kein EPG", selection:"Sender auswählen und mit ↑ / ↓ sortieren (max. 200). Eine leere Auswahl zeigt alle Sender.", savedEmpty:"Keine gespeicherten Sendungen.", minutes:"Minuten vorher", failed:"Aktion fehlgeschlagen", title:"TV Guide", hours:"Stunden"},
-  en: {programme:"Schedule", bookmarks:"Bookmarks", reminders:"Reminders", channels:"My channels", refresh:"Refresh", now:"Now", earlier:"Earlier", later:"Later", all:"All channels", save:"Save", bookmark:"Bookmark", remind:"Remind", remove:"Remove", empty:"No programmes in this time range.", loading:"Loading …", saved:"Saved", sent:"Delivered", missing:"No EPG available. Configure a source in TV Guide and retry.", limit:"Maximum 500 programmes. Choose a channel or a shorter interval.", unavailable:"No EPG", selection:"Choose channels and order with ↑ / ↓ (max. 200). An empty selection shows all channels.", savedEmpty:"No saved programmes.", minutes:"minutes before", failed:"Action failed", title:"TV Guide", hours:"hours"},
-};
-const tvgEscape = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const TV_GUIDE_PICKER_LOGO = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 250 100\" width=\"250\" height=\"100\"><title>TV Guide</title><g transform=\"translate(0,2) scale(.75)\"><rect x=\"12\" y=\"21\" width=\"104\" height=\"77\" rx=\"19\" fill=\"#25b9bf\"/><rect x=\"23\" y=\"32\" width=\"82\" height=\"54\" rx=\"10\" fill=\"#102d3e\"/><rect x=\"33\" y=\"42\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#fff\"/><rect x=\"52\" y=\"42\" width=\"42\" height=\"7\" rx=\"3\" fill=\"#fff\"/><rect x=\"33\" y=\"56\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#76e3d8\"/><rect x=\"52\" y=\"56\" width=\"32\" height=\"7\" rx=\"3\" fill=\"#76e3d8\"/><rect x=\"33\" y=\"70\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#fff\" opacity=\".7\"/><rect x=\"52\" y=\"70\" width=\"37\" height=\"7\" rx=\"3\" fill=\"#fff\" opacity=\".7\"/><path d=\"M48 106h32\" stroke=\"#25b9bf\" stroke-width=\"9\" stroke-linecap=\"round\"/></g><text x=\"105\" y=\"60\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"29\" font-weight=\"700\" fill=\"#31949b\">TV Guide</text></svg>";
+
+const TV_GUIDE_CARD_TRANSLATIONS = {"da":{"TV Guide wird geladen …":"TV Guide indlæses …","TV Guide konnte nicht geladen werden.":"TV Guide kunne ikke indlæses.","TV Guide ist nicht installiert.":"TV Guide er ikke installeret.","TV Guide ist nicht gestartet.":"TV Guide er ikke startet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen ingress-adresse er tilgængelig for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV Guide-kortet kunne ikke oprettes.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide blev ikke fundet i Home Assistant."},"de":{"TV Guide wird geladen …":"TV Guide wird geladen …","TV Guide konnte nicht geladen werden.":"TV Guide konnte nicht geladen werden.","TV Guide ist nicht installiert.":"TV Guide ist nicht installiert.","TV Guide ist nicht gestartet.":"TV Guide ist nicht gestartet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Für TV Guide ist keine Ingress-Adresse verfügbar.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV-Guide-Karte konnte nicht aufgebaut werden.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV-Guide-App wurde in Home Assistant nicht gefunden."},"en":{"TV Guide wird geladen …":"Loading TV Guide …","TV Guide konnte nicht geladen werden.":"Could not load TV Guide.","TV Guide ist nicht installiert.":"TV Guide is not installed.","TV Guide ist nicht gestartet.":"TV Guide is not running.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"No ingress address is available for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Could not create the TV Guide card.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide was not found in Home Assistant."},"nl":{"TV Guide wird geladen …":"TV Guide laden …","TV Guide konnte nicht geladen werden.":"TV Guide kon niet worden geladen.","TV Guide ist nicht installiert.":"TV Guide is niet geïnstalleerd.","TV Guide ist nicht gestartet.":"TV Guide is niet gestart.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Geen ingress-adres beschikbaar voor TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"De TV Guide-kaart kon niet worden gemaakt.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide is niet gevonden in Home Assistant."},"fr":{"TV Guide wird geladen …":"Chargement de TV Guide…","TV Guide konnte nicht geladen werden.":"Impossible de charger TV Guide.","TV Guide ist nicht installiert.":"TV Guide n’est pas installé.","TV Guide ist nicht gestartet.":"TV Guide n’est pas démarré.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Aucune adresse ingress disponible pour TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Impossible de créer la carte TV Guide.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide est introuvable dans Home Assistant."},"it":{"TV Guide wird geladen …":"Caricamento di TV Guide…","TV Guide konnte nicht geladen werden.":"Impossibile caricare TV Guide.","TV Guide ist nicht installiert.":"TV Guide non è installato.","TV Guide ist nicht gestartet.":"TV Guide non è avviato.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Nessun indirizzo ingress disponibile per TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Impossibile creare la scheda TV Guide.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide non è stato trovato in Home Assistant."},"nb":{"TV Guide wird geladen …":"Laster TV Guide …","TV Guide konnte nicht geladen werden.":"Kunne ikke laste TV Guide.","TV Guide ist nicht installiert.":"TV Guide er ikke installert.","TV Guide ist nicht gestartet.":"TV Guide er ikke startet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen ingress-adresse er tilgjengelig for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Kunne ikke opprette TV Guide-kortet.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide ble ikke funnet i Home Assistant."},"sv":{"TV Guide wird geladen …":"Läser in TV Guide …","TV Guide konnte nicht geladen werden.":"TV Guide kunde inte läsas in.","TV Guide ist nicht installiert.":"TV Guide är inte installerad.","TV Guide ist nicht gestartet.":"TV Guide är inte startad.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen Ingress-adress är tillgänglig för TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV Guide-kortet kunde inte skapas.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide hittades inte i Home Assistant."}};
+
+class TVGuideNativeCardEditor extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({mode:"open"});
+    this._hass = null;
+    this._config = {};
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this._render();
+  }
+
+  setConfig(config) {
+    this._config = {...(config || {})};
+    this._render();
+  }
+
+  _changed(patch) {
+    const config = {...this._config, ...patch};
+    for (const [key, value] of Object.entries(config)) {
+      if (value === "" || value === undefined || value === null) delete config[key];
+    }
+    this._config = config;
+    this.dispatchEvent(new CustomEvent("config-changed", {
+      detail:{config},
+      bubbles:true,
+      composed:true
+    }));
+  }
+
+  _render() {
+    if (!this.shadowRoot) return;
+    const themes = Object.keys(this._hass?.themes?.themes || {}).sort((a,b) => a.localeCompare(b));
+    const currentTheme = String(this._config?.theme || "");
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host { display:block; }
+        .form { display:grid; gap:16px; padding:8px 0; }
+        label { display:grid; gap:6px; color:var(--primary-text-color); font-size:14px; }
+        select {
+          width:100%; box-sizing:border-box; min-height:44px; padding:8px 10px;
+          border:1px solid var(--divider-color); border-radius:8px;
+          background:var(--card-background-color, var(--ha-card-background));
+          color:var(--primary-text-color); font:inherit;
+        }
+        .hint { color:var(--secondary-text-color); font-size:12px; line-height:1.4; }
+      </style>
+      <div class="form">
+        <label>
+          <span>Theme</span>
+          <select id="theme">
+            <option value="">Home Assistant / Dashboard</option>
+            ${themes.map(name => `<option value="${name.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}"${name === currentTheme ? " selected" : ""}>${name.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</option>`).join("")}
+          </select>
+          <span class="hint">Uses the selected Home Assistant theme only for this TV Guide card.</span>
+        </label>
+      </div>
+    `;
+    this.shadowRoot.getElementById("theme")?.addEventListener("change", (event) => {
+      this._changed({theme:event.target.value});
+    });
+  }
+}
+
+if (!customElements.get("tv-guide-native-card-editor")) {
+  customElements.define("tv-guide-native-card-editor", TVGuideNativeCardEditor);
+}
 
 class TVGuideNativeCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode:"open"});
-    this._tab = "programme";
-    this._channels = [];
-    this._selection = [];
-    this._programmes = [];
-    this._saved = {bookmarks:[], reminders:[]};
-    this._start = Date.now();
-    this._hours = 3;
-    this._channel = "";
-    this._busy = false;
-    this._loaded = false;
-  }
-  setConfig(config) {
-    this._config = {...config};
-    this._render();
-  }
-  static getStubConfig() { return {type:"custom:tv-guide-native-card"}; }
-  getCardSize() { return 8; }
-  set hass(value) {
-    const reconnect = this._hass && this._hass.connection !== value.connection;
-    const languageChanged = this._hass?.language !== value.language;
-    this._hass = value;
-    if (reconnect) this._loaded = false;
-    if (this.isConnected && !this._loaded && !this._busy) void this._load();
-    else if (languageChanged) this._render();
-  }
-  connectedCallback() {
-    if (this._hass && !this._busy) void this._load();
-  }
-  // No timers or subscriptions to leak on removal. In-flight reads cannot trigger writes.
-  disconnectedCallback() { this._loaded = false; }
-  get _t() { return TVG_TEXT[this._hass?.language?.split("-")[0]] || TVG_TEXT.en; }
-  async _response(service, data = {}) {
-    const result = await this._hass.callWS({type:"call_service", domain:"tv_guide", service, service_data:data, return_response:true});
-    if (!result?.response) throw new Error(this._t.failed);
-    return result.response;
-  }
-  async _load() {
-    if (this._busy || !this._hass) return;
-    this._busy = true;
-    this._error = "";
-    this._render();
-    try {
-      // Lists remain usable even in bridge-only mode or when no EPG is loaded.
-      this._saved = await this._response("get_saved_programmes");
-      try {
-        const catalogue = await this._response("get_channels");
-        this._channels = catalogue.channels;
-        this._selection = this._channels.filter(item => item.selected).map(item => item.id);
-        if (this._channel && !this._channels.some(item => item.selected && item.id === this._channel)) this._channel = "";
-        const records = await this._response("get_programmes", {
-          start:new Date(this._start).toISOString(),
-          end:new Date(this._start + this._hours * 3600000).toISOString(),
-          channel_id:this._channel, limit:500,
-        });
-        this._programmes = records.programmes;
-        this._truncated = records.truncated;
-        this._epgError = "";
-      } catch (error) {
-        this._programmes = [];
-        this._channels = [];
-        this._selection = [];
-        this._epgError = `${this._t.missing} (${error.message || String(error)})`;
+    this._config = {height: 1000};
+    this._hass = null;
+    this._started = false;
+    this._startGeneration = 0;
+    this._session = "";
+    this._sessionTimer = null;
+    this._iframe = null;
+    this._themeProperties = new Set();
+    this._themeFingerprint = "";
+    this._lastThemeMessageSignature = "";
+    this._themeReadyListening = false;
+    this._themeObserver = null;
+    this._themeSyncFrame = null;
+    this._themeRetryTimer = null;
+    this._themeReadyHandler = (event) => {
+      if (
+        event.origin === window.location.origin &&
+        event.source === this._iframe?.contentWindow
+      ) {
+        if (event.data?.type === "tv-guide-native-request") void this._handleNativeRequest(event);
+        else if (event.data?.type === "tv-guide-theme-request") this._sendThemeToIframe(true);
+        else if (event.data?.type === "tv-guide-theme-ready") this._iframe.style.opacity = "1";
       }
-      this._loaded = true;
-    } catch (error) { this._error = error.message || String(error); }
-    finally { this._busy = false; this._render(); }
+    };
   }
-  _time(value) {
-    return new Intl.DateTimeFormat(this._hass?.locale?.language || this._hass?.language || "en", {
-      timeZone:this._hass?.config?.time_zone || "UTC", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit",
-    }).format(new Date(value));
+
+  _attachThemeReadyListener() {
+    if (this._themeReadyListening) return;
+    window.addEventListener("message", this._themeReadyHandler);
+    this._themeReadyListening = true;
   }
-  async _action(service, data) {
-    if (this._busy) return;
-    this._busy = true;
-    this._error = "";
-    this._render();
-    try {
-      await this._hass.callService("tv_guide", service, data);
-      this._busy = false;
-      await this._load();
-    } catch (error) {
-      this._busy = false;
-      this._error = error.message || String(error);
-      this._render();
+
+  _detachThemeReadyListener() {
+    if (!this._themeReadyListening) return;
+    window.removeEventListener("message", this._themeReadyHandler);
+    this._themeReadyListening = false;
+  }
+
+  _scheduleThemeSync() {
+    if (!this.isConnected || !this._iframe || this._themeSyncFrame !== null) return;
+    this._themeSyncFrame = window.requestAnimationFrame(() => {
+      this._themeSyncFrame = null;
+      if (this.isConnected) this._sendThemeToIframe();
+    });
+  }
+
+  _watchInheritedTheme() {
+    this._themeObserver?.disconnect();
+    this._themeObserver = new MutationObserver(() => this._scheduleThemeSync());
+    // Dashboard themes can change on a shadow host without changing hass.themes.
+    for (let node = this; node; node = node.parentNode || node.host) {
+      if (node.nodeType === 1) {
+        this._themeObserver.observe(node, {attributes:true, attributeFilter:["class", "style"]});
+      }
     }
   }
-  _programmeRows(records, kind) {
-    const t = this._t;
-    return records.map((item, index) => {
-      const bookmark = this._saved.bookmarks.some(saved => saved.id === item.id);
-      const reminder = this._saved.reminders.find(saved => saved.id === item.id);
-      const end = item.stop || item.end;
-      const future = new Date(item.start).getTime() > Date.now();
-      const active = new Date(end).getTime() > Date.now();
-      return `<article><div class="meta">${tvgEscape(item.channel_name || item.channel)} · ${tvgEscape(this._time(item.start))} – ${tvgEscape(this._time(end))}</div>
-        <strong>${tvgEscape(item.title)}</strong>
-        ${item.description ? `<details><summary>Info</summary><p>${tvgEscape(item.description)}</p></details>` : ""}
-        <div class="actions">${kind ? `<button data-remove="${index}" data-kind="${kind}">${t.remove}</button>${kind === "reminders" ? `<span>${item.minutes} ${t.minutes}${item.sent ? ` · ${t.sent}` : ""}</span>` : ""}` : `
-        <button data-bookmark="${index}" ${!active || bookmark ? "disabled" : ""}>${bookmark ? "✓ " : ""}${t.bookmark}</button>
-        <select aria-label="${t.remind}" id="minutes-${index}" ${!future || reminder ? "disabled" : ""}>${[5,10,15,30].map(n => `<option value="${n}" ${n === 10 ? "selected" : ""}>${n} ${t.minutes}</option>`).join("")}</select>
-        <button data-remind="${index}" ${!future || reminder ? "disabled" : ""}>${reminder ? "✓ " : ""}${t.remind}</button>`}</div></article>`;
-    }).join("") || `<p>${kind ? t.savedEmpty : t.empty}</p>`;
-  }
-  _render() {
-    if (!this._config || !this.shadowRoot) return;
-    const t = this._t;
-    const disabled = this._busy ? "disabled" : "";
-    let content = "";
-    if (this._tab === "programme") {
-      content = `<div class="toolbar"><button id="earlier">← ${t.earlier}</button><button id="now">${t.now}</button><button id="later">${t.later} →</button>
-        <select id="hours" aria-label="${t.hours}">${[3,6,12,24].map(n => `<option value="${n}" ${this._hours === n ? "selected" : ""}>${n} ${t.hours}</option>`).join("")}</select>
-        <select id="channel" aria-label="${t.channels}"><option value="">${t.all}</option>${this._channels.filter(item => item.selected).map(item => `<option value="${tvgEscape(item.id)}" ${this._channel === item.id ? "selected" : ""}>${tvgEscape(item.name)}</option>`).join("")}</select></div>
-        <p class="meta">${tvgEscape(this._time(this._start))} – ${tvgEscape(this._time(this._start + this._hours * 3600000))} (${tvgEscape(this._hass?.config?.time_zone || "UTC")})</p>
-        ${this._epgError ? `<p role="status">${tvgEscape(this._epgError)}</p>` : this._programmeRows(this._programmes)}
-        ${this._truncated && !this._epgError ? `<p role="status">${t.limit}</p>` : ""}`;
-    } else if (this._tab === "channels") {
-      const channels = [...this._channels].sort((a,b) => {
-        const rank = id => {const i = this._selection.indexOf(id); return i < 0 ? Infinity : i;};
-        return rank(a.id) - rank(b.id);
-      });
-      content = `<p>${t.selection}</p><div class="actions"><button id="save-channels" ${!this._channels.length ? "disabled" : ""}>${t.save}</button><button id="all-channels" ${!this._channels.length ? "disabled" : ""}>${t.all}</button></div>
-        ${this._epgError ? `<p>${tvgEscape(this._epgError)}</p>` : ""}
-        ${channels.map(item => `<div class="station"><label><input type="checkbox" data-channel="${tvgEscape(item.id)}" ${this._selection.includes(item.id) ? "checked" : ""}> ${tvgEscape(item.name)} ${!item.available ? `(${t.unavailable})` : ""}</label>
-          ${this._selection.includes(item.id) ? `<button data-move="${tvgEscape(item.id)}" data-direction="-1" aria-label="${t.earlier}">↑</button><button data-move="${tvgEscape(item.id)}" data-direction="1" aria-label="${t.later}">↓</button>` : ""}</div>`).join("")}`;
-    } else content = this._programmeRows(this._saved[this._tab], this._tab);
-    this.shadowRoot.innerHTML = `<style>
-      :host{display:block;color:var(--primary-text-color)}ha-card{padding:16px}h2{margin:0;font-size:22px}.heading,.actions,.toolbar,.tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.heading{justify-content:space-between}.tabs{margin:16px 0;border-bottom:1px solid var(--divider-color);padding-bottom:12px}
-      button,select{font:inherit;color:var(--primary-text-color);background:var(--card-background-color,#fff);border:1px solid var(--divider-color,#bbb);border-radius:8px;min-height:40px;padding:6px 10px;cursor:pointer}button[aria-pressed=true]{color:var(--primary-color);border-color:var(--primary-color)}button:disabled,select:disabled{opacity:.5;cursor:default}article{padding:16px 0;border-bottom:1px solid var(--divider-color)}strong{display:block;margin:8px 0}.meta{font-size:13px;color:var(--secondary-text-color)}p{line-height:1.5;overflow-wrap:anywhere}.station{display:flex;align-items:center;gap:8px;margin:8px 0}.station label{flex:1}input{min-width:20px;min-height:20px}.error{color:var(--error-color,#b00020)}details{margin:8px 0}fieldset{border:0;padding:0;margin:0;min-width:0}.list{max-height:65vh;overflow:auto}
-      </style><ha-card><div class="heading"><h2>${tvgEscape(this._config.title || t.title)}</h2><button id="refresh" ${disabled}>${t.refresh}</button></div>
-      <div class="tabs">${["programme","bookmarks","reminders","channels"].map(tab => `<button data-tab="${tab}" aria-pressed="${this._tab === tab}" ${disabled}>${t[tab]}</button>`).join("")}</div>
-      ${this._error ? `<p class="error" role="alert">${tvgEscape(this._error)}</p>` : ""}
-      ${this._busy ? `<p role="status">${t.loading}</p>` : ""}<fieldset ${disabled}><div class="list">${content}</div></fieldset></ha-card>`;
-    const bind = (selector, event, handler) => this.shadowRoot.querySelectorAll(selector).forEach(el => el.addEventListener(event, handler));
-    bind("[data-tab]", "click", event => {this._tab = event.currentTarget.dataset.tab; this._render();});
-    bind("#refresh", "click", () => void this._load());
-    for (const [id,offset] of [["earlier",-1],["later",1],["now",0]]) bind(`#${id}`, "click", () => {this._start = offset ? this._start + offset*this._hours*3600000 : Date.now(); void this._load();});
-    bind("#hours", "change", event => {this._hours = Number(event.target.value); void this._load();});
-    bind("#channel", "change", event => {this._channel = event.target.value; void this._load();});
-    bind("[data-channel]", "change", event => {
-      const id = event.target.dataset.channel;
-      this._selection = event.target.checked ? [...this._selection,id] : this._selection.filter(value => value !== id);
-      this._render();
-    });
-    bind("[data-move]", "click", event => {
-      const i = this._selection.indexOf(event.currentTarget.dataset.move);
-      const j = i + Number(event.currentTarget.dataset.direction);
-      if (i >= 0 && j >= 0 && j < this._selection.length) [this._selection[i],this._selection[j]] = [this._selection[j],this._selection[i]];
-      this._render();
-    });
-    bind("#save-channels", "click", () => void this._action("set_channels", {channels:this._selection}));
-    bind("#all-channels", "click", () => void this._action("set_channels", {channels:[]}));
-    const save = (index, reminder) => {
-      const item = this._programmes[index];
-      const data = {id:item.id, title:item.title.slice(0,240), channel:(item.channel_name || item.channel).slice(0,120), channel_id:item.channel.slice(0,120), start:item.start, end:item.stop};
-      if (reminder) data.minutes = Number(this.shadowRoot.getElementById(`minutes-${index}`).value);
-      void this._action(reminder ? "save_reminder" : "save_bookmark", data);
+
+  _themeMessage() {
+    const style = getComputedStyle(this);
+    const names = [
+      "--primary-background-color",
+      "--secondary-background-color",
+      "--card-background-color",
+      "--ha-card-background",
+      "--primary-text-color",
+      "--secondary-text-color",
+      "--divider-color",
+      "--primary-color",
+      "--accent-color",
+      "--lovelace-background"
+    ];
+    const vars = {};
+    for (const name of names) {
+      const value = style.getPropertyValue(name).trim();
+      if (value) vars[name] = value;
+    }
+    const background = vars["--primary-background-color"] || "";
+    let darkMode = Boolean(this._hass?.themes?.darkMode);
+    const hex = background.match(/^#([0-9a-f]{6})$/i);
+    const rgb = background.match(/rgba?\((\d+)\D+(\d+)\D+(\d+)/i);
+    let channels = null;
+    if (hex) {
+      channels = [
+        parseInt(hex[1].slice(0, 2), 16),
+        parseInt(hex[1].slice(2, 4), 16),
+        parseInt(hex[1].slice(4, 6), 16)
+      ];
+    } else if (rgb) {
+      channels = [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+    }
+    if (channels) {
+      const brightness = (channels[0] * 299 + channels[1] * 587 + channels[2] * 114) / 1000;
+      darkMode = brightness < 128;
+    }
+    return {
+      type:"tv-guide-theme",
+      vars,
+      darkMode
     };
-    bind("[data-bookmark]", "click", event => save(Number(event.currentTarget.dataset.bookmark), false));
-    bind("[data-remind]", "click", event => save(Number(event.currentTarget.dataset.remind), true));
-    bind("[data-remove]", "click", event => {
-      const {kind,remove} = event.currentTarget.dataset;
-      void this._action("remove_saved_programme", {id:this._saved[kind][Number(remove)].id, kind:kind === "bookmarks" ? "bookmark" : "reminder"});
+  }
+
+  _sendThemeToIframe(force = false) {
+    const target = this._iframe?.contentWindow;
+    if (!target) return;
+    const message = this._themeMessage();
+    const signature = JSON.stringify(message);
+    if (!force && signature === this._lastThemeMessageSignature) return;
+    this._lastThemeMessageSignature = signature;
+    target.postMessage(message, window.location.origin);
+  }
+
+  static getConfigElement() {
+    return document.createElement("tv-guide-native-card-editor");
+  }
+
+  _t(message) {
+    const language = String(this._hass?.locale?.language || this._hass?.language || "en").toLowerCase().replace("_", "-").split("-")[0];
+    return (TV_GUIDE_CARD_TRANSLATIONS[language === "no" ? "nb" : language] || TV_GUIDE_CARD_TRANSLATIONS.en)[message] || message;
+  }
+
+  static getStubConfig() {
+    return {height:1000};
+  }
+
+  getGridOptions() {
+    return {
+      columns:"full",
+      min_columns:6
+    };
+  }
+
+  setConfig(config) {
+    this._config = {
+      ...config,
+      height:Math.max(500, Math.min(2200, Number(config?.height || 1000))),
+      theme:String(config?.theme || "").trim()
+    };
+    this._applyConfiguredTheme();
+    this._renderShell();
+    this._scheduleThemeSync();
+  }
+
+  _applyConfiguredTheme() {
+    const themeName = String(this._config?.theme || "").trim();
+    const darkMode = Boolean(this._hass?.themes?.darkMode);
+    const themes = this._hass?.themes?.themes || {};
+    const selectedTheme = themeName ? themes[themeName] : null;
+    const inheritedThemeName = String(this._hass?.themes?.theme || "");
+    const inheritedTheme = inheritedThemeName ? themes[inheritedThemeName] : null;
+    const sourceTheme = themeName ? selectedTheme : inheritedTheme;
+    const fingerprint = JSON.stringify([
+      themeName || "__inherit__",
+      inheritedThemeName,
+      darkMode,
+      sourceTheme || null
+    ]);
+
+    if (fingerprint === this._themeFingerprint) return false;
+    this._themeFingerprint = fingerprint;
+
+    for (const property of this._themeProperties) this.style.removeProperty(property);
+    this._themeProperties.clear();
+
+    if (!themeName || !selectedTheme || typeof selectedTheme !== "object") return true;
+
+    const modeValues = selectedTheme.modes?.[darkMode ? "dark" : "light"] || {};
+    const values = {...selectedTheme, ...modeValues};
+    delete values.modes;
+
+    for (const [rawName, rawValue] of Object.entries(values)) {
+      if (rawValue === undefined || rawValue === null || typeof rawValue === "object") continue;
+      const property = rawName.startsWith("--") ? rawName : "--" + rawName;
+      this.style.setProperty(property, String(rawValue));
+      this._themeProperties.add(property);
+    }
+    return true;
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this._applyConfiguredTheme();
+    this._scheduleThemeSync();
+    const loading = this.shadowRoot?.querySelector(".loading");
+    if (loading && !this._started) loading.textContent = this._t("TV Guide wird geladen …");
+    if (this.isConnected && !this._started) this._start();
+  }
+
+  _isCardPicker() {
+    let node = this;
+    while (node) {
+      if (node.localName === "hui-card-picker") return true;
+      node = node.parentNode || node.host;
+    }
+    return false;
+  }
+
+  connectedCallback() {
+    this._attachThemeReadyListener();
+    this._watchInheritedTheme();
+    this._renderShell();
+    if (this._hass && !this._started) this._start();
+  }
+
+  disconnectedCallback() {
+    this._startGeneration++;
+    this._detachThemeReadyListener();
+    this._themeObserver?.disconnect();
+    this._themeObserver = null;
+    if (this._themeSyncFrame !== null) window.cancelAnimationFrame(this._themeSyncFrame);
+    this._themeSyncFrame = null;
+    if (this._themeRetryTimer !== null) window.clearTimeout(this._themeRetryTimer);
+    this._themeRetryTimer = null;
+    if (this._sessionTimer) window.clearInterval(this._sessionTimer);
+    this._sessionTimer = null;
+    this._started = false;
+    this._iframe?.remove();
+    this._iframe = null;
+  }
+
+  getCardSize() {
+    return Math.max(10, Math.ceil(this._config.height / 50));
+  }
+
+  _renderShell(message = this._t("TV Guide wird geladen …")) {
+    if (!this.shadowRoot) return;
+    if (this._isCardPicker()) {
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host { display:block; width:100%; }
+          .brand { display:flex; align-items:center; justify-content:center;
+            min-height:180px; padding:16px; box-sizing:border-box; }
+          svg { display:block; width:250px; max-width:100%; height:auto; }
+        </style>
+        <div class="brand" role="img" aria-label="TV Guide">${TV_GUIDE_PICKER_LOGO}</div>
+      `;
+      return;
+    }
+    const iframe = this._iframe;
+    if (iframe && iframe.isConnected) {
+      iframe.style.height = this._config.height + "px";
+      return;
+    }
+
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display:block;
+          width:100%;
+        }
+        ha-card {
+          display:block;
+          width:100%;
+          padding:0;
+          margin:0;
+          overflow:hidden;
+          background:var(--primary-background-color);
+          box-shadow:none;
+          border:0;
+        }
+        .loading {
+          box-sizing:border-box;
+          min-height:180px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:24px;
+          color:var(--secondary-text-color);
+          font:var(--paper-font-body1_-_font,inherit);
+        }
+        iframe {
+          display:block;
+          width:100%;
+          border:0;
+          background:var(--primary-background-color);
+        }
+      </style>
+      <ha-card>
+        <div class="loading">${message}</div>
+      </ha-card>
+    `;
+  }
+
+  _setError(message) {
+    // Promise.all can reject while the ingress-session request is still pending.
+    // Invalidate that request before it can overwrite a working session cookie.
+    this._startGeneration++;
+    this._session = "";
+    this._started = false;
+    this._iframe = null;
+    this._renderShell(message || this._t("TV Guide konnte nicht geladen werden."));
+  }
+
+  async _response(service, service_data={}) {
+    const result = await this._hass.callWS({type:"call_service",domain:"tv_guide",service,service_data,return_response:true});
+    if (!result?.response) throw new Error("TV Guide response unavailable");
+    return result.response;
+  }
+  async _handleNativeRequest(event) {
+    const request = event.data;
+    if (!this.isConnected || !this._hass || typeof request.id !== "string" || request.id.length > 80) return;
+    const frame = this._iframe;
+    try {
+      const endpoint = request.endpoint;
+      const method = request.method;
+      const body = request.body || {};
+      let response;
+      if (method === "GET" && endpoint === "guide") response = await this._response("get_native_guide", request.at ? {at:request.at} : {});
+      else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_native_channels");
+      else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");
+      else if (method === "POST" && endpoint === "settings") {
+        const allowed = ["country","language","default_view","columns_desktop","max_channels","theme_mode","refresh_minutes","notification_service"];
+        response = await this._response("set_ui_settings", {options:Object.fromEntries(allowed.filter(key => Object.hasOwn(body,key)).map(key => [key,body[key]]))});
+      } else if (method === "POST" && endpoint === "personal-channels") {
+        await this._hass.callService("tv_guide","set_channels",{channels:body.reset ? [] : body.order});
+        response = {ok:true};
+      } else if (["bookmarks","reminders"].includes(endpoint) && ["GET","POST"].includes(method)) {
+        if (method === "POST") {
+          if (body.action === "remove") {
+            await this._hass.callService("tv_guide","remove_saved_programme",{id:body.id,kind:endpoint === "bookmarks" ? "programme" : "reminder"});
+          } else if (body.action === "upsert") {
+            const payload = {id:body.id,title:String(body.title || "").slice(0,240),channel:String(body.channel || "").slice(0,120),channel_id:body.channelId,start:body.start,end:body.end};
+            if (endpoint === "reminders") payload.minutes = body.minutes;
+            await this._hass.callService("tv_guide",endpoint === "bookmarks" ? "save_bookmark" : "save_reminder",payload);
+          } else throw new Error("Invalid saved-programme operation");
+        }
+        response = {ok:true,...await this._response("get_saved_programmes")};
+      } else if (method === "GET" && endpoint === "notification-services") {
+        response = {services:[{service:"persistent_notification.create",label:"Home Assistant"},...Object.keys(this._hass.services?.notify || {}).map(name => ({service:"notify."+name,label:name.startsWith("mobile_app_") ? "Mobilgerät · "+name : name,type:name.startsWith("mobile_app_") ? "mobile_app" : "notify"}))]};
+      } else if (method === "POST" && endpoint === "test-notification" && body.test === true) {
+        const settings = await this._response("get_ui_settings");
+        const [domain, service] = settings.notification_service.split(".");
+        if (!(domain === "notify" || (domain === "persistent_notification" && service === "create"))) throw new Error("Invalid notification destination");
+        await this._hass.callService(domain,service,{title:"TV Guide",message:"TV Guide – Test"});
+        response = {ok:true,service:settings.notification_service};
+      } else throw new Error("Unsupported native TV Guide operation");
+      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-native-response",id:request.id,response},window.location.origin);
+    } catch (error) {
+      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-native-response",id:request.id,error:error.message || String(error)},window.location.origin);
+    }
+  }
+  _start() {
+    if (!this.isConnected || this._started || !this._hass || this._isCardPicker()) return;
+    this._started = true;
+    this._renderShell();
+    const card = this.shadowRoot.querySelector("ha-card");
+    if (!card) return;
+    card.replaceChildren();
+    const iframe = document.createElement("iframe");
+    const url = new URL("/tv_guide/frontend/app/index.html",window.location.origin);
+    url.searchParams.set("tv_guide_card","1");
+    url.searchParams.set("tv_guide_theme",this._config.theme || "__dashboard__");
+    this._lastThemeMessageSignature = "";
+    iframe.title = "TV Guide";
+    iframe.src = url.toString();
+    iframe.style.height = this._config.height+"px";
+    iframe.style.opacity = "0";
+    iframe.setAttribute("allow","clipboard-read; clipboard-write");
+    this._iframe = iframe;
+    iframe.addEventListener("load",() => {
+      if (this._iframe !== iframe || !this.isConnected) return;
+      this._sendThemeToIframe(true);
+      // Show a readable native error even if the inner data request fails.
+      iframe.style.opacity = "1";
     });
+    card.appendChild(iframe);
   }
 }
-if (!customElements.get("tv-guide-native-card")) customElements.define("tv-guide-native-card", TVGuideNativeCard);
+if (!customElements.get("tv-guide-native-card")) customElements.define("tv-guide-native-card",TVGuideNativeCard);
 window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === "tv-guide-native-card")) window.customCards.push({type:"tv-guide-native-card", name:"TV Guide Native", description:"Native programme schedule, channels, bookmarks and reminders", preview:true});
+if (!window.customCards.some(card => card.type === "tv-guide-native-card")) window.customCards.push({type:"tv-guide-native-card",name:"TV Guide Native",description:"Original TV Guide presentation using native Home Assistant data",preview:true});

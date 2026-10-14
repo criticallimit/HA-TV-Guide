@@ -7,8 +7,11 @@ explicit migration. This module does not send notifications on its own.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import logging
 
 from homeassistant.helpers.storage import Store
+
+_LOGGER = logging.getLogger(__name__)
 
 STORAGE_VERSION = 1
 MAX_ITEMS = 1000
@@ -61,7 +64,7 @@ def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
                 result["sent_at"] = item["sent_at"][:64]
         accepted.append(result)
         seen.add(record_id)
-    accepted.sort(key=lambda value: value["start"])
+    accepted.sort(key=lambda value: datetime.fromisoformat(value["start"]).timestamp())
     return accepted
 
 
@@ -98,4 +101,7 @@ class TVGuideSavedProgrammes:
             "reminders": self.reminders,
         })
         for callback in tuple(self._subscribers):
-            callback()
+            try:
+                callback()
+            except Exception:
+                _LOGGER.exception("TV Guide saved-state subscriber failed after commit")

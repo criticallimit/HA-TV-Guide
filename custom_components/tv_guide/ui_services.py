@@ -1,0 +1,62 @@
+"""Authenticated response actions backing the original TV Guide presentation."""
+from datetime import datetime, timezone
+from functools import partial
+from zoneinfo import ZoneInfo
+import voluptuous as vol
+from homeassistant.core import SupportsResponse
+from homeassistant.exceptions import HomeAssistantError
+from .const import DOMAIN
+from .catalogs import resolve_catalogue_channels
+from .ui_payload import build_guide, personal_payload, ui_settings, normalize_ui_settings
+
+SERVICES=('get_native_guide','get_native_channels','get_ui_settings','set_ui_settings')
+
+def async_register_ui_services(hass):
+    def entry_and_options():
+        stores=hass.data.get(DOMAIN+'_saved',{})
+        if len(stores)!=1:
+            raise HomeAssistantError('Exactly one TV Guide entry must be loaded')
+        entry=hass.config_entries.async_get_entry(next(iter(stores)))
+        if entry is None:
+            raise HomeAssistantError('TV Guide entry not found')
+        return entry,{**entry.data,**entry.options}
+
+    async def snapshot(options):
+        coordinator=next(iter(hass.data.get(DOMAIN,{}).values()),None)
+        if coordinator is not None:
+            return coordinator.data or [],coordinator.canonical_channels,coordinator.channels,coordinator.refresh_running
+        catalogue=await hass.async_add_executor_job(resolve_catalogue_channels,options.get('country',''),[])
+        return [],catalogue,[],False
+
+    async def handle(call):
+        entry,options=entry_and_options()
+        if call.service=='get_ui_settings':
+            return ui_settings(options)
+        if call.service=='set_ui_settings':
+            try:
+                changes=normalize_ui_settings(call.data['options'])
+            except (ValueError,TypeError) as exc:
+                raise HomeAssistantError(str(exc)) from exc
+            hass.config_entries.async_update_entry(entry,options={**entry.options,**changes})
+            return {'ok':True,'settings':ui_settings({**options,**changes})}
+        data,catalogue,channels,busy=await snapshot(options)
+        if call.service=='get_native_channels':
+            return await hass.async_add_executor_job(personal_payload,catalogue,channels,options)
+        raw=call.data.get('at')
+        try:
+            at=datetime.fromisoformat(raw) if raw else datetime.now(timezone.utc)
+            if at.tzinfo is None:
+                raise ValueError('Timestamp must include a timezone')
+        except (TypeError,ValueError) as exc:
+            raise HomeAssistantError('Invalid guide timestamp') from exc
+        if not raw and options.get('default_view','now')!='now':
+            view=options['default_view'];at=at.astimezone(ZoneInfo(hass.config.time_zone)).replace(hour=int(view[:2]),minute=int(view[2:]),second=0,microsecond=0)
+        return await hass.async_add_executor_job(build_guide,data,catalogue,channels,options,at,busy)
+
+    for service in SERVICES:
+        schema=vol.Schema({vol.Optional('at'):str}) if service=='get_native_guide' else vol.Schema({vol.Required('options'):dict}) if service=='set_ui_settings' else vol.Schema({})
+        hass.services.async_register(DOMAIN,service,handle,schema=schema,supports_response=SupportsResponse.ONLY)
+
+def async_remove_ui_services(hass):
+    for service in SERVICES:
+        hass.services.async_remove(DOMAIN,service)

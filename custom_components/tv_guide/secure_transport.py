@@ -32,16 +32,22 @@ class PublicAddressResolver(AbstractResolver):
 @asynccontextmanager
 async def public_epg_session():
     """Create an isolated session whose actual connection uses filtered DNS."""
+    resolver = PublicAddressResolver()
     connector = TCPConnector(
-        resolver=PublicAddressResolver(),
+        resolver=resolver,
         use_dns_cache=False,
         force_close=True,
         ssl=True,
     )
-    async with ClientSession(
-        connector=connector,
-        timeout=ClientTimeout(total=60),
-        trust_env=False,
-        auto_decompress=False,
-    ) as session:
-        yield session
+    try:
+        async with ClientSession(
+            connector=connector,
+            timeout=ClientTimeout(total=60),
+            trust_env=False,
+            auto_decompress=False,
+        ) as session:
+            yield session
+    finally:
+        # aiohttp does not own/close a caller-supplied resolver.
+        await connector.close()
+        await resolver.close()

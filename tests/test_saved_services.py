@@ -96,6 +96,30 @@ class SavedServiceTests(unittest.IsolatedAsyncioTestCase):
             await self.call("save_bookmark", self.record)
         self.assertEqual(self.saved.bookmarks, [])
 
+    async def test_full_list_rejects_new_item_but_allows_replacement(self):
+        await self.call("save_bookmark", self.record)
+        template = self.saved.bookmarks[0]
+        self.saved.bookmarks = [{**template,"id":str(i)} for i in range(1000)]
+        with self.assertRaises(exc.HomeAssistantError):
+            await self.call("save_bookmark", self.record)
+        self.assertEqual(len(self.saved.bookmarks), 1000)
+        await self.call("save_bookmark", {**self.record,"id":"0","title":"Replacement"})
+        self.assertEqual(len(self.saved.bookmarks), 1000)
+        self.assertEqual(next(item for item in self.saved.bookmarks if item["id"] == "0")["title"], "Replacement")
+
+    async def test_remove_programme_atomically_removes_bookmark_and_reminder(self):
+        await self.call("save_bookmark", self.record)
+        await self.call("save_reminder", {**self.record,"minutes":10})
+        self.saved.fail = True
+        with self.assertRaises(OSError):
+            await self.call("remove_saved_programme", {"kind":"programme","id":self.record["id"]})
+        self.assertEqual(len(self.saved.bookmarks),1)
+        self.assertEqual(len(self.saved.reminders),1)
+        self.saved.fail = False
+        await self.call("remove_saved_programme", {"kind":"programme","id":self.record["id"]})
+        self.assertEqual(self.saved.bookmarks,[])
+        self.assertEqual(self.saved.reminders,[])
+
     async def test_no_loaded_entry_reports_error(self):
         self.hass.data["tv_guide_saved"] = {}
         with self.assertRaises(exc.HomeAssistantError):

@@ -80,6 +80,7 @@ remove_saved_programme:
           options:
             - bookmark
             - reminder
+            - programme
 get_programmes:
   name: Get TV programmes
   description: Return cached XMLTV programmes for a timezone-aware interval, without downloading the feed.
@@ -125,3 +126,25 @@ set_channels:
 get_saved_programmes:
   name: Get saved TV programmes
   description: Return active native bookmarks and reminders, including sent status, without accessing the add-on.
+
+get_native_guide:
+  name: Get native TV Guide view
+  description: Return seven programme rows per displayed sender in the original TV Guide presentation model.
+  fields:
+    at:
+      selector:
+        text:
+get_native_channels:
+  name: Get native personal channel picker
+  description: Return current-feed sender choices and saved ordering for the native card.
+get_ui_settings:
+  name: Get native TV Guide display settings
+  description: Return persisted native display and notification settings.
+set_ui_settings:
+  name: Set native TV Guide display settings
+  description: Validate and persist native card display options and notification destination.
+  fields:
+    options:
+      required: true
+      selector:
+        object:

@@ -1,0 +1,56 @@
+"""Bundled frontend registration is retryable and idempotent across entry reloads."""
+import asyncio
+import importlib.util
+from pathlib import Path
+import sys
+import types
+import unittest
+from unittest.mock import patch
+from dataclasses import dataclass
+
+ROOT=Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'
+PKG='_tvguide_frontend_tests'
+pkg=types.ModuleType(PKG);pkg.__path__=[str(ROOT)]
+http=types.ModuleType('homeassistant.components.http')
+@dataclass
+class StaticPathConfig:
+    url_path:str
+    path:str
+    cache_headers:bool
+http.StaticPathConfig=StaticPathConfig
+with patch.dict(sys.modules,{PKG:pkg,'homeassistant.components.http':http}):
+    for name in ('const','frontend'):
+        spec=importlib.util.spec_from_file_location(PKG+'.'+name,ROOT/(name+'.py'))
+        module=importlib.util.module_from_spec(spec)
+        sys.modules[spec.name]=module
+        spec.loader.exec_module(module)
+frontend=module
+
+class FrontendTests(unittest.IsolatedAsyncioTestCase):
+    async def test_concurrent_registration_and_reload_register_only_once(self):
+        calls=[]
+        async def register(paths):
+            await asyncio.sleep(0)
+            calls.extend(paths)
+        hass=types.SimpleNamespace(data={},http=types.SimpleNamespace(async_register_static_paths=register))
+        await asyncio.gather(frontend.async_register_frontend(hass),frontend.async_register_frontend(hass))
+        await frontend.async_register_frontend(hass)
+        self.assertEqual(len(calls),1)
+        self.assertEqual(calls[0].url_path,'/tv_guide/frontend')
+        self.assertTrue((Path(calls[0].path)/'tv-guide-native-card.js').is_file())
+        self.assertFalse(calls[0].cache_headers)
+
+    async def test_registration_failure_does_not_prevent_retry(self):
+        attempts=[]
+        async def register(paths):
+            attempts.append(paths)
+            if len(attempts)==1:
+                raise OSError('HTTP registration failure')
+        hass=types.SimpleNamespace(data={},http=types.SimpleNamespace(async_register_static_paths=register))
+        with self.assertRaises(OSError):
+            await frontend.async_register_frontend(hass)
+        await frontend.async_register_frontend(hass)
+        self.assertEqual(len(attempts),2)
+
+if __name__=='__main__':
+    unittest.main()

@@ -70,6 +70,28 @@ class SavedProgrammeTests(unittest.TestCase):
         import asyncio
         asyncio.run(run())
 
+    def test_saved_records_sort_by_instant_across_timezone_offsets(self):
+        now = datetime.now(timezone.utc) + timedelta(days=1)
+        early = {"id":"early","start":now.astimezone(timezone(timedelta(hours=3))).isoformat(),"end":(now+timedelta(hours=2)).isoformat()}
+        late = {"id":"late","start":(now+timedelta(hours=1)).isoformat(),"end":(now+timedelta(hours=2)).isoformat()}
+        self.assertEqual([item["id"] for item in module.normalize_items([late,early])], ["early","late"])
+
+    def test_subscriber_failure_cannot_turn_successful_storage_into_failed_action(self):
+        import asyncio
+        async def run():
+            saved=module.TVGuideSavedProgrammes.__new__(module.TVGuideSavedProgrammes)
+            events=[]
+            class Store:
+                async def async_save(self,data):events.append("committed")
+            saved._store=Store();saved.bookmarks=[];saved.reminders=[];saved._subscribers=set()
+            def bad():raise RuntimeError("unloaded entity")
+            saved.subscribe(bad)
+            saved.subscribe(lambda:events.append("other subscriber"))
+            await saved.async_save()
+            self.assertIn("committed",events)
+            self.assertIn("other subscriber",events)
+        asyncio.run(run())
+
     def test_expired_and_invalid_rejected(self):
         now = datetime.now(timezone.utc)
         past = {

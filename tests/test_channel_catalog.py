@@ -34,6 +34,10 @@ class ChannelCatalogTests(unittest.TestCase):
     def test_missing_display_name(self):
         self.assertEqual(parse_channel_catalog(b'<tv><channel id="a" /></tv>'), [{"id": "a", "name": "a"}])
 
+    def test_utf16_cannot_bypass_dtd_rejection(self):
+        with self.assertRaises(ValueError):
+            parse_channel_catalog('<!DOCTYPE tv [<!ENTITY x "expanded">]><tv><channel id="a"><display-name>&x;</display-name></channel></tv>'.encode('utf-16'))
+
     def test_reject_external_entities(self):
         with self.assertRaises(ValueError):
             parse_channel_catalog(b'<!DOCTYPE tv [<!ENTITY x "bad">]><tv/>')
