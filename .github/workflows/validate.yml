@@ -89,6 +89,7 @@ jobs:
           shutil.copytree(source, target)
           for name in reference["source_sha256"]:
               shutil.copy2(fixture / name, target / name)
+          shutil.copytree(Path("tests/reference-data"), target.parent / "data")
           print("Pinned original frontend verified and staged for pixel comparison")
           PY
       - name: Compare native card with original frontend in Chromium
