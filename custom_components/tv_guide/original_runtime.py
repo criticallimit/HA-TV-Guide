@@ -162,7 +162,8 @@ class OriginalRuntime:
                 stores = [active, *(store for store in self.runtime.COUNTRY_STORES.values() if store is not active)]
             for store in stores:
                 store.ensure_fresh_async()
-            self.preload_next()
+            # Only the active and explicitly selected country stores need refreshes.
+            # Do not download EPG for unrelated countries every maintenance tick.
 
     def refresh_active(self):
         """Use the same owned pool for periodic coordinator refreshes."""
