@@ -1,4 +1,4 @@
-"""In-process routes for the native programme engine and presentation settings.
+"""In-process routes for the TV Guide programme engine and presentation settings.
 
 
 The application context is supplied by services.py; all mutable state is shared.
