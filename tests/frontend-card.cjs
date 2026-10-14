@@ -276,13 +276,13 @@ const server = http.createServer((req,res) => {
   });
   const panelFrame=native.locator('tv-guide-native-panel').locator('tv-guide-native-card').locator('iframe').contentFrame();
   await panelFrame.locator('.channel-card').first().waitFor();
-  assert.equal(await native.locator('tv-guide-native-panel').locator('header').textContent(),'TV Guide');
+  assert.equal(await native.locator('tv-guide-native-panel').locator('header').count(),0);
   await native.setViewportSize({width:390,height:700});
   await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-native-panel').shadowRoot.querySelector('tv-guide-native-card').shadowRoot.querySelector('iframe').style.height)<=700);
   assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
   await native.setViewportSize({width:700,height:390});
-  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-native-panel').shadowRoot.querySelector('tv-guide-native-card').shadowRoot.querySelector('iframe').style.height)<=326);
-  assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=326));
+  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-native-panel').shadowRoot.querySelector('tv-guide-native-card').shadowRoot.querySelector('iframe').style.height)<=390);
+  assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=390));
   assert.equal(await native.evaluate(()=>{const card=document.createElement('tv-guide-native-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
   assert.deepEqual(errors,[]);
   console.log('PASS automatic sidebar panel loads the native guide and adapts to mobile');
