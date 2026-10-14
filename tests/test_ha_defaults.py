@@ -41,6 +41,20 @@ class DefaultsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.defaults(types.SimpleNamespace(country='AT',language='unsupported'))['country'],'at')
         self.assertEqual(self.defaults(types.SimpleNamespace(country='UK',language='en'))['country'],'gb')
 
+    async def test_first_install_independent_country_and_language(self):
+        for country, language, expected in [
+            ('DE', 'en', ('de', 'en')),
+            ('AT', 'de', ('at', 'de')),
+            ('CH', 'fr', ('ch', 'fr')),
+            ('NL', 'de', ('nl', 'de')),
+            ('GB', 'en', ('gb', 'en')),
+        ]:
+            with self.subTest(country=country, language=language):
+                flow=self.flow()
+                flow.hass=types.SimpleNamespace(config=types.SimpleNamespace(country=country, language=language))
+                result=await flow.async_step_user()
+                self.assertEqual((result['data']['country'],result['data']['language']),expected)
+
     async def test_first_selection_creates_entry_without_inputs(self):
         flow=self.flow();flow.hass=types.SimpleNamespace(config=types.SimpleNamespace(country='NL',language='nl'))
         result=await flow.async_step_user()
