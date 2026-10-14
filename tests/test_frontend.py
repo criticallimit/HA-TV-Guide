@@ -47,7 +47,7 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(calls),1)
         self.assertEqual(len(views),1)
         self.assertEqual(calls[0].url_path,'/tv_guide/frontend')
-        self.assertTrue((Path(calls[0].path)/'tv-guide-native-card.js').is_file())
+        self.assertTrue((Path(calls[0].path)/'tv-guide-card.js').is_file())
         self.assertFalse(calls[0].cache_headers)
         self.assertIn(frontend.MODULE_URL,hass.data['modules'])
         self.assertIn(frontend.PANEL_PATH,hass.data['panels'])
