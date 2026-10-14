@@ -71,8 +71,8 @@ async def main():
                     assert entity.disabled_by is None
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
-                assert frontend.async_panel_exists(hass,'tv-guide-native')
-                assert '/tv_guide/frontend/tv-guide-native-card.js?v=11' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert frontend.async_panel_exists(hass,'tv-guide')
+                assert '/tv_guide/frontend/tv-guide-card.js?v=11' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -174,13 +174,13 @@ async def main():
                 assert entry.version==2
                 for old_uid in ('tv_guide_native_epg_programme_count', 'tv_guide_native_epg_channels_count'):
                     assert registry.async_get_entity_id('sensor', 'tv_guide', old_uid) is None
-                assert frontend.async_panel_exists(hass,'tv-guide-native')
+                assert frontend.async_panel_exists(hass,'tv-guide')
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
                 assert len(saved['bookmarks']) == len(saved['reminders']) == 1
                 assert await hass.config_entries.async_unload(entry.entry_id)
                 assert not hass.services.has_service('tv_guide','native_request')
                 assert not hass.data['tv_guide']
-                assert not frontend.async_panel_exists(hass,'tv-guide-native')
+                assert not frontend.async_panel_exists(hass,'tv-guide')
                 assert hass.states.get(foreign_id).state=='9999'
                 # Deleting the config entry must remove only its entities and files.
                 native_storage = Path(hass.config.path('.storage','tv_guide_native',entry.entry_id))
