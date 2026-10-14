@@ -100,6 +100,7 @@ async def main():
                     'icon':'https://example.org/programme.jpg',
                 }]
                 store.channels[0]['available'] = True
+                coordinator.backend._backend_changed()
                 await coordinator._async_sync()
                 async def request(endpoint, method='GET', body=None):
                     return await hass.services.async_call('tv_guide','native_request',

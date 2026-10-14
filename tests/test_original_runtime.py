@@ -42,6 +42,19 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.assertFalse(hasattr(self.runtime,'load_bookmarks'))
         with self.assertRaises(ValueError):self.backend.request('bookmarks','POST',{})
 
+    def test_coordinator_snapshot_is_reused_until_backend_changes(self):
+        first = self.backend.state_snapshot()
+        second = self.backend.state_snapshot()
+        self.assertIs(first[0], second[0])
+        self.assertIs(first[1], second[1])
+        self.backend._backend_changed()
+        third = self.backend.state_snapshot()
+        self.assertIsNot(first[0], third[0])
+        settings = self.backend.request('settings', 'GET')
+        self.backend.request('settings', 'POST', {**settings, 'language': 'en'})
+        fourth = self.backend.state_snapshot()
+        self.assertIsNot(third[0], fourth[0])
+
     def test_known_revision_skips_full_guide_payload(self):
         first = self.backend.request('guide', 'GET')
         revision = first['revision']

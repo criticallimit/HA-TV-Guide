@@ -50,6 +50,7 @@ class OriginalRuntime:
         self._guide_cached_at = 0.0
         self._guide_revision = uuid4().hex
         self._guide_generation = 0
+        self._snapshot_cache = None
         name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
         self._module_name = name
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
@@ -86,6 +87,7 @@ class OriginalRuntime:
         with self._lock:
             self._guide_cache = None
             self._guide_generation += 1
+            self._snapshot_cache = None
         self._wake()
 
     def logo_urls(self, channel):
@@ -218,6 +220,7 @@ class OriginalRuntime:
             if method == "POST":
                 self._guide_cache = None
                 self._guide_generation += 1
+                self._snapshot_cache = None
             started = perf_counter()
             handler = object.__new__(self.runtime.Handler)
             handler.path = "/api/" + endpoint
@@ -261,7 +264,9 @@ class OriginalRuntime:
         """Capture data and active-country status together, outside HA's loop."""
         with self._lock, self.runtime.SETTINGS_LOCK:
             store = self.runtime.STORE
-            records, catalogue, channels = self.snapshot()
+            if self._snapshot_cache is None:
+                self._snapshot_cache = self.snapshot()
+            records, catalogue, channels = self._snapshot_cache
             return records, catalogue, channels, {
                 'country': store.country,
                 'refresh_running': store.refresh_running,
