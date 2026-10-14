@@ -104,6 +104,8 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         return result
 
     async def async_stop(self, event=None):
+        if self._closed:
+            return
         self._closed = True
         if self._cancel_preload is not None:
             self._cancel_preload()
