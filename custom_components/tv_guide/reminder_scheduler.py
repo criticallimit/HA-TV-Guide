@@ -17,10 +17,11 @@ _LOGGER = logging.getLogger(__name__)
 class TVGuideReminderScheduler:
     """Schedule only pending saved reminders using Home Assistant's event loop."""
 
-    def __init__(self, hass, saved, lock: asyncio.Lock):
+    def __init__(self, hass, saved, lock: asyncio.Lock, notification_service: str = "persistent_notification.create"):
         self.hass = hass
         self.saved = saved
         self.lock = lock
+        self.notification_service = notification_service
         self._cancellations = []
 
     def stop(self):
@@ -60,16 +61,14 @@ class TVGuideReminderScheduler:
             time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")
             message = f'{item["channel"]}: „{item["title"]}“ beginnt um {time_text} Uhr.'
             try:
+                domain, service = self.notification_service.split(".", 1)
+                payload = {"title": "TV Guide – Erinnerung", "message": message}
+                if domain == "persistent_notification":
+                    payload["notification_id"] = "tv_guide_" + re.sub(
+                        r"[^a-zA-Z0-9_]+", "_", reminder_id
+                    )[-180:]
                 await self.hass.services.async_call(
-                    "persistent_notification", "create",
-                    {
-                        "title": "TV Guide – Erinnerung",
-                        "message": message,
-                        "notification_id": "tv_guide_" + re.sub(
-                            r"[^a-zA-Z0-9_]+", "_", reminder_id
-                        )[-180:],
-                    },
-                    blocking=True,
+                    domain, service, payload, blocking=True,
                 )
             except Exception:
                 _LOGGER.exception("TV Guide reminder notification failed")
