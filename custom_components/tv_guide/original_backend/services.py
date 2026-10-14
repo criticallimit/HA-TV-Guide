@@ -38,8 +38,8 @@ from .providers import TELETEXT_PROVIDER_BY_CHANNEL as TELETEXT_PROVIDER_BY_CHAN
 from .providers import ZDF_PROGRAM_URL as ZDF_PROGRAM_URL
 from .store import GuideStore
 
-BASE = NATIVE_ASSET_ROOT
-WWW = NATIVE_ASSET_ROOT / "www"
+BASE = GUIDE_ASSET_ROOT
+WWW = GUIDE_ASSET_ROOT / "www"
 CHANNELS = json.loads((BASE / "data" / "channels.json").read_text(encoding="utf-8"))
 COUNTRIES = json.loads((BASE / "data" / "countries.json").read_text(encoding="utf-8"))
 COUNTRY_CATALOGS = {
@@ -59,12 +59,12 @@ EUROPE_LOGO_LIBRARY = (
     if EUROPE_LOGO_LIBRARY_FILE.is_file()
     else {"assets": {}, "aliases": {}}
 )
-OPTIONS_FILE = NATIVE_STORAGE_ROOT / "options.json"
-CACHE_FILE = NATIVE_STORAGE_ROOT / "tv_guide_epg.xml.gz"
-PARSED_CACHE_FILE = NATIVE_STORAGE_ROOT / "tv_guide_epg_parsed.json"
+OPTIONS_FILE = GUIDE_STORAGE_ROOT / "options.json"
+CACHE_FILE = GUIDE_STORAGE_ROOT / "tv_guide_epg.xml.gz"
+PARSED_CACHE_FILE = GUIDE_STORAGE_ROOT / "tv_guide_epg_parsed.json"
 PARSED_CACHE_SCHEMA_VERSION = 10
-CHANNEL_PREFS_FILE = NATIVE_STORAGE_ROOT / "tv_guide_channel_order.json"
-LOGO_CACHE_DIR = NATIVE_STORAGE_ROOT / "tv_guide_logos"
+CHANNEL_PREFS_FILE = GUIDE_STORAGE_ROOT / "tv_guide_channel_order.json"
+LOGO_CACHE_DIR = GUIDE_STORAGE_ROOT / "tv_guide_logos"
 LOGO_RENDER_VERSION = 5
 
 
@@ -96,7 +96,7 @@ def language_code(value):
 
 
 def home_assistant_locale(wait=True):
-    return dict(NATIVE_LOCALE)
+    return dict(GUIDE_LOCALE)
 
 
 def effective_language(value=None):
@@ -520,7 +520,7 @@ def reset_channel_preferences(store=None):
 
 
 def wake_sensors():
-    NATIVE_WAKE()
+    GUIDE_WAKE()
 
 
 
