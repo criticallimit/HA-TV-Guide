@@ -171,7 +171,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     # The HA Store API handles deletion of saved bookmarks and reminders.
     await Store(hass, 1, f"tv_guide.{entry.entry_id}.saved_programmes").async_remove()
 
-    root = Path(hass.config.path(".storage", "tv_guide_native")).resolve()
+    root = Path(hass.config.path(".storage", "tv_guide_store")).resolve()
     target = (root / entry.entry_id).resolve()
     if target.parent != root:
         raise ValueError("Invalid TV Guide entry storage path")
