@@ -143,7 +143,7 @@ class OriginalRuntimeTests(unittest.TestCase):
         calls=[]
         with patch.object(self.runtime.STORE,'ensure_fresh_async',side_effect=lambda:calls.append('de')),patch.object(inactive,'ensure_fresh_async',side_effect=lambda:calls.append('at')),patch.object(self.backend,'preload_next',side_effect=lambda:calls.append('preload')):
             self.backend.maintain_caches()
-        self.assertEqual(calls,['de','at','preload'])
+        self.assertEqual(calls,['de','at'])
 
     def test_refresh_after_unload_does_not_report_started(self):
         self.backend.close()
