@@ -1,4 +1,4 @@
-"""Regression tests for the native guide's read-only fast path."""
+"""Regression tests for the TV Guide's read-only fast path."""
 import ast
 import asyncio
 import unittest
