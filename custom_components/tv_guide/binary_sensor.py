@@ -16,7 +16,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class TVGuideRefreshSensor(BinarySensorEntity):
     """Reflect the integration's own download/parse lifecycle."""
 
-    _attr_name = "TV Guide EPG refresh running"
+    _attr_has_entity_name = True
+    _attr_translation_key = "epg_refresh_running"
     _attr_unique_id = "tv_guide_refresh_running"
     _attr_icon = "mdi:sync"
     _attr_should_poll = False
