@@ -73,6 +73,8 @@ Fresh native bookmark/reminder storage is empty. The integration does not read o
 
 Local validation for the native-card change: 50 Python offline tests passed; five Chromium workflow scenarios passed (including sender ordering, saved-item actions, service errors, unavailable EPG, feed-text escaping, language and reconnect). Tests use HA doubles; they do not run a real HA server. The suite now loads pure Python helpers without inserting the integration directory into `sys.path`, avoiding accidental shadowing of Python's `calendar` module.
 
+The branch has passed Python/JSON checks, Chromium card tests and Hassfest on GitHub Actions. HACS publication validation still requires repository topics; project branding is bundled under `brand/` using an unchanged copy of the original TV Guide project icon (not broadcaster logos).
+
 GitHub Actions runs offline tests, Python/JSON validation, HACS, Hassfest and Chromium card tests. Check the actual results for the branch/PR; local success does not establish CI success.
 
 Before replacing the add-on, test real HA installation/reload/unload, country feed sizes and availability, mobile-notification delivery, storage failures, and card setup on desktop/mobile. Provider fallback/enrichment, original UI parity and explicit old-data migration remain required. See [architecture](docs/ARCHITECTURE.md) and [manual test steps](docs/NATIVE_CARD_TESTING.md).
