@@ -135,7 +135,7 @@ get_guide:
       description: Optional ISO timestamp including its timezone.
       selector:
         text:
-get_channels:
+get_personal_channels:
   name: Get TV Guide personal channel picker
   description: Return current-feed sender choices and saved ordering for the TV Guide card.
 get_ui_settings:
