@@ -7,6 +7,7 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 from .const import DOMAIN
 from .frontend import async_register_frontend, async_remove_frontend
@@ -75,6 +76,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await async_register_frontend(hass)
         platforms_started = True
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+        # Retire previously registered count sensors on existing installations.
+        registry = er.async_get(hass)
+        for unique_id in (
+            'tv_guide_native_epg_programme_count',
+            'tv_guide_native_epg_channels_count',
+        ):
+            entity_id = registry.async_get_entity_id('sensor', DOMAIN, unique_id)
+            if entity_id is not None and registry.async_get(entity_id).config_entry_id == entry.entry_id:
+                registry.async_remove(entity_id)
         if not hass.services.has_service(DOMAIN, "save_bookmark"):
             await async_register_saved_services(hass)
         if coordinator is not None and not hass.services.has_service(DOMAIN, "get_programmes"):
