@@ -6,7 +6,7 @@ from .ha_defaults import installation_defaults
 
 
 class TVGuideConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Create one native guide without an input form."""
+    """Create one TV Guide integration without an input form."""
 
     VERSION = 2
 
