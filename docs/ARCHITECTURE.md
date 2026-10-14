@@ -1,4 +1,4 @@
-# Native TV Guide architecture
+# TV Guide integration architecture
 
 Only HA-TV-Guide implements this port. TV-Guide is pinned read-only reference material.
 
@@ -32,7 +32,7 @@ Both settings action paths persist normalized engine values and update the remin
 
 ## Standalone data and logos
 
-No runtime discovers or reads an installed add-on. State bridges, source entity constants, old browser-bookmark imports, duplicate reference bookmark/reminder routes and Supervisor option/notification helpers are removed. Native config-entry version upgrades concern earlier versions of this integration only.
+The integration does not discover or read a separately installed TV Guide instance. State bridges, source entity constants, old browser-bookmark imports, duplicate reference bookmark/reminder routes and Supervisor option/notification helpers are removed. Native config-entry version upgrades concern earlier versions of this integration only.
 
 The logo index contains all 20,292 original image paths, mapped to 18,528 verified SHA-256 objects in 37 ZIP bundles. The native HA view serves only indexed public artwork and performs ZIP reads/normalization in the executor. Europe SVG raster dependencies are embedded in the response, matching the reference rendering. Main-channel static SVGs remain unchanged for pixel parity. No logo downloads or add-on webserver are used.
 
@@ -40,7 +40,7 @@ The logo index contains all 20,292 original image paths, mapped to 18,528 verifi
 
 The two-minute maintenance timer checks active and retained country caches before inactive preloading. This guarantees freshness even when frequent data/status notifications reschedule the DataUpdateCoordinator timer. Forced requests arriving during non-forced work request one forced follow-up within the same owned job; duplicate already-forced requests remain deduplicated. Shutdown rejects new requests and chunk reads cooperatively, preserving the original network policies; a currently blocked IO call still observes its provider timeout.
 
-Restored native cache records are checked for valid aware date ranges and metadata containers before use. Good rows survive a partially damaged cache. Calendar label lookup happens once per snapshot/range, avoiding a catalogue scan for every programme. Main logos use their own country prefix when another country is active. Browser pixel comparisons now include all ten countries and all eight interface languages.
+Restored native cache records are checked for valid aware date ranges and metadata containers before use. Good rows survive a partially damaged cache. Calendar label lookup happens once per snapshot/range, avoiding a catalogue scan for every programme. Main logos use their own country prefix when another country is active. Browser pixel comparisons now include all ten countries and all nine interface languages.
 
 The sidebar sizes the guide to available viewport height in portrait and landscape. Card heights are finite, bounded values; invalid configuration values fall back to 1000 pixels.
 
