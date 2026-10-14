@@ -265,7 +265,7 @@ let guide = null;
 // Only store it when serialization fits the strict size budget; never add polling.
 const GUIDE_FIRST_PAINT_KEY = "tv-guide-native-first-paint-v1";
 const GUIDE_FIRST_PAINT_TTL_MS = 60 * 1000;
-const GUIDE_FIRST_PAINT_MAX_CHARS = 160 * 1024;
+const GUIDE_FIRST_PAINT_MAX_CHARS = 384 * 1024;
 function showCachedGuide() {
   try {
     const raw = sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY);
@@ -292,7 +292,15 @@ function saveFirstPaintGuide(snapshot) {
   const save = () => {
     if (guide !== snapshot) return;
     try {
-      const data = JSON.stringify({version:1, at:Date.now(), guide:snapshot});
+      // Store only a short window around the current programme per channel;
+      // avoid copying days of EPG or keeping programme history in browser storage.
+      const now = Date.now();
+      const channels = snapshot.channels.map(channel => {
+        const entries = channel.programs || [];
+        const index = entries.findIndex(item => new Date(item.end).getTime() > now);
+        return {...channel, programs:index < 0 ? [] : entries.slice(Math.max(0,index-1),index+24)};
+      });
+      const data = JSON.stringify({version:1, at:now, guide:{...snapshot, channels}});
       if (data.length <= GUIDE_FIRST_PAINT_MAX_CHARS) sessionStorage.setItem(GUIDE_FIRST_PAINT_KEY, data);
       else sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY);
     } catch {}
