@@ -23,15 +23,21 @@ class TVGuideReminderScheduler:
         self.lock = lock
         self.notification_service = notification_service
         self._cancellations = []
+        self._stopped = False
 
     def stop(self):
+        self._stopped = True
+        self._cancel_timers()
+
+    def _cancel_timers(self):
         for cancel in self._cancellations:
             cancel()
         self._cancellations.clear()
 
     def reschedule(self):
         """Replace timers, including after updating a reminder or a restart."""
-        self.stop()
+        self._cancel_timers()
+        self._stopped = False
         now = datetime.now(timezone.utc)
         for reminder in self.saved.reminders:
             when = next_reminder_time(reminder, now)
@@ -42,7 +48,8 @@ class TVGuideReminderScheduler:
     def _schedule(self, reminder_id: str, when: datetime):
         """Schedule a single reminder (also used for bounded delivery retries)."""
         def callback(_now):
-            self.hass.async_create_task(self._deliver(reminder_id))
+            if not self._stopped:
+                self.hass.async_create_task(self._deliver(reminder_id))
 
         self._cancellations.append(
             async_track_point_in_utc_time(self.hass, callback, when)
@@ -51,6 +58,8 @@ class TVGuideReminderScheduler:
     async def _deliver(self, reminder_id: str):
         """Persist sent state after a successful Home Assistant notification."""
         async with self.lock:
+            if self._stopped:
+                return
             item = next((r for r in self.saved.reminders if r["id"] == reminder_id), None)
             if item is None or item.get("sent"):
                 return
@@ -73,7 +82,7 @@ class TVGuideReminderScheduler:
             except Exception:
                 _LOGGER.exception("TV Guide reminder notification failed")
                 when = retry_time(item, datetime.now(timezone.utc))
-                if when is not None:
+                if when is not None and not self._stopped:
                     self._schedule(reminder_id, when)
                 return
             item["sent"] = True
