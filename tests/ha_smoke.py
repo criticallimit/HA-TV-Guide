@@ -173,7 +173,23 @@ async def main():
                 assert not hass.data['tv_guide']
                 assert not frontend.async_panel_exists(hass,'tv-guide-native')
                 assert hass.states.get(foreign_id).state=='9999'
-                print(f'PASS real Home Assistant {__version__}: setup, platforms, full guide, country picker, settings, saved actions, reload, unload',flush=True)
+                # Deleting the config entry must remove only its entities and files.
+                native_storage = Path(hass.config.path('.storage','tv_guide_native',entry.entry_id))
+                saved_storage = Path(hass.config.path('.storage',f'tv_guide.{entry.entry_id}.saved_programmes'))
+                assert native_storage.exists()
+                assert saved_storage.exists()
+                owned_ids = [entity.entity_id for entity in registry.entities.values()
+                             if entity.config_entry_id == entry.entry_id]
+                assert len(owned_ids) == 8
+                assert await hass.config_entries.async_remove(entry.entry_id)
+                await hass.async_block_till_done()
+                assert not [entity for entity in registry.entities.values()
+                            if entity.config_entry_id == entry.entry_id]
+                assert all(hass.states.get(entity_id) is None for entity_id in owned_ids)
+                assert not native_storage.exists()
+                assert not saved_storage.exists()
+                assert hass.states.get(foreign_id).state == '9999'
+                print(f'PASS real Home Assistant {__version__}: setup, reload, unload and complete removal of owned entities and storage',flush=True)
         finally:
             await hass.async_stop(force=True)
 

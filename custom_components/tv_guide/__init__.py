@@ -154,3 +154,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if not hass.data.get(DOMAIN):
             async_remove_epg_query(hass)
     return success
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Remove only persistent files owned by this deleted config entry.
+
+    Home Assistant removes the entity registry entries associated with the
+    config entry itself. This hook cleans up data stored outside the registry.
+    It deliberately does not run on reload or unload.
+    """
+    from pathlib import Path
+    import shutil
+
+    from homeassistant.helpers.storage import Store
+
+    # The HA Store API handles deletion of saved bookmarks and reminders.
+    await Store(hass, 1, f"tv_guide.{entry.entry_id}.saved_programmes").async_remove()
+
+    root = Path(hass.config.path(".storage", "tv_guide_native")).resolve()
+    target = (root / entry.entry_id).resolve()
+    if target.parent != root:
+        raise ValueError("Invalid TV Guide entry storage path")
+    await hass.async_add_executor_job(shutil.rmtree, target, True)
