@@ -448,4 +448,5 @@ class TVGuideNativeCard extends HTMLElement {
 }
 if (!customElements.get("tv-guide-native-card")) customElements.define("tv-guide-native-card",TVGuideNativeCard);
 window.customCards = window.customCards || [];
-if (!window.customCards.some(card => card.type === "tv-guide-native-card")) window.customCards.push({type:"tv-guide-native-card",name:"TV Guide Native",description:"Original TV Guide presentation using native Home Assistant data",preview:true});
+if (!customElements.get("tv-guide-card")) customElements.define("tv-guide-card", class extends TVGuideNativeCard {});
+if (!window.customCards.some(card => card.type === "tv-guide-card")) window.customCards.push({type:"tv-guide-card",name:"TV Guide",description:"TV programme guide for Home Assistant",preview:true});
