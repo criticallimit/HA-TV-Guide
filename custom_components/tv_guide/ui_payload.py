@@ -1,4 +1,4 @@
-"""Bounded native snapshots in the reference frontend's presentation model."""
+"""Bounded TV Guide snapshots in the reference frontend's presentation model."""
 from datetime import datetime, timezone
 from functools import lru_cache
 import json
@@ -107,7 +107,7 @@ def build_guide(programmes,catalogue,feed_channels,options,at,refresh_running=Fa
         if end<=at:
             continue
         key=f"{item['channel']}\n{start.astimezone(timezone.utc).isoformat()}"
-        grouped[item['channel']].append({'id':'native_'+sha256(key.encode()).hexdigest(),'title':item['title'],'start':item['start'],'end':item['stop'],'desc':item.get('description',''),'subtitle':item.get('subtitle',''),'category':item.get('category','')})
+        grouped[item['channel']].append({'id':'guide_'+sha256(key.encode()).hexdigest(),'title':item['title'],'start':item['start'],'end':item['stop'],'desc':item.get('description',''),'subtitle':item.get('subtitle',''),'category':item.get('category','')})
     for records in grouped.values():
         records.sort(key=lambda item:datetime.fromisoformat(item['start']).timestamp())
     for channel in visible.values():
