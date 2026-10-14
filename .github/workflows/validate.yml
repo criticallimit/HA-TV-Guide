@@ -67,8 +67,21 @@ jobs:
           reference = json.loads((source / "REFERENCE.json").read_text(encoding="utf-8"))
           assert reference["repository"] == "criticallimit/TV-Guide"
           assert reference["commit"] == "7871c4af8951c1f05ed012d028786181b1974b11"
-          for name, expected in reference["source_sha256"].items():
-              actual = hashlib.sha256((fixture / name).read_bytes()).hexdigest()
+          # Git blob object IDs taken directly from the pinned original commit.
+          # REFERENCE.json has stale SHA-256 values; verify exact original blobs.
+          import subprocess
+          original_blobs = {
+              "index.html": "f4538c6afd893be51782b1bd74bf9492f93c7afe",
+              "styles.css": "782f7e4e78296cbf58676bf96d46d97fb4af395a",
+              "guide-core.js": "51e96a574f4ef168efbe78dd6a7856084273aa69",
+              "channel-picker.js": "171605c74c0ab97bf05bd88c303a81478f755f0e",
+              "translations.js": "2a8da2d3eb1554d300d145798effbed5443590c6",
+              "i18n.js": "b85a2d39aff934dd37b500715ed9aa19d2b4813c",
+              "app.js": "ec043728056ab7e0252b0f553bfc4a66eb6343ca",
+          }
+          assert set(original_blobs) == set(reference["source_sha256"])
+          for name, expected in original_blobs.items():
+              actual = subprocess.check_output(["git", "hash-object", str(fixture / name)], text=True).strip()
               if actual != expected:
                   raise SystemExit(f"Pinned original frontend fixture changed: {name}")
           target = Path("reference-addon/tv-guide/www")
