@@ -26,7 +26,7 @@ Config flow version 2 immediately creates an entry from HA country/language with
 
 ## Port audit fixes
 
-An owned HA interval timer checks one inactive country every 120 seconds, deferring while country refreshes are busy. Fresh caches are reused; stale caches use the same deduplicated worker pool and are pruned from memory after refresh. Unload cancels the timer and drains workers. Data and active-country status are captured together outside HA's event loop; country switches clear absent last-update timestamps, malformed timestamps report unknown, and worker wakes arriving during synchronization request another snapshot. Extracted bundled reference data is repaired/updated atomically on restart.
+An owned HA interval timer checks one inactive country every five minutes, deferring while country refreshes are busy. Fresh caches are reused; stale caches use the same deduplicated worker pool and are pruned from memory after refresh. Unload cancels the timer and drains workers. Data and active-country status are captured together outside HA's event loop; country switches clear absent last-update timestamps, malformed timestamps report unknown, and worker wakes arriving during synchronization request another snapshot. Extracted bundled reference data is repaired/updated atomically on restart.
 
 Both settings action paths persist normalized engine values and update the reminder destination. Native reminder count/success/time semantics match the original sensors, while state bridge code is completely removed. Test notification text uses the original frontend translations and HA timezone. Notification choices match the original Home Assistant/mobile-app targets.
 
@@ -38,7 +38,7 @@ The logo index contains all 20,292 original image paths, mapped to 18,528 verifi
 
 ## Readiness audit
 
-The two-minute maintenance timer checks active and retained country caches before inactive preloading. This guarantees freshness even when frequent data/status notifications reschedule the DataUpdateCoordinator timer. Forced requests arriving during non-forced work request one forced follow-up within the same owned job; duplicate already-forced requests remain deduplicated. Shutdown rejects new requests and chunk reads cooperatively, preserving the original network policies; a currently blocked IO call still observes its provider timeout.
+The five-minute maintenance timer checks active and retained country caches before inactive preloading. This guarantees freshness even when frequent data/status notifications reschedule the DataUpdateCoordinator timer. Forced requests arriving during non-forced work request one forced follow-up within the same owned job; duplicate already-forced requests remain deduplicated. Shutdown rejects new requests and chunk reads cooperatively, preserving the original network policies; a currently blocked IO call still observes its provider timeout.
 
 Restored native cache records are checked for valid aware date ranges and metadata containers before use. Good rows survive a partially damaged cache. Calendar label lookup happens once per snapshot/range, avoiding a catalogue scan for every programme. Main logos use their own country prefix when another country is active. Browser pixel comparisons now include all ten countries and all nine interface languages.
 
