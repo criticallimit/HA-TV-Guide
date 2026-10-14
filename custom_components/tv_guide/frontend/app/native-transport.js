@@ -19,7 +19,7 @@
     const data = await new Promise((resolve,reject) => {
       const timer = setTimeout(() => {pending.delete(id);reject(new Error("Home Assistant request timed out"));},15000);
       pending.set(id,{resolve,reject,timer});
-      window.parent.postMessage({type:"tv-guide-native-request",id,endpoint:match[1],method:options.method || "GET",at:url.searchParams.get("at"),body:options.body ? JSON.parse(options.body) : null},window.location.origin);
+      window.parent.postMessage({type:"tv-guide-native-request",id,endpoint:match[1],method:options.method || "GET",at:url.searchParams.get("at"),body:options.body ? JSON.parse(options.body) : (url.searchParams.get("known_revision") ? {known_revision:url.searchParams.get("known_revision")} : null)},window.location.origin);
     });
     return {ok:true,json:async () => data};
   };

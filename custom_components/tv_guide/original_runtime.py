@@ -11,6 +11,7 @@ from pathlib import Path
 from time import monotonic, perf_counter
 import sys
 import threading
+from uuid import uuid4
 from urllib.parse import quote
 import zipfile
 from .logo_assets import bundled_logo_library
@@ -47,6 +48,8 @@ class OriginalRuntime:
         self._wake = wake
         self._guide_cache = None
         self._guide_cached_at = 0.0
+        self._guide_revision = uuid4().hex
+        self._guide_generation = 0
         name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
         self._module_name = name
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
@@ -82,6 +85,7 @@ class OriginalRuntime:
         # Called by provider workers when new programme data become available.
         with self._lock:
             self._guide_cache = None
+            self._guide_generation += 1
         self._wake()
 
     def logo_urls(self, channel):
@@ -206,10 +210,13 @@ class OriginalRuntime:
         with self._lock:
             if self.closed:
                 raise RuntimeError("TV Guide is unloading")
+            if method == "GET" and endpoint == "guide" and isinstance(body, dict) and body.get("known_revision") == f"{self._guide_revision}:{self._guide_generation}":
+                return {"unchanged": True, "revision": f"{self._guide_revision}:{self._guide_generation}"}
             if method == "GET" and endpoint == "guide" and self._guide_cache is not None and monotonic() - self._guide_cached_at < 10:
                 return self._guide_cache
             if method == "POST":
                 self._guide_cache = None
+                self._guide_generation += 1
             started = perf_counter()
             handler = object.__new__(self.runtime.Handler)
             handler.path = "/api/" + endpoint
@@ -232,6 +239,7 @@ class OriginalRuntime:
                         start = datetime.fromisoformat(programme["start"]).astimezone(timezone.utc)
                         key = f"{channel_id}\n{start.isoformat()}"
                         programme["id"] = "native_" + sha256(key.encode()).hexdigest()
+                result["revision"] = f"{self._guide_revision}:{self._guide_generation}"
                 self._guide_cache = result
                 self._guide_cached_at = monotonic()
                 _LOGGER.debug("TV Guide prepared guide in %.1f ms", (perf_counter() - started) * 1000)
