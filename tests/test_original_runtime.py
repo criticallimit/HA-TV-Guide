@@ -42,6 +42,17 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.assertFalse(hasattr(self.runtime,'load_bookmarks'))
         with self.assertRaises(ValueError):self.backend.request('bookmarks','POST',{})
 
+    def test_known_revision_skips_full_guide_payload(self):
+        first = self.backend.request('guide', 'GET')
+        revision = first['revision']
+        unchanged = self.backend.request('guide', 'GET', {'known_revision': revision})
+        self.assertEqual(unchanged, {'unchanged': True, 'revision': revision})
+        self.assertNotIn('channels', unchanged)
+        self.backend._backend_changed()
+        changed = self.backend.request('guide', 'GET', {'known_revision': revision})
+        self.assertIn('channels', changed)
+        self.assertNotEqual(changed['revision'], revision)
+
     def test_prepared_guide_reused_and_invalidated(self):
         first = self.backend.request('guide', 'GET')
         self.assertIs(first, self.backend.request('guide', 'GET'))
