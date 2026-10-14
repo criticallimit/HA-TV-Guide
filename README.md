@@ -18,8 +18,8 @@ All ten countries have prepared main-channel lists, individual channel selection
 - Open **Now**, **18:00**, **20:15**, **22:00**, or choose another day and time.
 - Create **My channels** with your own selection and order. Combine channels from all supported countries in one personal list. Your selection stays when you change country.
 - Open a programme for details, save it and set a reminder 5, 10, 15 or 30 minutes before it starts.
-- Use  Home Assistant sensors, a binary sensor and a programme calendar for automations.
-- Use **Danish, German, English, Dutch, French, Italian, Norwegian or Swedish**. The automatic setting follows your Home Assistant profile.
+- Use four Home Assistant sensors, one binary sensor and a programme calendar for automations.
+- Use **Danish, German, English, Spanish, Dutch, French, Italian, Norwegian or Swedish**. The automatic setting follows your Home Assistant profile.
 
 ## Install
 
@@ -45,7 +45,7 @@ Country and language are independent: Swiss schedules can be displayed with a Fr
 
 **Main channels** shows the prepared list for your TV country. Open **☰ Channels**, tick the countries you want to browse and search for a channel. Add channels to **My channels** and drag them or use the arrows to set their order. Unticking a country only hides its available channels; it keeps your selected channels. Remove a channel with **×**, then save. **Reset order** restores the main channels of the currently selected TV country. Your previous selection is carried over when you first save the new list.
 
-Settings are grouped into **Country & language**, **Display** and **Reminders**. Set the default view, appearance and channels per row under **Display**. A channel limit of **0** shows the entire selected list. Open **Advanced** to adjust the schedule refresh interval. sensors are created by Home Assistant automatically. Press **Save** to apply your changes.
+Settings are grouped into **Country & language**, **Display** and **Reminders**. Set the default view, appearance and channels per row under **Display**. A channel limit of **0** shows the entire selected list. Open **Advanced** to adjust the schedule refresh interval. Sensors are created by Home Assistant automatically. Press **Save** to apply your changes.
 
 ## Save programmes and get reminders
 
@@ -64,7 +64,7 @@ type: custom:tv-guide-card
 height: 1000
 ```
 
-no additional resource configuration is needed.
+No additional resource configuration is needed.
 
 
 ## When something is missing
