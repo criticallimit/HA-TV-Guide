@@ -99,7 +99,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             pass
         stub(PKG+'.frontend', async_register_frontend=register_frontend, async_remove_frontend=lambda hass:None)
         stub(PKG+'.ha_defaults', installation_defaults=lambda config: {'country':'at','language':'de','backend_mode':'original','channels':[],'notification_service':'persistent_notification.create'})
-        stub(PKG+'.ui_services', async_register_ui_services=lambda hass: self.registry.add('get_native_guide'), async_remove_ui_services=lambda hass: self.registry.discard('get_native_guide'))
+        stub(PKG+'.ui_services', async_register_ui_services=lambda hass: self.registry.add('get_guide'), async_remove_ui_services=lambda hass: self.registry.discard('get_guide'))
         stub(PKG+'.const', DOMAIN='tv_guide')
         stub(PKG+'.coordinator', TVGuideEPGCoordinator=Coordinator)
         stub(PKG+'.original_coordinator', TVGuideOriginalCoordinator=OriginalCoordinator)
@@ -119,7 +119,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(self.imports.stop)
         spec.loader.exec_module(self.module)
 
-    async def test_standalone_setup_without_feed_always_starts_native_engine(self):
+    async def test_standalone_setup_without_feed_always_starts_guide_engine(self):
         self.assertTrue(await self.module.async_setup_entry(self.hass,self.entry))
         self.assertIn('get_saved_programmes',self.registry)
         self.assertTrue(self.hass.data['tv_guide']['entry'].is_original)

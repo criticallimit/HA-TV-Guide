@@ -98,7 +98,7 @@ class TVGuideCard extends HTMLElement {
         event.origin === window.location.origin &&
         event.source === this._iframe?.contentWindow
       ) {
-        if (event.data?.type === "tv-guide-native-request") void this._handleNativeRequest(event);
+        if (event.data?.type === "tv-guide-request") void this._handleGuideRequest(event);
         else if (event.data?.type === "tv-guide-theme-request") this._sendThemeToIframe(true);
         else if (event.data?.type === "tv-guide-theme-ready") this._iframe.style.opacity = "1";
       }
@@ -365,7 +365,7 @@ class TVGuideCard extends HTMLElement {
     if (!result?.response) throw new Error("TV Guide response unavailable");
     return result.response;
   }
-  async _handleNativeRequest(event) {
+  async _handleGuideRequest(event) {
     const request = event.data;
     if (!this.isConnected || !this._hass || typeof request.id !== "string" || request.id.length > 80) return;
     const frame = this._iframe;
@@ -374,10 +374,10 @@ class TVGuideCard extends HTMLElement {
       const method = request.method;
       const body = request.body || {};
       let response;
-      if (this._hass.services?.tv_guide?.native_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
-        response = await this._response("native_request",{endpoint,method,...(method === "POST" ? {body} : {})});
-      } else if (method === "GET" && endpoint === "guide") response = await this._response("get_native_guide", request.at ? {at:request.at} : {});
-      else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_native_channels");
+      if (this._hass.services?.tv_guide?.guide_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
+        response = await this._response("guide_request",{endpoint,method,...(method === "POST" ? {body} : {})});
+      } else if (method === "GET" && endpoint === "guide") response = await this._response("get_guide", request.at ? {at:request.at} : {});
+      else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_personal_channels");
       else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");
       else if (method === "POST" && endpoint === "settings") {
         const allowed = ["country","language","default_view","columns_desktop","max_channels","theme_mode","refresh_minutes","notification_service"];
@@ -413,10 +413,10 @@ class TVGuideCard extends HTMLElement {
         const time = new Intl.DateTimeFormat(body.language || "en",{hour:"2-digit",minute:"2-digit",hour12:false,...(this._hass.config?.time_zone ? {timeZone:this._hass.config.time_zone} : {})}).format(new Date(Date.now()+60000));
         await this._hass.callService(domain,service,{title:t("TV Guide – Erinnerung"),message:t("{channel}: „{title}“ beginnt um {time} Uhr.",{channel:"TV Guide",title:t("Testbenachrichtigung"),time})});
         response = {ok:true,service:settings.notification_service};
-      } else throw new Error("Unsupported native TV Guide operation");
-      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-native-response",id:request.id,response},window.location.origin);
+      } else throw new Error("Unsupported TV Guide operation");
+      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-response",id:request.id,response},window.location.origin);
     } catch (error) {
-      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-native-response",id:request.id,error:error.message || String(error)},window.location.origin);
+      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-response",id:request.id,error:error.message || String(error)},window.location.origin);
     }
   }
   _start() {
@@ -440,7 +440,7 @@ class TVGuideCard extends HTMLElement {
     iframe.addEventListener("load",() => {
       if (this._iframe !== iframe || !this.isConnected) return;
       this._sendThemeToIframe(true);
-      // Show a readable native error even if the inner data request fails.
+      // Show a readable TV Guide error even if the inner data request fails.
       iframe.style.opacity = "1";
     });
     card.appendChild(iframe);

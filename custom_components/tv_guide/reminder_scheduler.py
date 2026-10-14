@@ -1,4 +1,4 @@
-"""Native event-driven reminders, without polling or Supervisor access."""
+"""Event-driven TV Guide reminders without polling."""
 
 from __future__ import annotations
 

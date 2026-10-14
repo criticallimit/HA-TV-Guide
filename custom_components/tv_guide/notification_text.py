@@ -1,4 +1,4 @@
-"""Original reminder translations for native HA delivery."""
+"""TV Guide reminder translations for Home Assistant notifications."""
 from functools import lru_cache
 import json
 from pathlib import Path

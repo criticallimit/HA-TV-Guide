@@ -1,4 +1,4 @@
-"""Authenticated response actions backing the original TV Guide presentation."""
+"""Authenticated response actions backing the TV Guide presentation."""
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import voluptuous as vol
@@ -8,7 +8,7 @@ from .const import DOMAIN
 from .catalogs import resolve_catalogue_channels
 from .ui_payload import build_guide, guide_at, personal_payload, ui_settings, normalize_ui_settings
 
-SERVICES=('get_native_guide','get_native_channels','get_ui_settings','set_ui_settings')
+SERVICES=('get_guide','get_personal_channels','get_ui_settings','set_ui_settings')
 PRESENTATION_OPTIONS=('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')
 
 def async_register_ui_services(hass):
@@ -40,7 +40,7 @@ def async_register_ui_services(hass):
         entry,options=entry_and_options()
         coordinator=hass.data.get(DOMAIN,{}).get(entry.entry_id)
         requested_at = None
-        if call.service == 'get_native_guide' and call.data.get('at'):
+        if call.service == 'get_guide' and call.data.get('at'):
             try:
                 requested_at = datetime.fromisoformat(call.data['at'])
                 if requested_at.tzinfo is None:
@@ -49,18 +49,18 @@ def async_register_ui_services(hass):
             except (TypeError, ValueError, OverflowError) as exc:
                 raise HomeAssistantError('Invalid guide timestamp') from exc
         if getattr(coordinator,'is_original',False):
-            if call.service=='native_request':
+            if call.service=='guide_request':
                 try:
                     if call.data['endpoint']=='settings' and call.data.get('method')=='POST':
                         normalize_ui_settings({'notification_service':(call.data.get('body') or {}).get('notification_service','persistent_notification.create')})
                     result=await coordinator.async_original_request(call.data['endpoint'],call.data.get('method','GET'),call.data.get('body'))
                 except (ValueError,RuntimeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
-                if call.service=='native_request' and call.data['endpoint']=='settings' and call.data.get('method')=='POST':
+                if call.service=='guide_request' and call.data['endpoint']=='settings' and call.data.get('method')=='POST':
 
                     await persist_original_settings(entry, coordinator)
                 return result
-            endpoint={'get_ui_settings':'settings','get_native_guide':'guide','get_native_channels':'personal-channels'}.get(call.service)
+            endpoint={'get_ui_settings':'settings','get_guide':'guide','get_personal_channels':'personal-channels'}.get(call.service)
             if endpoint:
                 result=await coordinator.async_original_request(endpoint)
                 if endpoint == 'guide' and requested_at is not None:
@@ -87,7 +87,7 @@ def async_register_ui_services(hass):
             hass.config_entries.async_update_entry(entry,options={**entry.options,**changes})
             return {'ok':True,'settings':ui_settings({**options,**changes})}
         data,catalogue,channels,busy=await snapshot(options)
-        if call.service=='get_native_channels':
+        if call.service=='get_personal_channels':
             return await hass.async_add_executor_job(personal_payload,catalogue,channels,options)
         raw=call.data.get('at')
         try:
@@ -102,14 +102,14 @@ def async_register_ui_services(hass):
         return await hass.async_add_executor_job(build_guide,data,catalogue,channels,options,at,busy)
 
     for service in SERVICES:
-        schema=vol.Schema({vol.Optional('at'):str}) if service=='get_native_guide' else vol.Schema({vol.Required('options'):dict}) if service=='set_ui_settings' else vol.Schema({})
+        schema=vol.Schema({vol.Optional('at'):str}) if service=='get_guide' else vol.Schema({vol.Required('options'):dict}) if service=='set_ui_settings' else vol.Schema({})
         hass.services.async_register(DOMAIN,service,handle,schema=schema,supports_response=SupportsResponse.ONLY)
     if any(getattr(item,'is_original',False) for item in hass.data.get(DOMAIN,{}).values()):
-        hass.services.async_register(DOMAIN,'native_request',handle,
+        hass.services.async_register(DOMAIN,'guide_request',handle,
             schema=vol.Schema({vol.Required('endpoint'):str,vol.Optional('method',default='GET'):vol.In(['GET','POST']),vol.Optional('body'):dict}),
             supports_response=SupportsResponse.ONLY)
 
 def async_remove_ui_services(hass):
-    hass.services.async_remove(DOMAIN,'native_request')
+    hass.services.async_remove(DOMAIN,'guide_request')
     for service in SERVICES:
         hass.services.async_remove(DOMAIN,service)

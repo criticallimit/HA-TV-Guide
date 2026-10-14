@@ -1,4 +1,4 @@
-"""Query the already downloaded EPG snapshot using a native HA response action."""
+"""Query the already downloaded EPG snapshot using a TV Guide HA response action."""
 
 from datetime import datetime, timezone
 from functools import partial
@@ -25,9 +25,9 @@ QUERY_SCHEMA = vol.Schema({
 
 
 def programme_id(channel_id: str, start: datetime) -> str:
-    """Stable native ID regardless of sender alias or timestamp offset."""
+    """Stable TV Guide ID regardless of sender alias or timestamp offset."""
     key = f"{channel_id}\n{start.astimezone(timezone.utc).isoformat()}"
-    return "native_" + sha256(key.encode("utf-8")).hexdigest()
+    return "guide_" + sha256(key.encode("utf-8")).hexdigest()
 
 
 def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start, end, limit, selected=None):

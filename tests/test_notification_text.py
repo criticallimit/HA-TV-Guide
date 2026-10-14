@@ -1,9 +1,9 @@
-"""Native delivery retains the original reminder language templates."""
+"""TV Guide keeps its reminder language templates."""
 import importlib.util
 from pathlib import Path
 import unittest
 
-spec=importlib.util.spec_from_file_location('native_notification_text',Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'/'notification_text.py')
+spec=importlib.util.spec_from_file_location('tv_guide_notification_text',Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'/'notification_text.py')
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 

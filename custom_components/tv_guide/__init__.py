@@ -136,7 +136,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Release native resources after platforms unload."""
+    """Release TV Guide resources after platforms unload."""
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
         coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
@@ -171,7 +171,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     # The HA Store API handles deletion of saved bookmarks and reminders.
     await Store(hass, 1, f"tv_guide.{entry.entry_id}.saved_programmes").async_remove()
 
-    root = Path(hass.config.path(".storage", "tv_guide_native")).resolve()
+    root = Path(hass.config.path(".storage", "tv_guide_store")).resolve()
     target = (root / entry.entry_id).resolve()
     if target.parent != root:
         raise ValueError("Invalid TV Guide entry storage path")

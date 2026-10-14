@@ -1,4 +1,4 @@
-"""Persistent native programme bookmarks and reminders.
+"""Persistent TV Guide programme bookmarks and reminders.
 
 Records belong only to this integration's HA Store.
 This module does not send notifications on its own.
@@ -82,7 +82,7 @@ class TVGuideSavedProgrammes:
         self._subscribers = set()
 
     def subscribe(self, callback):
-        """Subscribe an entity to changes in native saved lists."""
+        """Subscribe an entity to changes in TV Guide saved lists."""
         self._subscribers.add(callback)
 
     def unsubscribe(self, callback):

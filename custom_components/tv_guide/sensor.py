@@ -10,7 +10,7 @@ from .const import DOMAIN
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Create entities from the native coordinator and saved records."""
+    """Create entities from the TV Guide coordinator and saved records."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     entities = []
     if coordinator is not None:
@@ -22,7 +22,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class TVGuideSavedCount(SensorEntity):
-    """Count saved native items from the native saved store."""
+    """Count saved TV Guide items from the TV Guide saved store."""
 
     _attr_should_poll = False
 
@@ -31,7 +31,7 @@ class TVGuideSavedCount(SensorEntity):
         self._kind = kind
         self._attr_has_entity_name = True
         self._attr_translation_key = f"saved_{kind}"
-        self._attr_unique_id = f"tv_guide_native_saved_{kind}_count"
+        self._attr_unique_id = f"tv_guide_saved_{kind}_count"
         self._attr_icon = "mdi:bookmark" if kind == "bookmarks" else "mdi:alarm"
 
     @property
@@ -51,12 +51,12 @@ class TVGuideSavedCount(SensorEntity):
 
 
 class TVGuideNextReminder(SensorEntity):
-    """Next pending reminder based exclusively on native saved entries."""
+    """Next pending reminder based exclusively on TV Guide saved entries."""
 
     _attr_should_poll = False
     _attr_has_entity_name = True
     _attr_translation_key = "next_reminder"
-    _attr_unique_id = "tv_guide_native_next_reminder"
+    _attr_unique_id = "tv_guide_next_reminder"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_icon = "mdi:alarm"
 
@@ -93,11 +93,11 @@ class TVGuideNextReminder(SensorEntity):
 
 
 class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
-    """Last successful native EPG refresh; from the native coordinator."""
+    """Last successful TV Guide EPG refresh; from the TV Guide coordinator."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "last_epg_update"
-    _attr_unique_id = "tv_guide_native_epg_last_successful_refresh"
+    _attr_unique_id = "tv_guide_epg_last_successful_refresh"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_icon = "mdi:update"
 

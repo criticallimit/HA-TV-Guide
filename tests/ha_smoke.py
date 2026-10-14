@@ -1,4 +1,4 @@
-"""Real HA startup, native actions, registry platforms, reload and unload smoke test.
+"""Real HA startup, TV Guide actions, registry platforms, reload and unload smoke test.
 
 Run in the official Home Assistant image. Only provider downloads are replaced
 with deterministic programme data; the HA runtime and integration are real.
@@ -52,15 +52,15 @@ async def main():
                 registry = er.async_get(hass)
                 assert len([item for item in registry.entities.values() if item.config_entry_id==entry.entry_id])==6
                 assert not any(item.unique_id.startswith('tv_guide_bridge_') for item in registry.entities.values() if item.config_entry_id==entry.entry_id)
-                bookmark_count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_native_saved_bookmarks_count')
+                bookmark_count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_saved_bookmarks_count')
                 assert hass.states.get(bookmark_count_id).state=='0'
                 assert hass.states.get(foreign_id).state=='9999'
                 for domain, unique_id in (
-                    ('sensor', 'tv_guide_native_next_reminder'),
-                    ('sensor', 'tv_guide_native_saved_bookmarks_count'),
-                    ('sensor', 'tv_guide_native_saved_reminders_count'),
-                    ('sensor', 'tv_guide_native_epg_last_successful_refresh'),
-                    ('binary_sensor', 'tv_guide_native_refresh_running'),
+                    ('sensor', 'tv_guide_next_reminder'),
+                    ('sensor', 'tv_guide_saved_bookmarks_count'),
+                    ('sensor', 'tv_guide_saved_reminders_count'),
+                    ('sensor', 'tv_guide_epg_last_successful_refresh'),
+                    ('binary_sensor', 'tv_guide_refresh_running'),
                 ):
                     entity_id = registry.async_get_entity_id(domain, 'tv_guide', unique_id)
                     assert entity_id is not None, unique_id
@@ -95,7 +95,7 @@ async def main():
                 now = datetime.now(timezone.utc)
                 store.refresh_running = False
                 store.channels[0]['programs'] = [{
-                    'title':'Native HA test programme', 'start':(now+timedelta(hours=1)).isoformat(),
+                    'title':'TV Guide test programme', 'start':(now+timedelta(hours=1)).isoformat(),
                     'end':(now+timedelta(hours=2)).isoformat(), 'desc':'HA runtime fixture',
                     'icon':'https://example.org/programme.jpg',
                 }]
@@ -103,28 +103,28 @@ async def main():
                 coordinator.backend._backend_changed()
                 await coordinator._async_sync()
                 async def request(endpoint, method='GET', body=None):
-                    return await hass.services.async_call('tv_guide','native_request',
+                    return await hass.services.async_call('tv_guide','guide_request',
                         {'endpoint':endpoint,'method':method,**({'body':body} if body is not None else {})},
                         blocking=True,return_response=True)
                 guide = await request('guide')
                 programme = guide['channels'][0]['programs'][0]
                 assert programme['icon'].endswith('programme.jpg')
-                window=await hass.services.async_call('tv_guide','get_native_guide',
+                window=await hass.services.async_call('tv_guide','get_guide',
                     {'at':now.isoformat()},blocking=True,return_response=True)
                 assert window['channels'][0]['programs'][0]['id']==programme['id']
-                empty_window=await hass.services.async_call('tv_guide','get_native_guide',
+                empty_window=await hass.services.async_call('tv_guide','get_guide',
                     {'at':(now+timedelta(hours=3)).isoformat()},blocking=True,return_response=True)
                 assert empty_window['channels'][0]['programs']==[]
                 queried = await hass.services.async_call('tv_guide','get_programmes',
                     {'start':now.isoformat(),'end':(now+timedelta(hours=3)).isoformat(),'limit':1},
                     blocking=True,return_response=True)
                 assert queried['count']==1
-                assert queried['programmes'][0]['title']=='Native HA test programme'
+                assert queried['programmes'][0]['title']=='TV Guide test programme'
                 calendar_id=registry.async_get_entity_id('calendar','tv_guide','tv_guide_xmltv_programmes_calendar')
                 calendar_result=await hass.services.async_call('calendar','get_events',
                     {'entity_id':calendar_id,'start_date_time':now.isoformat(),'end_date_time':(now+timedelta(hours=3)).isoformat()},
                     blocking=True,return_response=True)
-                assert calendar_result[calendar_id]['events'][0]['summary']=='Native HA test programme'
+                assert calendar_result[calendar_id]['events'][0]['summary']=='TV Guide test programme'
                 picker = await request('personal-channels')
                 assert len(picker['supported_countries']) == 10
                 keys = [next(ch['id'] for ch in picker['channels'] if ch['id'].startswith(code+':')) for code in ('de','at')]
@@ -152,14 +152,14 @@ async def main():
                 else:
                     raise AssertionError('Unrepresentable UTC dates must not enter saved storage')
                 assert len(hass.data['tv_guide_saved'][entry.entry_id].reminders)==1
-                count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_native_saved_reminders_count')
+                count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_saved_reminders_count')
                 assert hass.states.get(count_id).state=='1'
-                native_saved=hass.data['tv_guide_saved'][entry.entry_id]
-                native_saved.reminders[0]['sent']=True
-                await native_saved.async_save()
+                guide_saved=hass.data['tv_guide_saved'][entry.entry_id]
+                guide_saved.reminders[0]['sent']=True
+                await guide_saved.async_save()
                 assert hass.states.get(count_id).state=='0'
-                native_saved.reminders[0]['sent']=False
-                await native_saved.async_save()
+                guide_saved.reminders[0]['sent']=False
+                await guide_saved.async_save()
                 assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
                 hass.config_entries.async_update_entry(entry,version=1)
                 assert await hass.config_entries.async_reload(entry.entry_id)
@@ -169,14 +169,14 @@ async def main():
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
                 assert len(saved['bookmarks']) == len(saved['reminders']) == 1
                 assert await hass.config_entries.async_unload(entry.entry_id)
-                assert not hass.services.has_service('tv_guide','native_request')
+                assert not hass.services.has_service('tv_guide','guide_request')
                 assert not hass.data['tv_guide']
                 assert not frontend.async_panel_exists(hass,'tv-guide')
                 assert hass.states.get(foreign_id).state=='9999'
                 # Deleting the config entry must remove only its entities and files.
-                native_storage = Path(hass.config.path('.storage','tv_guide_native',entry.entry_id))
+                guide_storage = Path(hass.config.path('.storage','tv_guide_store',entry.entry_id))
                 saved_storage = Path(hass.config.path('.storage',f'tv_guide.{entry.entry_id}.saved_programmes'))
-                assert native_storage.exists()
+                assert guide_storage.exists()
                 assert saved_storage.exists()
                 owned_ids = [entity.entity_id for entity in registry.entities.values()
                              if entity.config_entry_id == entry.entry_id]
@@ -186,7 +186,7 @@ async def main():
                 assert not [entity for entity in registry.entities.values()
                             if entity.config_entry_id == entry.entry_id]
                 assert all(hass.states.get(entity_id) is None for entity_id in owned_ids)
-                assert not native_storage.exists()
+                assert not guide_storage.exists()
                 assert not saved_storage.exists()
                 assert hass.states.get(foreign_id).state == '9999'
                 print(f'PASS real Home Assistant {__version__}: setup, reload, unload and complete removal of owned entities and storage',flush=True)

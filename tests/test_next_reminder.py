@@ -1,4 +1,4 @@
-"""Offline tests for selecting the earliest native reminder."""
+"""Offline tests for selecting the earliest TV Guide reminder."""
 
 import importlib.util
 from datetime import datetime, timedelta, timezone

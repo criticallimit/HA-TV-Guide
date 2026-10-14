@@ -1,4 +1,4 @@
-"""Native UI model bounds, aliases, IDs, settings and reference-asset provenance."""
+"""TV Guide UI model bounds, aliases, IDs, settings and reference-asset provenance."""
 from datetime import datetime,timezone,timedelta
 import hashlib
 import importlib.util
@@ -25,7 +25,7 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(result['feed_latest_end'],(self.at+timedelta(hours=20)).isoformat())
         self.assertEqual(first['programs'][0]['desc'],'Description')
         self.assertEqual(first['programs'][0]['category'],'News')
-        self.assertTrue(first['programs'][0]['id'].startswith('native_'))
+        self.assertTrue(first['programs'][0]['id'].startswith('guide_'))
         self.assertEqual(result['channels'][1]['programs'],[])
         self.assertTrue((ROOT/'frontend'/'app'/first['logo_normalized_light']).is_file())
 

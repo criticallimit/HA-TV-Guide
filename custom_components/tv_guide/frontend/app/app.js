@@ -1,4 +1,4 @@
-const fetch = window.TVGuideNativeFetch;
+const fetch = window.TVGuideFetch;
 const t = (message, values) => globalThis.TVGuideI18n?.t(message, values) || message;
 const grid = document.getElementById("grid");
 const guideHeader = document.querySelector(".guide-header");
@@ -107,8 +107,8 @@ function rgbLuminance(value) {
 
 const dashboardParams = new URLSearchParams(window.location.search);
 const inDashboardCard = dashboardParams.get("tv_guide_card") === "1";
-const dashboardThemeKey = "tv-guide-native-dashboard-theme:" + (dashboardParams.get("tv_guide_theme") || "__dashboard__");
-const dashboardDisplayModeKey = "tv-guide-native-dashboard-display-mode";
+const dashboardThemeKey = "tv-guide-dashboard-theme:" + (dashboardParams.get("tv_guide_theme") || "__dashboard__");
+const dashboardDisplayModeKey = "tv-guide-dashboard-display-mode";
 let dashboardThemeState = null;
 
 function dashboardDisplayMode() {
@@ -263,7 +263,7 @@ const dateFmt = TVGuideCore.dateFmt;
 let guide = null;
 // A tiny, short-lived first-paint snapshot, scoped to this browser tab.
 // Only store it when serialization fits the strict size budget; never add polling.
-const GUIDE_FIRST_PAINT_KEY = "tv-guide-native-first-paint-v1";
+const GUIDE_FIRST_PAINT_KEY = "tv-guide-first-paint-v1";
 const GUIDE_FIRST_PAINT_TTL_MS = 60 * 1000;
 const GUIDE_FIRST_PAINT_MAX_CHARS = 384 * 1024;
 function showCachedGuide() {
@@ -437,7 +437,7 @@ async function loadReminders() {
     if (request !== remindersRequest || revision !== remindersRevision) return;
     reminders = Array.isArray(payload.reminders) ? payload.reminders : [];
   } catch {
-    // Keep the last known reminders while the native action is temporarily unavailable.
+    // Keep the last known reminders while the TV Guide action is temporarily unavailable.
   }
 }
 
@@ -826,7 +826,7 @@ function setMode(nextMode) {
   if (nextMode === "now") selectedDate = startOfDay(new Date());
   document.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === nextMode));
-  // The native guide response contains complete channel timelines. Re-render
+  // The TV Guide guide response contains complete channel timelines. Re-render
   // an already loaded guide locally instead of waiting for a Home Assistant
   // websocket round trip on every time-tab click.
   if (guide) render();

@@ -1,4 +1,4 @@
-"""Refresh status from the native programme coordinator."""
+"""Refresh status from the TV Guide programme coordinator."""
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import callback
@@ -7,17 +7,17 @@ from .const import DOMAIN
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Register the native refresh entity."""
+    """Register the TV Guide refresh entity."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-    entities = [TVGuideNativeRefreshSensor(coordinator)] if coordinator is not None else []
+    entities = [TVGuideRefreshSensor(coordinator)] if coordinator is not None else []
     async_add_entities(entities)
 
 
-class TVGuideNativeRefreshSensor(BinarySensorEntity):
+class TVGuideRefreshSensor(BinarySensorEntity):
     """Reflect the integration's own download/parse lifecycle."""
 
-    _attr_name = "TV Guide native EPG refresh running"
-    _attr_unique_id = "tv_guide_native_refresh_running"
+    _attr_name = "TV Guide EPG refresh running"
+    _attr_unique_id = "tv_guide_refresh_running"
     _attr_icon = "mdi:sync"
     _attr_should_poll = False
 
