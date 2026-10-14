@@ -76,13 +76,26 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
                     best, best_key = candidate, key
         return best
 
-    async def async_get_events(self, hass, start_date, end_date):
-        """Retrieve programmes overlapping the requested time window."""
+    def _events_for_range(self, records, catalogue, channels, selection, start_date, end_date):
+        """Filter and build events from one captured snapshot in a worker."""
         events = []
-        labels = channel_labels(self.coordinator.canonical_channels, self.coordinator.channels)
-        for record in self._selected_programmes():
+        if selection:
+            selected = resolved_selection(selection, catalogue)
+            if not selected:
+                return events
+            records = filter_programmes(records, selected)
+        labels = channel_labels(catalogue, channels)
+        for record in records:
             event = self._to_event(record, labels)
             if event is not None and event.start < end_date and event.end > start_date:
                 events.append(event)
         events.sort(key=lambda event: (event.start, event.location or ""))
         return events
+
+    async def async_get_events(self, hass, start_date, end_date):
+        """Retrieve overlapping programmes without blocking HA's event loop."""
+        return await hass.async_add_executor_job(
+            self._events_for_range, self.coordinator.data or [],
+            self.coordinator.canonical_channels, self.coordinator.channels,
+            list(self._selected_channels), start_date, end_date,
+        )

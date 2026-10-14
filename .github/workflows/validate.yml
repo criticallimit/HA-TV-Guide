@@ -20,15 +20,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: home-assistant/actions/hassfest@master
 
-  hacs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: HACS validation
-        uses: hacs/action@main
-        with:
-          category: integration
-
   syntax:
     runs-on: ubuntu-latest
     steps:
@@ -45,7 +36,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          for path in list(Path("custom_components").rglob("*.json")) + [Path("hacs.json")]:
+          for path in Path("custom_components").rglob("*.json"):
               json.loads(path.read_text(encoding="utf-8"))
               print("OK", path)
           PY

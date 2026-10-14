@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from datetime import datetime,timedelta,timezone
 import importlib.util
+import asyncio
+import threading
 from pathlib import Path
 import sys,types,unittest
 from unittest.mock import patch
@@ -31,6 +33,13 @@ class CalendarTests(unittest.IsolatedAsyncioTestCase):
         self.coordinator=types.SimpleNamespace(data=[],canonical_channels=[{'id':'ard','xmltv_id':'ard','name':'Das Erste'},{'id':'zdf','xmltv_id':'zdf','name':'ZDF'}],channels=[])
         self.entry=types.SimpleNamespace(data={},options={})
         self.calendar=module.TVGuideProgrammeCalendar(self.coordinator,self.entry)
+        self.threads=[]
+        async def executor(fn,*args):
+            def run():
+                self.threads.append(threading.get_ident())
+                return fn(*args)
+            return await asyncio.to_thread(run)
+        self.hass=types.SimpleNamespace(async_add_executor_job=executor)
     def record(self,channel,begin,end,title):
         return {'channel':channel,'start':(self.now+timedelta(minutes=begin)).isoformat(),'stop':(self.now+timedelta(minutes=end)).isoformat(),'title':title}
 
@@ -50,7 +59,18 @@ class CalendarTests(unittest.IsolatedAsyncioTestCase):
     async def test_range_overlap_and_order_preserve_names_with_one_label_scan(self):
         self.coordinator.data=[self.record('zdf',20,50,'later'),self.record('ard',-10,20,'overlap'),self.record('ard',60,90,'outside')]
         with patch.object(module,'channel_labels',wraps=module.channel_labels) as labels:
-            events=await self.calendar.async_get_events(None,self.now,self.now+timedelta(minutes=30))
+            events=await self.calendar.async_get_events(self.hass,self.now,self.now+timedelta(minutes=30))
         labels.assert_called_once()
         self.assertEqual([event.summary for event in events],['overlap','later'])
         self.assertEqual([event.location for event in events],['Das Erste','ZDF'])
+        self.assertEqual(len(self.threads),1)
+        self.assertNotEqual(self.threads[0],threading.get_ident())
+
+    async def test_range_uses_selected_channels_and_skips_invalid_rows_in_worker(self):
+        self.coordinator.data=[self.record('ard',0,30,'ARD'),self.record('zdf',10,20,'ZDF'),{'start':'bad'},
+            {'channel':'zdf','title':'naive','start':'2026-10-14T12:00:00','stop':'2026-10-14T13:00:00'}]
+        self.entry.options['channels']=['zdf']
+        events=await self.calendar.async_get_events(self.hass,self.now,self.now+timedelta(minutes=30))
+        self.assertEqual([event.summary for event in events],['ZDF'])
+        self.entry.options['channels']=['unknown']
+        self.assertEqual(await self.calendar.async_get_events(self.hass,self.now,self.now+timedelta(minutes=30)),[])

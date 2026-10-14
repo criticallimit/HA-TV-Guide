@@ -113,6 +113,11 @@ async def main():
                     blocking=True,return_response=True)
                 assert queried['count']==1
                 assert queried['programmes'][0]['title']=='Native HA test programme'
+                calendar_id=registry.async_get_entity_id('calendar','tv_guide','tv_guide_xmltv_programmes_calendar')
+                calendar_result=await hass.services.async_call('calendar','get_events',
+                    {'entity_id':calendar_id,'start_date':now.isoformat(),'end_date':(now+timedelta(hours=3)).isoformat()},
+                    blocking=True,return_response=True)
+                assert calendar_result[calendar_id]['events'][0]['summary']=='Native HA test programme'
                 picker = await request('personal-channels')
                 assert len(picker['supported_countries']) == 10
                 keys = [next(ch['id'] for ch in picker['channels'] if ch['id'].startswith(code+':')) for code in ('de','at')]

@@ -16,7 +16,7 @@ Native bookmarks/reminders use HA Store and the event-driven scheduler. All prev
 
 ## Verification and remaining detail work
 
-Inherited provider regression fixtures exercise the copied engine. Existing Python/browser tests cover native storage/reminders and original appearance. CI adds a real HA stable-container startup/actions/reload/unload smoke test with offline provider fixtures. Live provider availability and real notification destinations still require an installation test. The complete source logo library is packaged locally; saved records exist exclusively in the native HA Store. Repository privacy, disabled issues and missing topics currently block HACS publication validation.
+Inherited provider regression fixtures exercise the copied engine. Existing Python/browser tests cover native storage/reminders and original appearance. CI adds a real HA stable-container startup/actions/reload/unload smoke test with offline provider fixtures. Live provider availability and real notification destinations still require an installation test. The complete source logo library is packaged locally; saved records exist exclusively in the native HA Store.
 
 Repeated refresh requests share one queued/running job per country store. Periodic coordinator refreshes use the same owned worker pool, so unload drains those requests as well. Native option restoration tolerates corrupt/wrong-root JSON and writes the replacement atomically. Live DE/GB engine checks passed on 14 October 2026; actual HA runtime verification remains fixture-backed.
 
@@ -47,3 +47,7 @@ The sidebar sizes the guide to available viewport height in portrait and landsca
 ## Follow-up review
 
 Named card themes retain the original visual editor, HA mode values and dashboard inheritance. Short CSS hex colours also determine light/dark appearance correctly. Native programme response actions scan and sort snapshots in the HA executor instead of blocking the event loop. The public logo route handles corrupt ZIP bundles as missing images rather than leaking HTTP 500 errors.
+
+## Manual installation review
+
+Distribution uses manual installation of the complete custom component directory. CI validates the native integration with offline unit/JSON/syntax checks, Hassfest, browser parity and a real Home Assistant smoke test. Calendar range queries capture the current snapshot and selection, then build/filter/sort events in HA's executor. The smoke also exercises the native calendar get_events action.
