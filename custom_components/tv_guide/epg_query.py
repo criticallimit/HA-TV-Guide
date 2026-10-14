@@ -121,6 +121,10 @@ def async_register_epg_query(hass):
             raise HomeAssistantError("Invalid channel selection") from exc
         known = {station["id"] for station in coordinator.canonical_channels}
         known.update(station["id"] for station in coordinator.channels)
+        known.update(
+            station["xmltv_id"] for station in coordinator.canonical_channels
+            if station.get("xmltv_id")
+        )
         if any(channel not in known for channel in selected):
             raise HomeAssistantError("Unknown channel in selection")
         hass.config_entries.async_update_entry(
