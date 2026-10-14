@@ -24,10 +24,15 @@ QUERY_SCHEMA = vol.Schema({
 
 def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start, end, limit, selected=None):
     """Return a bounded chronological subset of the cached XMLTV snapshot."""
-    ids = resolved_selection([channel_id], catalogue) if channel_id else resolved_selection(selected or [], catalogue)
+    chosen = set(resolved_selection(selected or [], catalogue))
+    if selected and not chosen:
+        return []
+    ids = set(resolved_selection([channel_id], catalogue)) if channel_id else chosen
+    if selected and channel_id:
+        ids &= chosen
     if (channel_id or selected) and not ids:
         return []
-    allowed = set(ids)
+    allowed = ids
     labels = channel_labels(catalogue, feed_channels)
     result = []
     for programme in programmes:
