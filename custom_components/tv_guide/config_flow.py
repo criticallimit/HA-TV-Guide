@@ -39,7 +39,7 @@ def _validated_feed(user_input: dict[str, Any]) -> tuple[dict[str, str], dict[st
     except ValueError:
         return {}, {CONF_CHANNELS: "invalid_channels"}
     notification_service = user_input.get(CONF_NOTIFICATION_SERVICE, "persistent_notification.create").strip()
-    if notification_service != "persistent_notification.create" and not (notification_service.startswith("notify.") and notification_service[7:].replace("_", "").isalnum()):
+    if notification_service != "persistent_notification.create" and not (notification_service.startswith("notify.") and bool(notification_service[7:]) and notification_service[7:].isascii() and notification_service[7:].replace("_", "").isalnum()):
         return {}, {CONF_NOTIFICATION_SERVICE: "invalid_notification_service"}
     data = {CONF_COUNTRY: country, CONF_FEED_URL: "", CONF_CHANNELS: selected, CONF_NOTIFICATION_SERVICE: notification_service}
     if not url:
@@ -98,5 +98,5 @@ class TVGuideOptionsFlow(config_entries.OptionsFlow):
             CONF_NOTIFICATION_SERVICE, self.config_entry.data.get(CONF_NOTIFICATION_SERVICE, "persistent_notification.create")
         )
         return self.async_show_form(
-            step_id="init", data_schema=_feed_schema(current, country, ", ".join(channels), notification_service), errors=errors
+            step_id="init", data_schema=_feed_schema(current, country, ", ".join(channels) if isinstance(channels, list) else channels, notification_service), errors=errors
         )
