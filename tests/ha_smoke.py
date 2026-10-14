@@ -161,7 +161,6 @@ async def main():
                 guide_saved.reminders[0]['sent']=False
                 await guide_saved.async_save()
                 assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
-                hass.config_entries.async_update_entry(entry,version=1)
                 assert await hass.config_entries.async_reload(entry.entry_id)
                 await hass.async_block_till_done()
                 assert entry.version==2
