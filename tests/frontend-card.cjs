@@ -183,6 +183,11 @@ const server = http.createServer((req,res) => {
   const themeSelect=native.locator('tv-guide-native-card-editor').locator('#theme');
   assert.deepEqual(await themeSelect.locator('option').allTextContents(),['Home Assistant / Dashboard','A <B> & "C"','Dirk']);
   await themeSelect.selectOption('Dirk');
+  assert.equal(await native.evaluate(()=>{
+    const editor=document.querySelector('tv-guide-native-card-editor'),select=editor.shadowRoot.getElementById('theme');
+    select.focus();editor.setConfig({...editor._config});editor.hass={...hass,states:{updated:{state:'on'}}};
+    return editor.shadowRoot.getElementById('theme')===select&&editor.shadowRoot.activeElement===select&&select.value==='Dirk';
+  }),true);
   await frame.locator('html[data-ha-theme="light"]').waitFor();
   assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card')._config.theme),'Dirk');
   assert.equal(await native.evaluate(()=>document.querySelector('tv-guide-native-card')._config.height),1000);

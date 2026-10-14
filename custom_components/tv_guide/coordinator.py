@@ -11,6 +11,8 @@ from .xmltv import parse_xmltv
 from .channel_catalog import parse_channel_catalog
 from .catalogs import resolve_catalogue_channels
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
     """Maintain one shared EPG snapshot, refreshing at most every 3 hours."""
@@ -40,7 +42,10 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
 
     def _notify_refresh(self):
         for callback in tuple(self._refresh_listeners):
-            callback()
+            try:
+                callback()
+            except Exception:
+                _LOGGER.exception("TV Guide refresh-state subscriber failed")
 
     async def _async_update_data(self) -> list[dict]:
         self.refresh_running = True

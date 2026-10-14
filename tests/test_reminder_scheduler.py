@@ -100,6 +100,16 @@ class SchedulerTests(unittest.TestCase):
             self.assertEqual(hass.services.calls, [])
         asyncio.run(run())
 
+    def test_ended_programme_is_not_notified_during_the_start_grace_window(self):
+        async def run():
+            scheduler,saved,hass=self._make()
+            now=datetime.now(timezone.utc)
+            saved.reminders[0].update(start=(now-timedelta(minutes=1)).isoformat(),end=(now-timedelta(seconds=30)).isoformat())
+            await scheduler._deliver('test')
+            self.assertEqual(hass.services.calls,[])
+            self.assertEqual(saved.saves,0)
+        asyncio.run(run())
+
     def test_storage_retry_never_resends_successful_notification(self):
         async def run():
             scheduler, saved, hass = self._make()

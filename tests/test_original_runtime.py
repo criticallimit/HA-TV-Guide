@@ -135,7 +135,8 @@ class OriginalRuntimeTests(unittest.TestCase):
     def test_damaged_cached_rows_and_metadata_preserve_valid_programmes(self):
         now=datetime.now(timezone.utc)
         valid={'title':'Valid cache','start':(now-timedelta(minutes=10)).isoformat(),'end':(now+timedelta(minutes=50)).isoformat()}
-        channel={**self.runtime.STORE.channels[0],'programs':[valid,{'title':'broken','start':'invalid','end':valid['end']},{**valid,'start':'2026-10-14T11:00:00'},None]}
+        invalid={'title':'invalid-utc','start':'9999-12-31T23:30:00-01:00','end':'9999-12-31T23:45:00-01:00'}
+        channel={**self.runtime.STORE.channels[0],'programs':[valid,invalid,{'title':'broken','start':'invalid','end':valid['end']},{**valid,'start':'2026-10-14T11:00:00'},None]}
         payload={'schema_version':10,'country':'de','channels':[channel],'source_metrics':[{'ok':True},'bad'],'official_metrics':['bad'],'feed_latest_end':'invalid'}
         self.runtime.STORE.parsed_cache_file.write_text(json.dumps(payload),encoding='utf-8')
         restored=self.runtime.EPGStore('de')
@@ -143,6 +144,14 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.assertEqual(restored.source_metrics,[{'ok':True}])
         self.assertIsNone(restored.feed_latest_end)
         self.assertTrue(restored._cache_fresh())
+
+    def test_invalid_provider_instants_cannot_poison_native_guide_timelines(self):
+        for value in ('99991231233000 -0100','00010101000000 +0100'):
+            self.assertIsNone(self.runtime.xmltv_datetime(value))
+        now=datetime.now(timezone.utc)
+        valid={'title':'Valid','start':now.isoformat(),'end':(now+timedelta(hours=1)).isoformat()}
+        invalid={'title':'Invalid','start':'9999-12-31T23:30:00-01:00','end':'9999-12-31T23:45:00-01:00'}
+        self.assertEqual(self.runtime.STORE._validate_program_timeline([invalid,valid]),[valid])
 
     def test_wrong_cached_programme_container_is_replaced_by_empty_native_data(self):
         channel={**self.runtime.STORE.channels[0],'programs':{'bad':'container'}}

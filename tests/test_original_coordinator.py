@@ -67,7 +67,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.coordinator._sync_pending)
 
     async def test_malformed_cached_success_timestamp_does_not_break_setup(self):
-        for value in ('invalid','2026-10-14T11:00:00',None):
+        for value in ('invalid','2026-10-14T11:00:00','9999-12-31T23:30:00-01:00',None):
             self.coordinator.backend.state_snapshot=lambda:([],[],[],{'country':'de','last_loaded':value,'refresh_running':False,'source_attempts':[],'refresh_minutes':180})
             await self.coordinator._snapshot()
             self.assertIsNone(self.coordinator.last_successful_refresh)

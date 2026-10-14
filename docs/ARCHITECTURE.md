@@ -55,3 +55,7 @@ Distribution uses manual installation of the complete custom component directory
 ## Complete action review
 
 The native get_native_guide action validates optional aware timestamps and returns a copied seven-row window when requested; default original-provider timelines remain complete for date navigation. HA reminder select fields may supply numeric strings, which are normalized to supported integer values; fractional and boolean minute values are rejected. Saved channel identifiers share a 200-character bound across the action schema and storage, preserving country-qualified XMLTV identifiers.
+
+## Full lifecycle and boundary review
+
+Unchanged HA state updates reuse the existing Lovelace theme selector instead of rebuilding its focused control. Refresh-state callbacks are isolated so one failed subscriber cannot abort a programme refresh or prevent other entities from updating. Reminder delivery and retry deadlines end at the earlier of programme end and the five-minute grace limit. Unrepresentable UTC conversions are rejected in saved records, provider/XMLTV parsing, restored caches and timeline validation; valid rows are retained. All reminder arithmetic handles datetime range overflow without breaking setup or scheduling.

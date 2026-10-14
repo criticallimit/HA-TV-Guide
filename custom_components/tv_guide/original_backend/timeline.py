@@ -5,7 +5,7 @@ The application context is supplied by services.py; all mutable state is shared.
 """
 
 import re
-from datetime import timedelta
+from datetime import timedelta, timezone
 
 
 class ProgrammeTimeline:
@@ -31,7 +31,7 @@ class ProgrammeTimeline:
                     start = self.runtime.datetime.fromisoformat(item["start"])
                     end = self.runtime.datetime.fromisoformat(item["end"])
                     if (start.utcoffset() is None or end.utcoffset() is None or end <= now
-                            or not start < end <= start + timedelta(days=1)):
+                            or not start < end or end - start > timedelta(days=1)):
                         continue
                     # Old official priorities must never override a newly
                     # published correction, even from a lower-ranked feed.
@@ -243,7 +243,9 @@ class ProgrammeTimeline:
                 end = self.runtime.datetime.fromisoformat(item.get("end") or "")
                 if start.utcoffset() is None or end.utcoffset() is None or end <= start:
                     continue
-            except (AttributeError, TypeError, ValueError):
+                start.astimezone(timezone.utc)
+                end.astimezone(timezone.utc)
+            except (AttributeError, TypeError, ValueError, OverflowError):
                 continue
             ordered.append((start, end, dict(item)))
         # ISO strings do not sort chronologically across different UTC offsets,

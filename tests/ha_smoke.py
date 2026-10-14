@@ -70,7 +70,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
-                assert '/tv_guide/frontend/tv-guide-native-card.js?v=8' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-native-card.js?v=9' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -142,6 +142,15 @@ async def main():
                 assert saved['bookmarks'][0]['channelId']==fields['channel_id']
                 assert saved['reminders'][0]['channelId']==fields['channel_id']
                 assert saved['reminders'][0]['minutes']==15
+                from homeassistant.exceptions import HomeAssistantError
+                try:
+                    await hass.services.async_call('tv_guide','save_reminder',
+                        {**fields,'id':'invalid-utc','start':'9999-12-31T23:30:00-01:00','end':'9999-12-31T23:45:00-01:00','minutes':10},blocking=True)
+                except HomeAssistantError:
+                    pass
+                else:
+                    raise AssertionError('Unrepresentable UTC dates must not enter saved storage')
+                assert len(hass.data['tv_guide_saved'][entry.entry_id].reminders)==1
                 count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_native_saved_reminders_count')
                 assert hass.states.get(count_id).state=='1'
                 native_saved=hass.data['tv_guide_saved'][entry.entry_id]

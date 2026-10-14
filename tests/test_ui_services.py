@@ -76,7 +76,7 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         calls=[]
         async def request(*args):calls.append(args);return {}
         self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_original=True,async_original_request=request)}
-        for at in ('bad','2030-01-01T12:00:00'):
+        for at in ('bad','2030-01-01T12:00:00','9999-12-31T23:30:00-01:00'):
             with self.assertRaises(exc.HomeAssistantError):await self.call('get_native_guide',{'at':at})
         self.assertEqual(calls,[])
 

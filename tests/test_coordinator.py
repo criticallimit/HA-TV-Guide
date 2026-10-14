@@ -84,6 +84,16 @@ class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.coordinator.channels[0]["id"], "zdf")
         self.assertEqual(self.busy, [True, False])
 
+    async def test_failed_status_subscriber_cannot_break_refresh_or_other_listeners(self):
+        def broken():raise RuntimeError('Removed entity')
+        self.coordinator.subscribe_refresh(broken)
+        self.responses={'primary':FUTURE}
+        result=await self.coordinator._async_update_data()
+        self.assertEqual(result[0]['title'],'News')
+        self.assertEqual(self.busy,[True,False])
+        self.assertFalse(self.coordinator.refresh_running)
+        self.assertIsNotNone(self.coordinator.last_successful_refresh)
+
     async def test_transport_malformed_empty_and_expired_feed_use_fallback(self):
         for response in (ConnectionError("offline"), b"<broken", b"<tv/>", EXPIRED):
             with self.subTest(response=response):

@@ -23,7 +23,7 @@ def parse_xmltv_time(value: str | None) -> datetime | None:
         return None
     try:
         return datetime.strptime(" ".join(match.groups()), "%Y%m%d%H%M%S %z").astimezone(timezone.utc)
-    except ValueError:
+    except (ValueError, OverflowError):
         return None
 
 

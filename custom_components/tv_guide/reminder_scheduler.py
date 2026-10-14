@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_point_in_utc_time
-from .reminder_times import next_reminder_time, retry_time
+from .reminder_times import next_reminder_time, retry_time, reminder_expiry
 from .notification_text import reminder_text
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,8 +66,8 @@ class TVGuideReminderScheduler:
                 checkpoints.append(max(now,datetime.fromisoformat(item["end"])))
         for item in self.saved.reminders:
             if not item.get("sent"):
-                expires = datetime.fromisoformat(item["start"]) + timedelta(minutes=5)
-                if expires > now:
+                expires = reminder_expiry(item)
+                if expires is not None and expires > now:
                     checkpoints.append(expires)
         if checkpoints:
             self._schedule_cleanup(min(checkpoints))
@@ -132,7 +132,8 @@ class TVGuideReminderScheduler:
                 return
             start = datetime.fromisoformat(item["start"])
             now = datetime.now(timezone.utc)
-            if now < start - timedelta(minutes=item["minutes"]) or now >= start + timedelta(minutes=5):
+            due = next_reminder_time(item, now)
+            if due is None or due > now:
                 return
             try:
                 time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")

@@ -90,7 +90,11 @@ def async_register_epg_query(hass):
         try:
             start = datetime.fromisoformat(call.data["start"])
             end = datetime.fromisoformat(call.data["end"])
-        except (ValueError, TypeError) as exc:
+            if start.tzinfo is not None:
+                start.astimezone(timezone.utc)
+            if end.tzinfo is not None:
+                end.astimezone(timezone.utc)
+        except (ValueError, TypeError, OverflowError) as exc:
             raise HomeAssistantError("Invalid ISO 8601 timestamp") from exc
         if start.tzinfo is None or end.tzinfo is None or end <= start:
             raise HomeAssistantError("Time range must use timezone-aware start and end")

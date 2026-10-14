@@ -26,6 +26,7 @@
     "In-process authenticated route adapter instead of HTTP server",
     "Complete offline logo library packaged and served by native HA view",
     "Removed add-on state bridges, sensor-option publishing, duplicate saved-record and Supervisor/notification routes",
-    "Validate restored native programme cache records and metadata"
+    "Validate restored native programme cache records and metadata",
+    "Reject unrepresentable datetime instants in native XMLTV/cache/timeline validation without changing valid schedules"
   ]
 }

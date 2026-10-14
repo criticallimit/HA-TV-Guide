@@ -9,7 +9,7 @@ import json
 import os
 import threading
 import time
-from datetime import timedelta
+from datetime import timedelta, timezone
 from urllib.parse import urlparse
 from urllib.request import Request
 
@@ -108,7 +108,11 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                     try:
                         start = self.runtime.datetime.fromisoformat(programme['start'])
                         end = self.runtime.datetime.fromisoformat(programme['end'])
-                    except (KeyError, TypeError, ValueError):
+                        if start.tzinfo is not None:
+                            start.astimezone(timezone.utc)
+                        if end.tzinfo is not None:
+                            end.astimezone(timezone.utc)
+                    except (KeyError, TypeError, ValueError, OverflowError):
                         continue
                     if start.tzinfo is None or end.tzinfo is None or end <= start:
                         continue
@@ -119,7 +123,9 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                 latest = self.runtime.datetime.fromisoformat(latest_end_raw)
                 if latest.tzinfo is None:
                     latest_end_raw = None
-            except (TypeError, ValueError):
+                else:
+                    latest.astimezone(timezone.utc)
+            except (TypeError, ValueError, OverflowError):
                 latest_end_raw = None
             if cache_version < 10:
                 # Old RTL records can contain reversed series/episode fields.

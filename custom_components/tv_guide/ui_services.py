@@ -45,7 +45,8 @@ def async_register_ui_services(hass):
                 requested_at = datetime.fromisoformat(call.data['at'])
                 if requested_at.tzinfo is None:
                     raise ValueError('Timestamp must include a timezone')
-            except (TypeError, ValueError) as exc:
+                requested_at.astimezone(timezone.utc)
+            except (TypeError, ValueError, OverflowError) as exc:
                 raise HomeAssistantError('Invalid guide timestamp') from exc
         if getattr(coordinator,'is_original',False):
             if call.service=='native_request':
@@ -93,7 +94,8 @@ def async_register_ui_services(hass):
             at=datetime.fromisoformat(raw) if raw else datetime.now(timezone.utc)
             if at.tzinfo is None:
                 raise ValueError('Timestamp must include a timezone')
-        except (TypeError,ValueError) as exc:
+            at.astimezone(timezone.utc)
+        except (TypeError,ValueError,OverflowError) as exc:
             raise HomeAssistantError('Invalid guide timestamp') from exc
         if not raw and options.get('default_view','now')!='now':
             view=options['default_view'];at=at.astimezone(ZoneInfo(hass.config.time_zone)).replace(hour=int(view[:2]),minute=int(view[2:]),second=0,microsecond=0)

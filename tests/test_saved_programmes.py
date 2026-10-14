@@ -31,6 +31,12 @@ spec.loader.exec_module(module)
 
 
 class SavedProgrammeTests(unittest.TestCase):
+    def test_dates_outside_the_representable_utc_range_are_not_restored(self):
+        for start,end in [('9999-12-31T23:30:00-01:00','9999-12-31T23:45:00-01:00'),('0001-01-01T00:00:00+01:00','2040-01-01T01:00:00+00:00')]:
+            item={'id':'bad-time','start':start,'end':end,'minutes':10}
+            self.assertEqual(module.normalize_items([item]),[])
+            self.assertEqual(module.normalize_items([item],reminders=True),[])
+
     def test_long_country_qualified_channel_id_survives_storage(self):
         now=datetime.now(timezone.utc)+timedelta(hours=1)
         channel_id='de:'+'x'*160

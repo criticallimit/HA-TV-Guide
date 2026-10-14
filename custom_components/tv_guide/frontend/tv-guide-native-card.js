@@ -37,6 +37,14 @@ class TVGuideNativeCardEditor extends HTMLElement {
     if (!this.shadowRoot) return;
     const themes = Object.keys(this._hass?.themes?.themes || {}).sort((a,b) => a.localeCompare(b));
     const currentTheme = String(this._config?.theme || "");
+    const themesKey = JSON.stringify(themes);
+    const select = this.shadowRoot.getElementById("theme");
+    if (select && this._themesKey === themesKey) {
+      const value = themes.includes(currentTheme) ? currentTheme : "";
+      if (select.value !== value) select.value = value;
+      return;
+    }
+    this._themesKey = themesKey;
     this.shadowRoot.innerHTML = `
       <style>
         :host { display:block; }

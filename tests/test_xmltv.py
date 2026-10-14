@@ -24,6 +24,12 @@ class XMLTVTests(unittest.TestCase):
         self.assertIsNone(parse_xmltv_time("20261013201500"))
         self.assertIsNone(parse_xmltv_time("wrong"))
 
+    def test_dates_outside_utc_range_are_skipped_without_losing_valid_programmes(self):
+        self.assertIsNone(parse_xmltv_time('99991231233000 -0100'))
+        self.assertIsNone(parse_xmltv_time('00010101000000 +0100'))
+        data=b'<tv><programme channel="bad" start="99991231233000 -0100" stop="99991231234500 -0100"><title>Invalid</title></programme><programme channel="good" start="20300101120000 +0000" stop="20300101130000 +0000"><title>Valid</title></programme></tv>'
+        self.assertEqual([row['title'] for row in parse_xmltv(data)],['Valid'])
+
     def test_programmes(self):
         xml = b'<tv><programme channel="channel.one" start="20261013201500 +0200" stop="20261013220000 +0200"><title lang="de">Film</title><desc>Beschreibung</desc></programme></tv>'
         result = parse_xmltv(xml)

@@ -39,7 +39,11 @@ def xmltv_datetime(value):
         dt = dt.replace(tzinfo=timezone(sign * timedelta(hours=hours, minutes=minutes)))
     else:
         dt = dt.replace(tzinfo=EPG_TIMEZONE)
-    return dt.astimezone(EPG_TIMEZONE)
+    try:
+        dt.astimezone(timezone.utc)
+        return dt.astimezone(EPG_TIMEZONE)
+    except (ValueError, OverflowError):
+        return None
 
 def first_text(node, tag):
     child = node.find(tag)

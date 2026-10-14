@@ -62,7 +62,9 @@ class TVGuideOriginalCoordinator(TVGuideEPGCoordinator):
         self.active_source = "multi-source"
         try:
             loaded = datetime.fromisoformat(status['last_loaded']) if status['last_loaded'] else None
-        except (TypeError, ValueError):
+            if loaded is not None and loaded.tzinfo is not None:
+                loaded.astimezone(timezone.utc)
+        except (TypeError, ValueError, OverflowError):
             loaded = None
         self.last_successful_refresh = loaded if loaded is not None and loaded.tzinfo is not None else None
         self.update_interval = timedelta(minutes=status['refresh_minutes'])

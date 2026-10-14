@@ -10,22 +10,13 @@ from datetime import datetime, timezone
 import logging
 
 from homeassistant.helpers.storage import Store
+from .reminder_times import normalize_reminder_minutes
 
 _LOGGER = logging.getLogger(__name__)
 
 STORAGE_VERSION = 1
 MAX_ITEMS = 1000
 MAX_CHANNEL_ID_LENGTH = 200
-REMINDER_MINUTES = (5, 10, 15, 30)
-
-
-def normalize_reminder_minutes(value):
-    """Accept supported minute values from numeric clients or HA select fields."""
-    if isinstance(value, str) and value in {str(minutes) for minutes in REMINDER_MINUTES}:
-        value = int(value)
-    if type(value) is not int or value not in REMINDER_MINUTES:
-        raise ValueError("Invalid reminder minutes")
-    return value
 
 
 def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
@@ -44,7 +35,11 @@ def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
         try:
             start = datetime.fromisoformat(item["start"])
             end = datetime.fromisoformat(item["end"])
-        except (KeyError, ValueError, TypeError):
+            if start.tzinfo is not None:
+                start.astimezone(timezone.utc)
+            if end.tzinfo is not None:
+                end.astimezone(timezone.utc)
+        except (KeyError, ValueError, TypeError, OverflowError):
             continue
         if start.tzinfo is None or end.tzinfo is None or start >= end or end <= now:
             continue
