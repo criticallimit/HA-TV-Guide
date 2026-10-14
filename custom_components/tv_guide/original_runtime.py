@@ -42,7 +42,7 @@ class OriginalRuntime:
         self.closed = False
         self._logos = bundled_logo_library()
         self._lock = threading.RLock()
-        self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide-native")
+        self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
         self._preload_index = 0
         self._wake = wake
@@ -55,10 +55,10 @@ class OriginalRuntime:
         self._module_name = name
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
         runtime = importlib.util.module_from_spec(spec)
-        runtime.NATIVE_ASSET_ROOT = assets
-        runtime.NATIVE_STORAGE_ROOT = storage
-        runtime.NATIVE_LOCALE = locale
-        runtime.NATIVE_WAKE = self._backend_changed
+        runtime.GUIDE_ASSET_ROOT = assets
+        runtime.GUIDE_STORAGE_ROOT = storage
+        runtime.GUIDE_LOCALE = locale
+        runtime.GUIDE_WAKE = self._backend_changed
         # Persist presentation settings between HA restarts; never touch /data.
         options_path = storage / "options.json"
         try:
@@ -91,7 +91,7 @@ class OriginalRuntime:
         self._wake()
 
     def logo_urls(self, channel):
-        """Use native main logos and the complete offline station library."""
+        """Use TV Guide main logos and the complete offline station library."""
         raw_id = str(channel.get("id") or "")
         prefix = raw_id.split(':',1)[0].split('_',1)[0]
         country = channel.get('source_country') or (prefix if prefix in self.runtime.COUNTRIES else self.runtime.STORE.country)
@@ -242,7 +242,7 @@ class OriginalRuntime:
                     for programme in channel.get("programs", []):
                         start = datetime.fromisoformat(programme["start"]).astimezone(timezone.utc)
                         key = f"{channel_id}\n{start.isoformat()}"
-                        programme["id"] = "native_" + sha256(key.encode()).hexdigest()
+                        programme["id"] = "guide_" + sha256(key.encode()).hexdigest()
                 result["revision"] = f"{self._guide_revision}:{self._guide_generation}"
                 self._guide_cache = result
                 self._guide_cached_at = monotonic()
