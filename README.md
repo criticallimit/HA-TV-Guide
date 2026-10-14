@@ -127,3 +127,7 @@ A new `TV Guide last native EPG update` timestamp entity reports the last succes
 ## Senderreihenfolge ohne EPG-Neuladen
 
 Eine Änderung ausschließlich der gespeicherten Sender-IDs über `tv_guide.set_channels` oder die Integrationsoptionen löst jetzt keinen neuen EPG-Download und keinen vollständigen Neustart der Integration aus, solange Land und Feed-URL unverändert bleiben. Der native Programmkalender liest die ausgewählten Sender dynamisch aus den aktuellen Config-Entry-Optionen. Änderungen der tatsächlichen EPG-Quelle führen weiterhin zu einem regulären Reload.
+
+## Benachrichtigungsziel für Erinnerungen
+
+Unter den Integrationsoptionen kann `notification_service` eingestellt werden. Standard ist `persistent_notification.create` (Home-Assistant-Benachrichtigungszentrale); alternativ ist ein vorhandener Dienst `notify.<dienstname>` möglich, beispielsweise eine registrierte Mobile-App-Benachrichtigung. Unbekannte Dienste werden nicht angelegt; ein Zustellfehler wird protokolliert und die Erinnerung bleibt bis zum Ende des Zustellfensters ausstehend. Eine Änderung des Benachrichtigungsziels benötigt keinen erneuten EPG-Download. Die Zustellung über unterschiedliche HA-Benachrichtigungsdienste wurde noch nicht in einer realen HA-Instanz getestet.
