@@ -1,10 +1,20 @@
 """Offline XMLTV reader tests."""
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from xmltv import parse_xmltv, parse_xmltv_time  # noqa: E402
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("xmltv")
+parse_xmltv = _module.parse_xmltv
+parse_xmltv_time = _module.parse_xmltv_time
 
 
 class XMLTVTests(unittest.TestCase):

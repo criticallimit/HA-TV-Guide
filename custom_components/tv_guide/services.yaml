@@ -29,7 +29,7 @@ save_bookmark:
         text:
 save_reminder:
   name: Save reminder
-  description: Store a programme reminder. Notification delivery is not yet implemented.
+  description: Store a programme reminder for delivery through the configured Home Assistant notification service.
   fields:
     id:
       required: true
@@ -121,3 +121,7 @@ set_channels:
         - zdf
       selector:
         object:
+
+get_saved_programmes:
+  name: Get saved TV programmes
+  description: Return active native bookmarks and reminders, including sent status, without accessing the add-on.

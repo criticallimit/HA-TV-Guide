@@ -1,11 +1,22 @@
 """Country baseline selection tests without Home Assistant."""
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from country_sources import COUNTRY_FEEDS, effective_feed
-from feed_url import validate_feed_url
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("country_sources")
+COUNTRY_FEEDS = _module.COUNTRY_FEEDS
+effective_feed = _module.effective_feed
+_module = load_module("feed_url")
+validate_feed_url = _module.validate_feed_url
 
 
 class CountrySourceTests(unittest.TestCase):

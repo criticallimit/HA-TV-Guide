@@ -1,94 +1,39 @@
-# Native TV Guide integration architecture
+# Native TV Guide architecture
 
-## Current implementation
+## Repository boundary
 
-The integration is a **setup-only preview**. It has an initial config flow and
-does not yet expose entities, connect to EPG providers or communicate with the
-existing add-on. Do not disable the add-on.
+Only `criticallimit/HA-TV-Guide` implements this port. `criticallimit/TV-Guide` is the reference add-on and must remain unchanged. The native integration never depends on a hard-coded Docker IP or unauthenticated add-on HTTP endpoint.
 
-## Existing add-on transport
+## Current runtime
 
-The add-on runs a `ThreadingHTTPServer` on port 8099 with Supervisor Ingress.
-Endpoints in `tv-guide/tvguide/api.py` include:
+`async_setup_entry` resolves the optional country/custom feed, performs the first coordinator refresh, loads an entry-specific Home Assistant Store and forwards sensor, binary-sensor and calendar platforms. Native actions are shared by the single configured instance. The reminder scheduler uses HA time-event helpers rather than a polling worker. Unload stops timers, removes runtime references and unregisters shared actions when the last relevant entry unloads.
 
-- `GET /api/status`: cache/refresh status
-- `GET /api/reminders`: reminders
-- `GET /api/bookmarks`: saved programmes
-- `GET /api/guide`: programme data
-- `GET /api/settings`: add-on options
+The coordinator downloads one snapshot every three hours. Parsing, decompression and catalogue loading run in the executor. Programmes, parsed feed channels and matched canonical channels are reused by the calendar and response actions. Selected sender IDs live in config-entry options; sender-only changes do not redownload XMLTV.
 
-These are designed for use through Ingress, not as a general-purpose
-authenticated Home Assistant integration API. The integration must **not**
-assume it can access the Supervisor ingress proxy or use a hard-coded private
-Docker IP. Exposing the existing unauthenticated backend on a public port would
-be unsafe.
+The five transitional bridge entities mirror optional add-on states using separate registry unique IDs. Native saved-list and EPG entities are independent of those states.
 
-## Planned safe bridge
+## Native card transport
 
-1. Identify a supported authenticated integration-to-add-on transport, or
-   implement the standalone EPG engine directly in the integration.
-2. Reuse Home Assistant's shared HTTP session and nonblocking execution.
-3. Create a `DataUpdateCoordinator` to coalesce reads and avoid duplicated
-   EPG downloads.
-4. Register native entities with stable unique IDs and use the entity
-   registry. Ensure old REST-published state-only entity IDs do not collide.
-5. Keep add-on reminders, bookmark persistence and the Lovelace card working.
-6. Test installation, unloading, authentication, service failures and upgrades.
+The manually installed `tv-guide-native-card` custom element uses the `hass` object's existing authenticated WebSocket/service connection. Read actions use `call_service` with `return_response: true`, reading the resulting `response`. Writes use native HA actions. It does not call Ingress, store an access token, fetch a provider directly or modify add-on files.
 
-## Native entities planned
+The card queries a bounded chronological programme window and the existing channel catalogue, with explicit refresh and no timer/subscription. Saved-list reads work without an EPG feed. All feed/config/error text is escaped before DOM rendering. German and English labels and HA theme variables are supported. An original-style multi-channel television grid and automatic frontend registration are later work.
 
-- `sensor.tv_guide_next_reminder`
-- `sensor.tv_guide_bookmark_count`
-- `sensor.tv_guide_reminder_count`
-- `sensor.tv_guide_last_update`
-- `binary_sensor.tv_guide_refresh_running`
+A programme's native ID hashes the feed channel ID and UTC start instant. Names, title text, canonical aliases and timestamp offsets do not determine the ID. These IDs support repeat native save/remove operations; old add-on ID migration needs an explicit mapping policy.
 
-All five already exist as optional **REST-published states** in the add-on;
-they are not yet registry-backed integration entities.
+## Storage and reminders
 
-The integration should not publish duplicate entity IDs while the add-on
-sensor options are active.
+`TVGuideSavedProgrammes` stores bookmarks/reminders in `tv_guide.<entry_id>.saved_programmes`. Records retain old-style field names (`id`, `channel`, `channelId`, `title`, `start`, `end`; reminder metadata adds `minutes`, `language`, `sent`, optionally `sent_at`). Validation removes invalid/expired/duplicate records.
 
-## Source constraints
+A shared async lock serializes saved actions and notification delivery. `get_saved_programmes` returns independent validated lists without writing or rescheduling timers. Save/remove actions roll back their in-memory lists if persistence raises. Committed changes notify native sensor subscribers and rebuild reminder timers. Sent reminders are not rescheduled; delivery failures retry for a bounded window.
 
-The EPG data and locally bundled third-party logos have rights and
-redistribution constraints described in the original repository's
-`THIRD_PARTY_NOTICES.md`. Native integration publication and possible Core
-submission require separate review.
+No old storage is read or overwritten. Notification service availability and persistence/delivery interruption behavior still require real HA tests.
 
-## Experimental native EPG downloader
+## Network and source constraints
 
-`epg_client.py` and `coordinator.py` provide an isolated, **not yet activated** HTTPS XMLTV fetcher and a shared 3-hour refresh coordinator. Redirects are disabled, incoming data is bounded to 12 MiB, and gzip decoding and XML parsing run in the Home Assistant executor. The 8 MiB decompressed data limit is deliberately conservative and may reject large country feeds.
+Transport uses a dedicated aiohttp connector whose resolver validates the DNS addresses used for the actual connection. Mixed or private addresses are rejected; redirects, environment proxies and automatic HTTP decompression are disabled. HTTPS certificate/hostname validation stays enabled. Incoming bytes, gzip output and parsed programme counts are bounded. This is not a claim of comprehensive transport verification.
 
-These modules are **not wired into the configuration flow or setup**. No URL is configured and no additional background downloads occur until that wiring, security review, and tests are completed. The integration still relies on add-on-published states for its five entities.
+Ten country baselines and the original ordered main-channel JSON catalogues are present. Official broadcaster enrichment, alternative source fallback and production-sized feed tests are pending. Third-party EPG/logo rights from the reference add-on still apply; the native card introduces no third-party logo assets.
 
-Before enabling network access, add explicit feed selection, protection against local/private-network endpoints and DNS rebinding, end-to-end tests, and review of data-source terms.
+## Validation boundaries
 
-## DNS policy development
-
-`dns_policy.py` now validates resolved DNS records, rejecting the entire
-response when **any** returned address is non-public. The policy has offline
-tests for mixed public/private results, loopback, link-local and malformed
-answers.
-
-**This is only the validation component.** It is not yet wired to the
-transport. In particular, a DNS preflight followed by an ordinary aiohttp
-request is insufficient against DNS rebinding: the dedicated HTTP connector
-must use the validated address selection for its actual connection and prevent
-later resolution from bypassing the policy. HTTPS hostname and certificate
-validation must remain enabled. The downloader stays disconnected from
-Home Assistant setup pending that work.
-
-## Connection-time DNS enforcement
-
-The dormant EPG coordinator now uses a dedicated `public_epg_session`
-instead of the general Home Assistant HTTP session. Its aiohttp connector
-uses `PublicAddressResolver` during the actual connection, rejecting DNS
-answers containing any non-public IPv4 or IPv6 address. Redirects are disabled
-in the fetcher; environment proxies and automatic content decompression are
-disabled in the session. TLS certificate verification remains enabled.
-
-This is not a claim of comprehensive SSRF resistance or a production-ready
-connector: integration tests with a controlled DNS resolver, proxy/firewall
-behavior, and malformed network responses are still required. The coordinator
-is not configured or started by `async_setup_entry` yet.
+Offline tests cover parser/policy/selection/query/storage/reminder helpers and saved-action adapters, with HA doubles. Chromium tests exercise the card against a simulated authenticated `hass` connection. GitHub Actions adds HACS/Hassfest and syntax/JSON checks. These checks cannot establish real HA startup, partial platform-forwarding failure rollback, resource installation, country-feed availability or notification delivery. Validate those before recommending an add-on replacement.

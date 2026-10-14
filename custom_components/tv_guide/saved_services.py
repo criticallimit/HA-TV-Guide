@@ -6,6 +6,7 @@ import asyncio
 from datetime import datetime, timezone
 
 import voluptuous as vol
+from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
@@ -14,6 +15,7 @@ from .saved_programmes import normalize_items
 SERVICE_BOOKMARK = "save_bookmark"
 SERVICE_REMINDER = "save_reminder"
 SERVICE_REMOVE = "remove_saved_programme"
+SERVICE_GET_SAVED = "get_saved_programmes"
 
 BASE = {
     vol.Required("id"): vol.All(str, vol.Length(min=1, max=200)),
@@ -35,6 +37,23 @@ async def async_register_saved_services(hass):
     """Register one set of actions shared by the single TV Guide instance."""
     lock = hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock())
 
+    async def handle_get_saved(_call):
+        stores = hass.data.get(DOMAIN + "_saved", {})
+        if len(stores) != 1:
+            raise HomeAssistantError("Exactly one TV Guide entry must be loaded")
+        saved = next(iter(stores.values()))
+        async with lock:
+            # A read does not write storage, send notifications or expose expired items.
+            return {
+                "bookmarks": normalize_items(saved.bookmarks),
+                "reminders": normalize_items(saved.reminders, reminders=True),
+            }
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_GET_SAVED, handle_get_saved,
+        schema=vol.Schema({}), supports_response=SupportsResponse.ONLY,
+    )
+
     async def handle(call):
         stores = hass.data.get(DOMAIN + "_saved", {})
         if len(stores) != 1:
@@ -42,6 +61,8 @@ async def async_register_saved_services(hass):
         saved = next(iter(stores.values()))
         action = call.service
         async with lock:
+            previous_bookmarks = [dict(item) for item in saved.bookmarks]
+            previous_reminders = [dict(item) for item in saved.reminders]
             if action == SERVICE_REMOVE:
                 key = "bookmarks" if call.data["kind"] == "bookmark" else "reminders"
                 setattr(saved, key, [item for item in getattr(saved, key) if item["id"] != call.data["id"]])
@@ -70,7 +91,12 @@ async def async_register_saved_services(hass):
                 if not normalized:
                     raise HomeAssistantError("Invalid programme")
                 setattr(saved, key, [old for old in getattr(saved, key) if old["id"] != item["id"]] + normalized)
-            await saved.async_save()
+            try:
+                await saved.async_save()
+            except Exception:
+                saved.bookmarks = previous_bookmarks
+                saved.reminders = previous_reminders
+                raise
             scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(next(iter(stores)))
             if scheduler is not None:
                 scheduler.reschedule()
@@ -82,5 +108,5 @@ async def async_register_saved_services(hass):
 
 def async_remove_saved_services(hass):
     """Unregister all TV Guide actions when the last entry unloads."""
-    for service in (SERVICE_BOOKMARK, SERVICE_REMINDER, SERVICE_REMOVE):
+    for service in (SERVICE_BOOKMARK, SERVICE_REMINDER, SERVICE_REMOVE, SERVICE_GET_SAVED):
         hass.services.async_remove(DOMAIN, service)

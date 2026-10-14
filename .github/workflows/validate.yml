@@ -41,3 +41,19 @@ jobs:
               json.loads(path.read_text(encoding="utf-8"))
               print("OK", path)
           PY
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: npm install --no-save --package-lock=false playwright@1.62.1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Check native card syntax
+        run: node --check custom_components/tv_guide/frontend/tv-guide-native-card.js
+      - name: Exercise native card in Chromium
+        run: node tests/frontend-card.cjs

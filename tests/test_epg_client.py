@@ -1,11 +1,20 @@
 """Offline tests of the URL policy, without Home Assistant imports."""
 
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from feed_url import validate_feed_url  # noqa: E402
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("feed_url")
+validate_feed_url = _module.validate_feed_url
 
 
 class FeedURLTests(unittest.TestCase):

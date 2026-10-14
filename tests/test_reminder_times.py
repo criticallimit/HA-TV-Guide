@@ -1,12 +1,22 @@
 """UTC/DST safe reminder scheduling tests; no Home Assistant imports."""
 
-import sys
+import importlib.util
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from reminder_times import next_reminder_time, retry_time
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("reminder_times")
+next_reminder_time = _module.next_reminder_time
+retry_time = _module.retry_time
 
 
 class ReminderTimeTests(unittest.TestCase):

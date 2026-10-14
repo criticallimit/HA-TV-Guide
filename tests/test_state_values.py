@@ -1,11 +1,22 @@
 """Offline unit tests for safe native value conversion."""
 
-import sys
+import importlib.util
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"))
-from state_values import owned_state, parse_count, parse_timestamp  # noqa: E402
+
+def load_module(name):
+    """Load pure helpers without shadowing standard-library modules."""
+    path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+_module = load_module("state_values")
+owned_state = _module.owned_state
+parse_count = _module.parse_count
+parse_timestamp = _module.parse_timestamp
 
 
 class StateValueTests(unittest.TestCase):
