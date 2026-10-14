@@ -854,10 +854,18 @@ async function loadGuide() {
   const request = ++guideRequest;
   const url = new URL("api/guide", window.location.href);
   if (document.body.dataset.initialized) url.searchParams.set("at",TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString());
+  // Only a complete in-memory guide may opt into the minimal unchanged reply.
+  if (guide?.revision && lastGuideLoadedAt) url.searchParams.set("known_revision",guide.revision);
   const res = await fetch(url, {cache:"no-store"});
   if (!res.ok) throw new Error(t("Programmdaten konnten nicht geladen werden."));
   const nextGuide = await res.json();
   if (request !== guideRequest) return;
+  if (nextGuide.unchanged) {
+    if (!guide || nextGuide.revision !== guide.revision) throw new Error("TV Guide revision mismatch");
+    lastGuideLoadedAt = Date.now();
+    if (mode === "now") render();
+    return;
+  }
   const countryChanged = guide && guide.country !== nextGuide.country;
   guide = nextGuide;
   lastGuideLoadedAt = Date.now();
