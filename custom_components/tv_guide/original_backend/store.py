@@ -459,7 +459,9 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             if self is not self.runtime.STORE and self.runtime.COUNTRY_STORES.get(self.country) is not self:
                 return
             retry_due = (time.time() - self.last_refresh_attempt) >= 300
-            if self._cache_fresh() or self.refresh_running or not retry_due:
+            # Avoid scanning programme data while a refresh is already running
+            # or while the retry backoff has not elapsed.
+            if self.refresh_running or not retry_due or self._cache_fresh():
                 return
             self.refresh_running = True
         self.runtime.start_background(self.refresh)
