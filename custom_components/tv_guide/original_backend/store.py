@@ -239,6 +239,11 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             return False
         if not self.source_metrics:
             return False
+        # Reject expired caches before traversing thousands of programme rows.
+        # The time window scan remains necessary for a still-fresh file.
+        age = time.time() - self.parsed_cache_file.stat().st_mtime
+        if age >= self.options["refresh_minutes"] * 60:
+            return False
         if not any(channel.get("programs") for channel in self.channels):
             return False
         now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
@@ -248,8 +253,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             if item.get("start") and item.get("end")
         ):
             return False
-        age = time.time() - self.parsed_cache_file.stat().st_mtime
-        return age < self.options["refresh_minutes"] * 60
+        return True
 
     def _download(self, url):
         attempts = [url]
