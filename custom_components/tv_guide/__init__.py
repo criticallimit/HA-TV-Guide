@@ -136,7 +136,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Release native resources after platforms unload."""
+    """Release TV Guide resources after platforms unload."""
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
         coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
