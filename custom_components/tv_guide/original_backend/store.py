@@ -233,14 +233,12 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
         return list(self.source_urls)
 
     def _cache_fresh(self):
-        if not self.parsed_cache_file.exists():
-            return False
         if not self.cache_schema_current:
             return False
         if not self.source_metrics:
             return False
-        # Reject expired caches before traversing thousands of programme rows.
-        # The time window scan remains necessary for a still-fresh file.
+        # One stat call checks existence and age; avoid an extra exists()
+        # filesystem operation on every maintenance check.
         try:
             age = time.time() - self.parsed_cache_file.stat().st_mtime
         except OSError:
