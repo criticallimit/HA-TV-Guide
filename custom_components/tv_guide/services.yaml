@@ -125,7 +125,7 @@ set_channels:
 
 get_saved_programmes:
   name: Get saved TV programmes
-  description: Return active native bookmarks and reminders, including sent status, without accessing the add-on.
+  description: Return active native bookmarks and reminders, including sent status.
 
 get_native_guide:
   name: Get native TV Guide view

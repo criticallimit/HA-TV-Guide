@@ -24,7 +24,9 @@ ui.remove_extra_js_url=lambda hass,url:hass.data['modules'].remove(url)
 ui.async_register_built_in_panel=lambda hass,name,**kwargs:hass.data.setdefault('panels',{}).update({kwargs['frontend_url_path']:kwargs})
 ui.async_remove_panel=lambda hass,path:hass.data['panels'].pop(path)
 components=types.ModuleType('homeassistant.components');components.frontend=ui
-with patch.dict(sys.modules,{PKG:pkg,'homeassistant.components':components,'homeassistant.components.frontend':ui,'homeassistant.components.http':http}):
+logo=types.ModuleType(PKG+'.logo_view');logo.TVGuideLogoView=lambda hass:object()
+async def executor(fn,*args):return fn(*args)
+with patch.dict(sys.modules,{PKG:pkg,PKG+'.logo_view':logo,'homeassistant.components':components,'homeassistant.components.frontend':ui,'homeassistant.components.http':http}):
     for name in ('const','frontend'):
         spec=importlib.util.spec_from_file_location(PKG+'.'+name,ROOT/(name+'.py'))
         module=importlib.util.module_from_spec(spec)
@@ -38,10 +40,12 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
         async def register(paths):
             await asyncio.sleep(0)
             calls.extend(paths)
-        hass=types.SimpleNamespace(data={},http=types.SimpleNamespace(async_register_static_paths=register))
+        views=[]
+        hass=types.SimpleNamespace(data={},async_add_executor_job=executor,http=types.SimpleNamespace(async_register_static_paths=register,register_view=views.append))
         await asyncio.gather(frontend.async_register_frontend(hass),frontend.async_register_frontend(hass))
         await frontend.async_register_frontend(hass)
         self.assertEqual(len(calls),1)
+        self.assertEqual(len(views),1)
         self.assertEqual(calls[0].url_path,'/tv_guide/frontend')
         self.assertTrue((Path(calls[0].path)/'tv-guide-native-card.js').is_file())
         self.assertFalse(calls[0].cache_headers)
@@ -60,11 +64,13 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
             attempts.append(paths)
             if len(attempts)==1:
                 raise OSError('HTTP registration failure')
-        hass=types.SimpleNamespace(data={},http=types.SimpleNamespace(async_register_static_paths=register))
+        views=[]
+        hass=types.SimpleNamespace(data={},async_add_executor_job=executor,http=types.SimpleNamespace(async_register_static_paths=register,register_view=views.append))
         with self.assertRaises(OSError):
             await frontend.async_register_frontend(hass)
         await frontend.async_register_frontend(hass)
         self.assertEqual(len(attempts),2)
+        self.assertEqual(len(views),1)
 
 if __name__=='__main__':
     unittest.main()

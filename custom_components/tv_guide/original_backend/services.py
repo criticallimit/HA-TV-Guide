@@ -9,14 +9,12 @@ import threading
 import time
 from datetime import datetime, timedelta
 from functools import lru_cache
-from http.server import ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from .api import GuideRequestHandler
-from .ha_sensors import SENSOR_OPTIONS, SensorPublisher
 from .json_files import read_json_file, write_json_file
 from .personal_channels import PersonalChannels
 from .programme_values import EPG_TIMEZONE as EPG_TIMEZONE
@@ -66,12 +64,8 @@ CACHE_FILE = NATIVE_STORAGE_ROOT / "tv_guide_epg.xml.gz"
 PARSED_CACHE_FILE = NATIVE_STORAGE_ROOT / "tv_guide_epg_parsed.json"
 PARSED_CACHE_SCHEMA_VERSION = 10
 CHANNEL_PREFS_FILE = NATIVE_STORAGE_ROOT / "tv_guide_channel_order.json"
-REMINDERS_FILE = NATIVE_STORAGE_ROOT / "tv_guide_reminders.json"
-BOOKMARKS_FILE = NATIVE_STORAGE_ROOT / "tv_guide_bookmarks.json"
 LOGO_CACHE_DIR = NATIVE_STORAGE_ROOT / "tv_guide_logos"
 LOGO_RENDER_VERSION = 5
-REMINDER_LOCK = threading.Lock()
-BOOKMARK_LOCK = threading.Lock()
 
 
 # Every curated main channel goes through the same official-source layer. Channels
@@ -92,8 +86,6 @@ TRANSLATIONS = {
     code: json.loads((WWW / "locales" / f"{code}.json").read_text(encoding="utf-8"))
     for code in LANGUAGES
 }
-HA_LOCALE_CACHE = {"expires": 0, "value": {}}
-HA_LOCALE_LOCK = threading.Lock()
 
 
 def language_code(value):
@@ -101,8 +93,6 @@ def language_code(value):
     return "nb" if value == "no" else value if value in LANGUAGES else "en"
 
 
-def _refresh_home_assistant_locale(token):
-    return None
 
 
 def home_assistant_locale(wait=True):
@@ -171,7 +161,6 @@ def load_options():
         "language": data.get("language") if data.get("language") in LANGUAGES | {"auto"} else "auto",
         "refresh_minutes": max(30, min(1440, refresh)),
         "notification_service": notification_service,
-        **{key: data.get(key) is True for key in SENSOR_OPTIONS},
     }
 
 def load_options_ui():
@@ -428,7 +417,7 @@ def normalized_logo_data(channel, theme):
 
 @lru_cache(maxsize=None)
 def _logo_source_identity(source):
-    # Bundled files are immutable while the add-on process is running. Hash the
+    # Bundled files are immutable while Home Assistant is running. Hash the
     # bytes so rebuilding artwork at the same path also invalidates logo caches.
     path = (WWW / source).resolve()
     if WWW.resolve() not in path.parents or not path.is_file():
@@ -522,51 +511,22 @@ def reset_channel_preferences(store=None):
     return {"order": base_channel_ids(store), "hidden": []}
 
 
-def load_reminders():
-    return read_json_file(REMINDERS_FILE, [])
 
 
-def save_reminders(items):
-    write_json_file(REMINDERS_FILE, items)
-    wake_sensors()
 
 
-def load_bookmarks():
-    return read_json_file(BOOKMARKS_FILE, [])
 
 
-def save_bookmarks(items):
-    write_json_file(BOOKMARKS_FILE, items)
-    wake_sensors()
 
 
 def wake_sensors():
     NATIVE_WAKE()
 
 
-def clean_bookmarks(items):
-    now = datetime.now(EPG_TIMEZONE)
-    result = []
-    for item in items:
-        try:
-            end = datetime.fromisoformat(str(item.get("end") or "")).astimezone(EPG_TIMEZONE)
-        except Exception:
-            continue
-        if end > now:
-            result.append(item)
-    return result
 
-def update_addon_options(options):
-    return None
 
-def list_notification_services():
-    return list(NATIVE_NOTIFICATION_SERVICES)
 
-def _ha_notification(reminder):
-    raise RuntimeError("Notifications are delivered by native HA actions")
 
-def reminder_worker():
-    raise RuntimeError("Native HA owns reminder scheduling")
 
 class EPGStore(GuideStore):
     """Store bound to the shared application services."""
@@ -586,7 +546,6 @@ def prune_country_stores(keep=()):
     for country, store in list(COUNTRY_STORES.items()):
         if country not in required and not store.refresh_running:
             del COUNTRY_STORES[country]
-SENSOR_PUBLISHER = SensorPublisher(sys.modules[__name__])
 
 class Handler(GuideRequestHandler):
     """HTTP handler bound to the shared application services."""
@@ -644,9 +603,5 @@ def preload_country_caches_once(delay_seconds=BACKGROUND_PRELOAD_DELAY_SECONDS):
             del store
 
 
-def country_preload_worker():
-    raise RuntimeError("Native HA owns the refresh lifecycle")
 
 
-def main():
-    raise RuntimeError("This backend is hosted by the native HA integration")

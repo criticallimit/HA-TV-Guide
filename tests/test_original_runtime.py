@@ -35,8 +35,9 @@ class OriginalRuntimeTests(unittest.TestCase):
     def test_startup_is_isolated_from_addon_paths_and_supervisor(self):
         self.assertTrue(self.runtime.OPTIONS_FILE.is_relative_to(Path(self.temp.name)))
         self.assertEqual(self.runtime.home_assistant_locale()['language'],'de')
-        with self.assertRaises(RuntimeError):self.runtime.main()
-        with self.assertRaises(RuntimeError):self.runtime._ha_notification({})
+        self.assertFalse(hasattr(self.runtime,'main'))
+        self.assertFalse(hasattr(self.runtime,'_ha_notification'))
+        self.assertFalse(hasattr(self.runtime,'load_bookmarks'))
         with self.assertRaises(ValueError):self.backend.request('bookmarks','POST',{})
 
     def test_original_guide_all_countries_picker_and_logos(self):
@@ -190,6 +191,13 @@ class OriginalRuntimeTests(unittest.TestCase):
                 for logo in logos:
                     self.assertTrue(logo.startswith('/tv_guide/frontend/app/logos/'),(country,channel['id']))
                     self.assertTrue((ROOT/'frontend/app/logos'/logo.rsplit('/',1)[1]).is_file())
+
+    def test_additional_channel_uses_packaged_library_without_downloads(self):
+        channel_id,definition=next((key,item) for key,item in self.runtime.LOGO_LIBRARY['channels'].items() if key.startswith('epg_') and self.backend._logos.contains(item.get('light')))
+        channel={'id':channel_id,'name':definition['name'],'source_country':definition.get('country','de')}
+        with patch.object(self.runtime,'urlopen',side_effect=AssertionError('No logo download')):
+            logos=self.backend.logo_urls(channel)
+        self.assertTrue(all(url.startswith('/tv_guide/logo/') for url in logos),logos)
 
 
 if __name__=='__main__':unittest.main()

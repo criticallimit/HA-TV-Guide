@@ -1,4 +1,4 @@
-"""HTTP routes for the guide, settings, reminders and bookmarks.
+"""In-process routes for the native programme engine and presentation settings.
 
 
 The application context is supplied by services.py; all mutable state is shared.
@@ -6,10 +6,8 @@ The application context is supplied by services.py; all mutable state is shared.
 
 import json
 import re
-import threading
-from datetime import timedelta
 from http.server import SimpleHTTPRequestHandler
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
 
 from .json_files import read_json_file
 
@@ -44,30 +42,6 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
         store = self.runtime.STORE
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
-        if "/api/channel-logo/" in path:
-            match = re.search(r"/api/channel-logo/([^/]+)/(light|dark)\.svg$", path)
-            if not match:
-                self.send_error(404)
-                return
-            channel_id = unquote(match.group(1))
-            theme = match.group(2)
-            channel = next((item for item in store.channels if item.get("id") == channel_id), None)
-            if not channel and ":" in channel_id:
-                channel = self.runtime.PERSONAL_CHANNELS.logo_channel(channel_id)
-            if not channel:
-                self.send_error(404)
-                return
-            data = self.runtime.normalized_logo_data(channel, theme)
-            if not data:
-                self.send_error(404)
-                return
-            self.send_response(200)
-            self.send_header("Content-Type", "image/svg+xml; charset=utf-8")
-            self.send_header("Cache-Control", "public, max-age=86400")
-            self.send_header("Content-Length", str(len(data)))
-            self.end_headers()
-            self.wfile.write(data)
-            return
         if path.endswith("/api/guide") or path == "/api/guide":
             return self._json(self.runtime.PERSONAL_CHANNELS.guide(store))
         if path.endswith("/api/channels") or path == "/api/channels":
@@ -124,20 +98,7 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
                 "theme_mode": ui["theme_mode"],
                 "refresh_minutes": options["refresh_minutes"],
                 "notification_service": options["notification_service"],
-                **{key: options[key] for key in self.runtime.SENSOR_OPTIONS},
             })
-        if path.endswith("/api/notification-services") or path == "/api/notification-services":
-            return self._json({"services": self.runtime.list_notification_services()})
-        if path.endswith("/api/reminders") or path == "/api/reminders":
-            with self.runtime.REMINDER_LOCK:
-                return self._json({"reminders": self.runtime.load_reminders()})
-        if path.endswith("/api/bookmarks") or path == "/api/bookmarks":
-            with self.runtime.BOOKMARK_LOCK:
-                stored_bookmarks = self.runtime.load_bookmarks()
-                bookmarks = self.runtime.clean_bookmarks(stored_bookmarks)
-                if bookmarks != stored_bookmarks:
-                    self.runtime.save_bookmarks(bookmarks)
-                return self._json({"bookmarks": bookmarks})
         if path.endswith("/api/status") or path == "/api/status":
             return self._json({
                 "provider": "XMLTV",
@@ -242,10 +203,6 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
                     current_refresh_minutes = self.runtime.DEFAULT_REFRESH_MINUTES
 
                 refresh_needed = refresh_minutes != current_refresh_minutes
-                sensor_options = {key: payload.get(key, current_raw.get(key, False)) for key in self.runtime.SENSOR_OPTIONS}
-                if not all(isinstance(value, bool) for value in sensor_options.values()):
-                    return self._json({"ok": False, "error": "Ungültige Sensor-Einstellung."}, status=400)
-
                 new_options = {
                     "country": country,
                     "language": language,
@@ -255,10 +212,8 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
                     "theme_mode": theme_mode,
                     "refresh_minutes": refresh_minutes,
                     "notification_service": notification_service,
-                    **sensor_options,
                 }
                 with self.runtime.SETTINGS_LOCK:
-                    self.runtime.update_addon_options(new_options)
                     self.runtime.save_options_file(new_options)
                     country_changed = country != self.runtime.STORE.country
                     if country_changed:
@@ -279,106 +234,6 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
                     "country_changed": country_changed,
                     "refresh_started": bool(refresh_needed),
                 })
-
-            if path.endswith("/api/reminders") or path == "/api/reminders":
-                action = str(payload.get("action") or "")
-                reminder_id = str(payload.get("id") or "").strip()
-                if not reminder_id:
-                    return self._json({"ok": False, "error": "Erinnerungs-ID fehlt."}, status=400)
-
-                with self.runtime.REMINDER_LOCK:
-                    reminders = self.runtime.load_reminders()
-                    reminders = [item for item in reminders if item.get("id") != reminder_id]
-
-                    if action == "upsert":
-                        minutes = int(payload.get("minutes") or 10)
-                        if minutes not in {5, 10, 15, 30}:
-                            return self._json({"ok": False, "error": "Ungültiger Erinnerungszeitpunkt."}, status=400)
-
-                        start_raw = str(payload.get("start") or "")
-                        end_raw = str(payload.get("end") or "")
-                        start = self.runtime.datetime.fromisoformat(start_raw).astimezone(self.runtime.EPG_TIMEZONE)
-                        end = self.runtime.datetime.fromisoformat(end_raw).astimezone(self.runtime.EPG_TIMEZONE)
-                        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
-                        if end <= start or end <= now or start <= now:
-                            return self._json({"ok": False, "error": "Für bereits laufende oder beendete Sendungen ist keine Erinnerung möglich."}, status=400)
-
-                        reminders.append({
-                            "id": reminder_id,
-                            "channel": str(payload.get("channel") or "Unbekannter Sender")[:120],
-                            "channelId": str(payload.get("channelId") or "")[:120],
-                            "title": str(payload.get("title") or "Sendung")[:240],
-                            "start": start.isoformat(),
-                            "end": end.isoformat(),
-                            "minutes": minutes,
-                            "language": self.runtime.effective_language(payload.get("language")),
-                            "sent": False,
-                        })
-                    elif action != "remove":
-                        return self._json({"ok": False, "error": "Unbekannte Erinnerungsaktion."}, status=400)
-
-                    reminders.sort(key=lambda item: item.get("start", ""))
-                    self.runtime.save_reminders(reminders)
-                    return self._json({"ok": True, "reminders": reminders})
-
-            if path.endswith("/api/test-notification") or path == "/api/test-notification":
-                test = {
-                    "id": "tv_guide_test",
-                    "channel": "TV Guide",
-                    "title": self.runtime.translate("Testbenachrichtigung", self.runtime.effective_language(payload.get("language"))),
-                    "language": self.runtime.effective_language(payload.get("language")),
-                    "start": (self.runtime.datetime.now(self.runtime.EPG_TIMEZONE) + timedelta(minutes=1)).isoformat(),
-                    "end": (self.runtime.datetime.now(self.runtime.EPG_TIMEZONE) + timedelta(minutes=2)).isoformat(),
-                    "minutes": 1,
-                }
-                self.runtime._ha_notification(test)
-                return self._json({
-                    "ok": True,
-                    "service": self.runtime.load_options().get("notification_service", "persistent_notification.create"),
-                })
-
-            if path.endswith("/api/bookmarks") or path == "/api/bookmarks":
-                action = str(payload.get("action") or "")
-                bookmark_id = str(payload.get("id") or "").strip()
-                if not bookmark_id:
-                    return self._json({"ok": False, "error": "Merklisten-ID fehlt."}, status=400)
-
-                with self.runtime.BOOKMARK_LOCK:
-                    bookmarks = self.runtime.clean_bookmarks(self.runtime.load_bookmarks())
-                    bookmarks = [item for item in bookmarks if item.get("id") != bookmark_id]
-
-                    if action == "upsert":
-                        start_raw = str(payload.get("start") or "")
-                        end_raw = str(payload.get("end") or "")
-                        start = self.runtime.datetime.fromisoformat(start_raw).astimezone(self.runtime.EPG_TIMEZONE)
-                        end = self.runtime.datetime.fromisoformat(end_raw).astimezone(self.runtime.EPG_TIMEZONE)
-                        if end <= start or end <= self.runtime.datetime.now(self.runtime.EPG_TIMEZONE):
-                            return self._json({"ok": False, "error": "Beendete Sendungen können nicht gemerkt werden."}, status=400)
-                        bookmarks.append({
-                            "id": bookmark_id,
-                            "channel": str(payload.get("channel") or "Unbekannter Sender")[:120],
-                            "channelId": str(payload.get("channelId") or "")[:120],
-                            "title": str(payload.get("title") or "Sendung")[:240],
-                            "start": start.isoformat(),
-                            "end": end.isoformat(),
-                        })
-                    elif action != "remove":
-                        return self._json({"ok": False, "error": "Unbekannte Merklistenaktion."}, status=400)
-
-                    bookmarks.sort(key=lambda item: item.get("start", ""))
-                    self.runtime.save_bookmarks(bookmarks)
-
-                    if action == "remove":
-                        with self.runtime.REMINDER_LOCK:
-                            reminders = self.runtime.load_reminders()
-                            remaining = [
-                                item for item in reminders
-                                if item.get("id") != bookmark_id
-                            ]
-                            if remaining != reminders:
-                                self.runtime.save_reminders(remaining)
-
-                    return self._json({"ok": True, "bookmarks": bookmarks})
 
             return self._json({"ok": False, "error": "Nicht gefunden."}, status=404)
         except Exception as exc:

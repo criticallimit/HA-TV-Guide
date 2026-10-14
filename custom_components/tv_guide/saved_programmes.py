@@ -1,7 +1,7 @@
-"""Persistent, addon-independent programme bookmarks and reminders.
+"""Persistent native programme bookmarks and reminders.
 
-Data model matches the old TV Guide API's IDs and field names for a later
-explicit migration. This module does not send notifications on its own.
+Records belong only to this integration's HA Store.
+This module does not send notifications on its own.
 """
 
 from __future__ import annotations
@@ -85,7 +85,7 @@ class TVGuideSavedProgrammes:
         self._subscribers.discard(callback)
 
     async def async_load(self):
-        """Load records without accessing old add-on files."""
+        """Load this integration's saved records."""
         data = await self._store.async_load() or {}
         if not isinstance(data, dict):
             data = {}

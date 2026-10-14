@@ -60,6 +60,13 @@ class Saved:
     async def async_load(self):
         pass
 
+class OriginalCoordinator(Coordinator):
+    is_original=True
+    def __init__(self,hass,entry,options):
+        super().__init__(hass,'original-providers',options.get('country','de'),())
+        self.stopped=False
+    async def async_stop(self):self.stopped=True
+
 class Scheduler:
     instances = []
     def __init__(self, hass, saved, lock, notification_service):
@@ -94,6 +101,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         stub(PKG+'.ui_services', async_register_ui_services=lambda hass: self.registry.add('get_native_guide'), async_remove_ui_services=lambda hass: self.registry.discard('get_native_guide'))
         stub(PKG+'.const', DOMAIN='tv_guide')
         stub(PKG+'.coordinator', TVGuideEPGCoordinator=Coordinator)
+        stub(PKG+'.original_coordinator', TVGuideOriginalCoordinator=OriginalCoordinator)
         stub(PKG+'.country_sources', effective_feed=lambda options: options.get('feed_url') or None,
              feed_candidates=lambda options: (options['feed_url'],) if options.get('feed_url') else ())
         stub(PKG+'.reminder_scheduler', TVGuideReminderScheduler=Scheduler)
@@ -105,12 +113,15 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         spec = importlib.util.spec_from_file_location(PKG, ROOT/'__init__.py', submodule_search_locations=[str(ROOT)])
         self.module = importlib.util.module_from_spec(spec)
         imports[PKG] = self.module
-        with patch.dict(sys.modules, imports):
-            spec.loader.exec_module(self.module)
+        self.imports=patch.dict(sys.modules,imports)
+        self.imports.start()
+        self.addCleanup(self.imports.stop)
+        spec.loader.exec_module(self.module)
 
-    async def test_bridge_setup_and_unload_use_public_entry_api(self):
+    async def test_standalone_setup_without_feed_always_starts_native_engine(self):
         self.assertTrue(await self.module.async_setup_entry(self.hass,self.entry))
         self.assertIn('get_saved_programmes',self.registry)
+        self.assertTrue(self.hass.data['tv_guide']['entry'].is_original)
         self.assertTrue(Scheduler.instances[0].scheduled)
         self.assertTrue(await self.module.async_unload_entry(self.hass,self.entry))
         self.assertTrue(Scheduler.instances[0].stopped)

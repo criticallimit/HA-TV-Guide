@@ -32,7 +32,7 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
 
     async def call(self,name,data=None):return await self.handlers[name](types.SimpleNamespace(service=name,data=data or {}))
 
-    async def test_bridge_only_has_original_sender_model_and_no_epg_requests(self):
+    async def test_empty_native_snapshot_has_sender_model_without_epg_requests(self):
         result=await self.call('get_native_guide')
         self.assertTrue(result['channels'])
         self.assertTrue(all(item['programs']==[] for item in result['channels']))

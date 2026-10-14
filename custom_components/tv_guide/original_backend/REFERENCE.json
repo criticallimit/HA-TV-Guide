@@ -24,6 +24,7 @@
     "HA action notifications and native timer scheduler",
     "Tracked worker pool instead of daemon workers",
     "In-process authenticated route adapter instead of HTTP server",
-    "Existing main logo bundle; text fallback for extra station assets"
+    "Complete offline logo library packaged and served by native HA view",
+    "Removed add-on state bridges, sensor-option publishing, duplicate saved-record and Supervisor/notification routes"
   ]
 }

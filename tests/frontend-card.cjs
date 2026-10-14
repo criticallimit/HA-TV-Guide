@@ -48,6 +48,7 @@ const server = http.createServer((req,res) => {
   await native.addScriptTag({path:path.join(root,'tv-guide-native-card.js')});
   await native.evaluate(data=>{
     window.calls=[];window.model=structuredClone(data);window.saved={bookmarks:[],reminders:[]};window.fail='';
+    localStorage.setItem('tvguide-native-bookmarks',JSON.stringify([{id:'old-cache-record',title:'Old cache',start:'2040-10-14T20:00:00Z',end:'2040-10-14T21:00:00Z'}]));
     window.hass={language:'de',locale:{language:'de'},config:{time_zone:'Europe/Berlin'},themes:{darkMode:false,themes:{}},services:{notify:{mobile_app_test:{},send_message:{}}},connection:{},
       async callWS(message){
         calls.push(message);if(fail===message.service)throw new Error('Simulated service failure');
@@ -83,6 +84,8 @@ const server = http.createServer((req,res) => {
   if(process.env.TVG_SCREENSHOT){fs.writeFileSync(process.env.TVG_SCREENSHOT,first);fs.writeFileSync(process.env.TVG_SCREENSHOT.replace('.png','-reference.png'),expected);}
   assert.ok(first.equals(expected),'Native main view must be pixel-identical to the original add-on for the same data');
   console.log('PASS pixel-identical original card view on desktop (CSS, fonts, logos, rows, progress and toolbar)');
+  assert.equal(await frame.locator('#bookmarkCount').textContent(),'0');
+  assert.equal(await native.evaluate(()=>calls.some(call=>call.service==='save_bookmark'&&call.service_data.id==='old-cache-record')),false);
 
   await frame.locator('[data-channel-id="zdf"] [data-program-start]').nth(2).click();
   await frame.locator('#bookmarkProgram').click();

@@ -1,4 +1,4 @@
-"""Native TV Guide: EPG integration and optional add-on migration bridge."""
+"""Standalone TV Guide integration."""
 
 import asyncio
 import logging
@@ -52,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     platforms_started = False
     try:
         url = effective_feed(options)
-        if options.get("backend_mode") == "original" and not options.get("feed_url"):
+        if not options.get("feed_url"):
             from .original_coordinator import TVGuideOriginalCoordinator
             coordinator = TVGuideOriginalCoordinator(hass, entry, options)
             await coordinator.async_config_entry_first_refresh()
@@ -113,7 +113,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     expected_url = effective_feed(options)
     if getattr(coordinator, "is_original", False):
-        if options.get("backend_mode") == "original" and not options.get("feed_url") and coordinator.country == (options.get("country") or "de"):
+        if not options.get("feed_url") and coordinator.country == (options.get("country") or "de"):
             scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
             if scheduler is not None:
                 scheduler.notification_service = options.get("notification_service", "persistent_notification.create")

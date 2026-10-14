@@ -36,6 +36,8 @@ async def main():
             assert configured is not None
             await hass.config.async_update(language='de')
             await hass.async_start()
+            foreign_id='sensor.tv_guide_bookmark_count'
+            hass.states.async_set(foreign_id,'9999',{'tv_guide_source':'criticallimit/TV-Guide'})
             from custom_components.tv_guide.original_runtime import OriginalRuntime
             with patch.object(OriginalRuntime, 'start_background', lambda *args, **kwargs: None):
                 result = await hass.config_entries.flow.async_init('tv_guide', context={'source':'user'})
@@ -48,7 +50,11 @@ async def main():
                 assert entry.state.value == 'loaded', entry.state
                 from homeassistant.helpers import entity_registry as er
                 registry = er.async_get(hass)
+                assert len([item for item in registry.entities.values() if item.config_entry_id==entry.entry_id])==8
                 assert not any(item.unique_id.startswith('tv_guide_bridge_') for item in registry.entities.values() if item.config_entry_id==entry.entry_id)
+                bookmark_count_id=registry.async_get_entity_id('sensor','tv_guide','tv_guide_native_saved_bookmarks_count')
+                assert hass.states.get(bookmark_count_id).state=='0'
+                assert hass.states.get(foreign_id).state=='9999'
                 for domain, unique_id in (
                     ('sensor', 'tv_guide_native_next_reminder'),
                     ('sensor', 'tv_guide_native_saved_bookmarks_count'),
@@ -64,8 +70,19 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide-native')
-                assert '/tv_guide/frontend/tv-guide-native-card.js?v=5' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-native-card.js?v=6' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
+                import aiohttp
+                source=next(key for key in coordinator.backend._logos.entries if key.startswith('logos/europe/light/'))
+                async with aiohttp.ClientSession() as client:
+                    async with client.get('http://127.0.0.1:8123/tv_guide/logo/'+source) as response:
+                        assert response.status==200
+                        assert response.headers['Content-Type'].startswith('image/svg+xml')
+                        artwork=await response.read()
+                        assert b'href="data:image/' in artwork
+                        assert b'../assets/' not in artwork
+                    async with client.get('http://127.0.0.1:8123/tv_guide/logo/not-a-logo') as response:
+                        assert response.status==404
                 store = coordinator.backend.runtime.STORE
                 now = datetime.now(timezone.utc)
                 store.refresh_running = False
@@ -118,6 +135,7 @@ async def main():
                 assert not hass.services.has_service('tv_guide','native_request')
                 assert not hass.data['tv_guide']
                 assert not frontend.async_panel_exists(hass,'tv-guide-native')
+                assert hass.states.get(foreign_id).state=='9999'
                 print(f'PASS real Home Assistant {__version__}: setup, platforms, full guide, country picker, settings, saved actions, reload, unload',flush=True)
         finally:
             await hass.async_stop(force=True)

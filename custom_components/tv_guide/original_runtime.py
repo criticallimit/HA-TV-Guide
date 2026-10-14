@@ -11,6 +11,7 @@ import sys
 import threading
 from urllib.parse import quote
 import zipfile
+from .logo_assets import bundled_logo_library
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
 POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
@@ -35,6 +36,7 @@ class OriginalRuntime:
                     temporary.write_bytes(data)
                     temporary.replace(target)
         self.closed = False
+        self._logos = bundled_logo_library()
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide-native")
         self._jobs = {}
@@ -47,7 +49,6 @@ class OriginalRuntime:
         runtime.NATIVE_ASSET_ROOT = assets
         runtime.NATIVE_STORAGE_ROOT = storage
         runtime.NATIVE_LOCALE = locale
-        runtime.NATIVE_NOTIFICATION_SERVICES = []
         runtime.NATIVE_WAKE = wake
         # Persist presentation settings between HA restarts; never touch /data.
         options_path = storage / "options.json"
@@ -72,7 +73,7 @@ class OriginalRuntime:
         runtime.normalized_logo_urls = self.logo_urls
 
     def logo_urls(self, channel):
-        """Use original bundled main logos; text fallback for additional stations."""
+        """Use native main logos and the complete offline station library."""
         raw_id = str(channel.get("id") or "")
         country = raw_id.partition(":")[0] if ":" in raw_id else self.runtime.STORE.country
         channel_id = str(channel.get("source_channel_id") or raw_id).split(":")[-1]
@@ -83,8 +84,15 @@ class OriginalRuntime:
             if path.is_file():
                 result.append(f"/tv_guide/frontend/app/logos/{quote(path.name)}")
             else:
-                svg = self.runtime._normalized_text_logo_svg(channel.get("name") or channel_id, theme)
-                result.append("data:image/svg+xml," + quote(svg))
+                original = {**channel, 'source_country': channel.get('source_country') or country}
+                source = self.runtime._logo_source_for_channel(original, theme)
+                if self._logos.contains(source):
+                    bundled = self.runtime.LOGO_LIBRARY['channels'].get(str(original.get('source_channel_id') or original.get('id') or ''))
+                    normalized = bool(bundled and source==bundled.get(theme)) or source.startswith(('logos/europe/','logos/uk/'))
+                    result.append('/tv_guide/logo/'+quote(source,safe='/')+'?v='+self._logos.revision+('' if normalized else '&normalize=1'))
+                else:
+                    svg = self.runtime._normalized_text_logo_svg(channel.get("name") or channel_id, theme)
+                    result.append("data:image/svg+xml," + quote(svg))
         return tuple(result)
 
     def start_background(self, function, **kwargs):

@@ -265,7 +265,7 @@ let mode = "now";
 let selectedDate = startOfDay(new Date());
 let customTarget = null;
 let activeDetail = null;
-let bookmarks = loadBookmarksLocal();
+let bookmarks = [];
 let startupReloadTimer = null;
 let lastGuideLoadedAt = 0;
 const GUIDE_VISIBILITY_REFRESH_AGE = 60 * 1000;
@@ -284,16 +284,7 @@ function dateKey(value) {
   return TVGuideCore.dateKey(value);
 }
 
-function loadBookmarksLocal() {
-  try {
-    const items = JSON.parse(localStorage.getItem("tvguide-native-bookmarks") || "[]");
-    return Array.isArray(items) ? items.filter(item => item && typeof item === "object") : [];
-  }
-  catch { return []; }
-}
-
-function saveBookmarksLocal() {
-  try { localStorage.setItem("tvguide-native-bookmarks", JSON.stringify(bookmarks)); } catch {}
+function updateBookmarkCount() {
   bookmarkCount.textContent = String(bookmarks.length);
 }
 
@@ -314,17 +305,13 @@ async function syncBookmark(action, item) {
   ++bookmarksRevision;
   if (action === "remove") ++remindersRevision;
   bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : [];
-  saveBookmarksLocal();
+  updateBookmarkCount();
 }
 
 async function loadBookmarksRemote() {
   const request = ++bookmarksRequest;
   let revision = bookmarksRevision;
   const isCurrent = () => request === bookmarksRequest && revision === bookmarksRevision;
-  const local = loadBookmarksLocal();
-  let migrationDone = true;
-  // Add-on/browser bookmarks are not automatically imported into native storage.
-
   try {
     const url = new URL("api/bookmarks", window.location.href);
     const res = await fetch(url, {cache:"no-store"});
@@ -333,28 +320,12 @@ async function loadBookmarksRemote() {
     if (!isCurrent()) return;
     bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : [];
 
-    // Import old browser-only bookmarks exactly once. Afterwards the
-    // persistent add-on store is authoritative so deleted entries cannot
-    // reappear from a stale browser cache.
-    if (!migrationDone) {
-      for (const item of local) {
-        if (!isCurrent()) return;
-        if (!bookmarks.some(x => x.id === item.id) && new Date(item.end) > new Date()) {
-          ++revision; // Account for this import's own write, not unrelated writes.
-          await syncBookmark("upsert", item);
-          ++revision;
-        }
-      }
-      if (!isCurrent()) return;
-      try { localStorage.setItem("tvguide-native-bookmarks-migrated", "1"); } catch {}
-    }
   } catch {
     // A failed refresh must not replace current entries with an earlier snapshot.
     if (!isCurrent()) return;
-    if (!migrationDone) bookmarks = local;
   }
 
-  saveBookmarksLocal();
+  updateBookmarkCount();
 }
 
 function bookmarkId(channel, program) {
@@ -419,7 +390,7 @@ async function loadReminders() {
     if (request !== remindersRequest || revision !== remindersRevision) return;
     reminders = Array.isArray(payload.reminders) ? payload.reminders : [];
   } catch {
-    // Keep the last known reminders while the add-on is temporarily unreachable.
+    // Keep the last known reminders while the native action is temporarily unavailable.
   }
 }
 
@@ -512,7 +483,7 @@ function renderBookmarks() {
   document.querySelector("#bookmarksStatus").textContent = "";
   const now = new Date();
   bookmarks = bookmarks.filter(x => new Date(x.end) > now);
-  saveBookmarksLocal();
+  updateBookmarkCount();
   if (!bookmarks.length) {
     bookmarksBody.innerHTML = ("<p class=\"empty-bookmarks\">" + escapeHtml(t("Noch keine Sendung gemerkt.")) + "</p>");
     return;
@@ -852,7 +823,7 @@ async function loadGuide() {
   if (!document.body.dataset.initialized) {
     mode = ["now","1800","2015","2200"].includes(guide.ui?.default_view) ? guide.ui.default_view : "now";
     document.body.dataset.initialized = "1";
-    saveBookmarksLocal();
+    updateBookmarkCount();
   }
   initCustomDate();
   document.querySelectorAll(".tab").forEach(b =>
