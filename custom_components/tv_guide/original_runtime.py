@@ -8,6 +8,7 @@ from io import BytesIO
 import json
 import logging
 from pathlib import Path
+from time import monotonic, perf_counter
 import sys
 import threading
 from urllib.parse import quote
@@ -44,6 +45,8 @@ class OriginalRuntime:
         self._jobs = {}
         self._preload_index = 0
         self._wake = wake
+        self._guide_cache = None
+        self._guide_cached_at = 0.0
         name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
         self._module_name = name
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
@@ -51,7 +54,7 @@ class OriginalRuntime:
         runtime.NATIVE_ASSET_ROOT = assets
         runtime.NATIVE_STORAGE_ROOT = storage
         runtime.NATIVE_LOCALE = locale
-        runtime.NATIVE_WAKE = wake
+        runtime.NATIVE_WAKE = self._backend_changed
         # Persist presentation settings between HA restarts; never touch /data.
         options_path = storage / "options.json"
         try:
@@ -74,6 +77,12 @@ class OriginalRuntime:
         runtime.urlopen = partial(worker_urlopen, runtime.urlopen, lambda:self.closed)
         runtime.start_background = self.start_background
         runtime.normalized_logo_urls = self.logo_urls
+
+    def _backend_changed(self):
+        # Called by provider workers when new programme data become available.
+        with self._lock:
+            self._guide_cache = None
+        self._wake()
 
     def logo_urls(self, channel):
         """Use native main logos and the complete offline station library."""
@@ -135,7 +144,7 @@ class OriginalRuntime:
                         completed.result()
                     except Exception:
                         _LOGGER.exception("TV Guide provider worker failed")
-                self._wake()
+                self._backend_changed()
             future.add_done_callback(finished)
             return future
 
@@ -197,6 +206,11 @@ class OriginalRuntime:
         with self._lock:
             if self.closed:
                 raise RuntimeError("TV Guide is unloading")
+            if method == "GET" and endpoint == "guide" and self._guide_cache is not None and monotonic() - self._guide_cached_at < 10:
+                return self._guide_cache
+            if method == "POST":
+                self._guide_cache = None
+            started = perf_counter()
             handler = object.__new__(self.runtime.Handler)
             handler.path = "/api/" + endpoint
             handler.headers = {"Content-Length": str(len(encoded))}
@@ -218,6 +232,9 @@ class OriginalRuntime:
                         start = datetime.fromisoformat(programme["start"]).astimezone(timezone.utc)
                         key = f"{channel_id}\n{start.isoformat()}"
                         programme["id"] = "native_" + sha256(key.encode()).hexdigest()
+                self._guide_cache = result
+                self._guide_cached_at = monotonic()
+                _LOGGER.debug("TV Guide prepared guide in %.1f ms", (perf_counter() - started) * 1000)
             return result
 
     def snapshot(self):
