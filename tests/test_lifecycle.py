@@ -61,7 +61,7 @@ class Saved:
         pass
 
 class OriginalCoordinator(Coordinator):
-    is_original=True
+    is_multi_source=True
     def __init__(self,hass,entry,options):
         super().__init__(hass,'original-providers',options.get('country','de'),())
         self.stopped=False
@@ -122,7 +122,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
     async def test_standalone_setup_without_feed_always_starts_guide_engine(self):
         self.assertTrue(await self.module.async_setup_entry(self.hass,self.entry))
         self.assertIn('get_saved_programmes',self.registry)
-        self.assertTrue(self.hass.data['tv_guide']['entry'].is_original)
+        self.assertTrue(self.hass.data['tv_guide']['entry'].is_multi_source)
         self.assertTrue(Scheduler.instances[0].scheduled)
         self.assertTrue(await self.module.async_unload_entry(self.hass,self.entry))
         self.assertTrue(Scheduler.instances[0].stopped)
