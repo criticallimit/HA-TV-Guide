@@ -11,12 +11,6 @@
   },
   "entity": {
     "sensor": {
-      "epg_programmes": {
-        "name": "EPG-programma's"
-      },
-      "epg_channels": {
-        "name": "EPG-zenders"
-      },
       "saved_bookmarks": {
         "name": "Opgeslagen favorieten"
       },

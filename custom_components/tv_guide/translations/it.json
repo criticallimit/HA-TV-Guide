@@ -11,12 +11,6 @@
   },
   "entity": {
     "sensor": {
-      "epg_programmes": {
-        "name": "Programmi EPG"
-      },
-      "epg_channels": {
-        "name": "Canali EPG"
-      },
       "saved_bookmarks": {
         "name": "Preferiti salvati"
       },

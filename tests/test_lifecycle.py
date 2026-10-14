@@ -94,6 +94,7 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         stub('homeassistant.config_entries', ConfigEntry=Entry)
         stub('homeassistant.const', Platform=types.SimpleNamespace(SENSOR='sensor', BINARY_SENSOR='binary_sensor', CALENDAR='calendar'))
         stub('homeassistant.core', HomeAssistant=object)
+        stub('homeassistant.helpers', entity_registry=types.SimpleNamespace(async_get=lambda hass: types.SimpleNamespace(async_get_entity_id=lambda *args: None)))
         async def register_frontend(hass):
             pass
         stub(PKG+'.frontend', async_register_frontend=register_frontend, async_remove_frontend=lambda hass:None)

@@ -11,12 +11,6 @@
   },
   "entity": {
     "sensor": {
-      "epg_programmes": {
-        "name": "EPG-Sendungen"
-      },
-      "epg_channels": {
-        "name": "EPG-Sender"
-      },
       "saved_bookmarks": {
         "name": "Gespeicherte Sendungen"
       },

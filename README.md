@@ -77,7 +77,7 @@ No `/local/tv-guide-card-loader.js` resource, add-on or Ingress configuration is
 
 ## Native Home Assistant entities
 
-The integration creates native Home Assistant registry entities (rather than add-on REST-published states): EPG programme count, channel count, last update, saved programme count, reminder count, next reminder, update-running binary sensor and programme calendar. Names are translated into supported Home Assistant languages. Entities are linked to the integration and removed when it is deleted. Their identifiers depend on the Home Assistant entity registry and may vary if customized.
+The integration creates native Home Assistant registry entities (rather than add-on REST-published states): last EPG update, saved programme count, reminder count, next reminder, update-running binary sensor and programme calendar. Names are translated into supported Home Assistant languages. Entities are linked to the integration and removed when it is deleted. Their identifiers depend on the Home Assistant entity registry and may vary if customized.
 
 
 ## Updates and help
