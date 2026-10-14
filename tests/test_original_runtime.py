@@ -180,7 +180,7 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.assertIsNone(restored.feed_latest_end)
         self.assertTrue(restored._cache_fresh())
 
-    def test_invalid_provider_instants_cannot_poison_native_guide_timelines(self):
+    def test_invalid_provider_instants_cannot_poison_guide_guide_timelines(self):
         for value in ('99991231233000 -0100','00010101000000 +0100'):
             self.assertIsNone(self.runtime.xmltv_datetime(value))
         now=datetime.now(timezone.utc)
@@ -188,7 +188,7 @@ class OriginalRuntimeTests(unittest.TestCase):
         invalid={'title':'Invalid','start':'9999-12-31T23:30:00-01:00','end':'9999-12-31T23:45:00-01:00'}
         self.assertEqual(self.runtime.STORE._validate_program_timeline([invalid,valid]),[valid])
 
-    def test_wrong_cached_programme_container_is_replaced_by_empty_native_data(self):
+    def test_wrong_cached_programme_container_is_replaced_by_empty_guide_data(self):
         channel={**self.runtime.STORE.channels[0],'programs':{'bad':'container'}}
         payload={'schema_version':10,'country':'de','channels':[channel],'source_metrics':[{'ok':True}]}
         self.runtime.STORE.parsed_cache_file.write_text(json.dumps(payload),encoding='utf-8')
@@ -201,9 +201,9 @@ class OriginalRuntimeTests(unittest.TestCase):
         self.runtime.STORE.refresh = lambda: calls.append(threading.current_thread().name)
         self.backend.refresh_active()
         self.assertEqual(len(calls), 1)
-        self.assertTrue(calls[0].startswith('tv-guide-native'))
+        self.assertTrue(calls[0].startswith('tv-guide'))
 
-    def test_corrupt_native_options_do_not_prevent_startup(self):
+    def test_corrupt_guide_options_do_not_prevent_startup(self):
         root = self.runtime.OPTIONS_FILE.parent
         self.backend.close()
         for value in ('{broken', '[]'):
@@ -263,7 +263,7 @@ class OriginalRuntimeTests(unittest.TestCase):
             job.result(timeout=5)
         self.assertEqual(len(calls),1)
         self.assertNotEqual(calls[0][0],'de')
-        self.assertTrue(calls[0][1].startswith('tv-guide-native'))
+        self.assertTrue(calls[0][1].startswith('tv-guide'))
 
     def test_preload_defers_while_active_country_is_refreshing(self):
         self.runtime.STORE.refresh_running=True
