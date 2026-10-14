@@ -24,7 +24,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class TVGuideProgrammeCount(CoordinatorEntity, SensorEntity):
     """Show the number of downloaded, parsed programmes."""
 
-    _attr_name = "TV Guide EPG programmes"
+    _attr_has_entity_name = True
+    _attr_translation_key = "epg_programmes"
     _attr_unique_id = "tv_guide_native_epg_programme_count"
     _attr_icon = "mdi:television-guide"
     _attr_native_unit_of_measurement = "programmes"
@@ -48,7 +49,8 @@ class TVGuideProgrammeCount(CoordinatorEntity, SensorEntity):
 class TVGuideChannelsCount(CoordinatorEntity, SensorEntity):
     """Expose catalogue coverage, including stations with missing feed data."""
 
-    _attr_name = "TV Guide EPG channels"
+    _attr_has_entity_name = True
+    _attr_translation_key = "epg_channels"
     _attr_unique_id = "tv_guide_native_epg_channels_count"
     _attr_icon = "mdi:television-classic"
     _attr_native_unit_of_measurement = "channels"
@@ -90,7 +92,8 @@ class TVGuideSavedCount(SensorEntity):
     def __init__(self, saved, kind):
         self._saved = saved
         self._kind = kind
-        self._attr_name = f"TV Guide saved {kind}"
+        self._attr_has_entity_name = True
+        self._attr_translation_key = f"saved_{kind}"
         self._attr_unique_id = f"tv_guide_native_saved_{kind}_count"
         self._attr_icon = "mdi:bookmark" if kind == "bookmarks" else "mdi:alarm"
 
@@ -114,7 +117,8 @@ class TVGuideNextReminder(SensorEntity):
     """Next pending reminder based exclusively on native saved entries."""
 
     _attr_should_poll = False
-    _attr_name = "TV Guide next native reminder"
+    _attr_has_entity_name = True
+    _attr_translation_key = "next_reminder"
     _attr_unique_id = "tv_guide_native_next_reminder"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_icon = "mdi:alarm"
@@ -154,7 +158,8 @@ class TVGuideNextReminder(SensorEntity):
 class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
     """Last successful native EPG refresh; from the native coordinator."""
 
-    _attr_name = "TV Guide last native EPG update"
+    _attr_has_entity_name = True
+    _attr_translation_key = "last_epg_update"
     _attr_unique_id = "tv_guide_native_epg_last_successful_refresh"
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_icon = "mdi:update"
