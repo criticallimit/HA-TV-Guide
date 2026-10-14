@@ -38,8 +38,8 @@ async def main():
             await hass.async_start()
             foreign_id='sensor.tv_guide_bookmark_count'
             hass.states.async_set(foreign_id,'9999',{'tv_guide_source':'criticallimit/TV-Guide'})
-            from custom_components.tv_guide.original_runtime import OriginalRuntime
-            with patch.object(OriginalRuntime, 'start_background', lambda *args, **kwargs: None):
+            from custom_components.tv_guide.guide_runtime import GuideRuntime
+            with patch.object(GuideRuntime, 'start_background', lambda *args, **kwargs: None):
                 result = await hass.config_entries.flow.async_init('tv_guide', context={'source':'user'})
                 assert result['type'] == 'create_entry', result
                 entry = result['result']
