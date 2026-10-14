@@ -28,7 +28,7 @@ TV Guide is a **Home Assistant custom integration** and runs directly in Home As
 1. [Download the current integration](https://github.com/criticallimit/HA-TV-Guide/archive/refs/heads/main.zip).
 2. Extract the archive and copy `custom_components/tv_guide` to `/config/custom_components/tv_guide` on your Home Assistant installation.
 3. Restart Home Assistant, then open **Settings → Devices & services → Add integration → TV Guide**.
-4. The integration automatically uses your configured Home Assistant country and language at first setup. Open **TV Guide** in the sidebar or add `type: custom:tv-guide--card` to a dashboard.
+4. The integration automatically uses your configured Home Assistant country and language at first setup. Open **TV Guide** in the sidebar or add `type: custom:tv-guide-card` to a dashboard.
 
 The initial EPG download may take a few minutes. Subsequent views use bounded caches, and unmodified guide data is not transferred again.
 
@@ -60,7 +60,7 @@ Your saved programmes and channel lists are available on devices using the same 
 The integration automatically registers its Lovelace module. Add a manual dashboard card with:
 
 ```yaml
-type: custom:tv-guide--card
+type: custom:tv-guide-card
 height: 1000
 ```
 
@@ -69,7 +69,7 @@ no additional resource configuration is needed.
 
 ## When something is missing
 
-**No programme for a channel:** Availability depends on public sources. Confirmed broadcaster data is preferred; other feeds fill gaps. Coverage and updates vary by channel and date. Additional schedules now cover Denmark through DR/TV 2, selected Austrian channels through Joyn Austria, and La Une/Tipik/La Trois through RTBF. Dutch RTL/SBS channels also have a TVgids.nl fallback. See [country source notes](https://github.com/criticallimit/TV-Guide/blob/main/tv-guide/data/COUNTRY_SOURCES.md) for coverage and limitations.
+**No programme for a channel:** Availability depends on public sources. Confirmed broadcaster data is preferred; other feeds fill gaps. Coverage and updates vary by channel and date. Additional schedules now cover Denmark through DR/TV 2, selected Austrian channels through Joyn Austria, and La Une/Tipik/La Trois through RTBF. Dutch RTL/SBS channels also have a TVgids.nl fallback. See [country source notes](https://github.com/criticallimit/HA-TV-Guide/blob/main/custom_components/tv_guide/country_sources.py) for coverage and limitations.
 
 **Empty guide after an update or country change:** Let the download finish and reopen the guide after a few minutes.
 
@@ -77,7 +77,7 @@ no additional resource configuration is needed.
 
 ## Home Assistant entities
 
-The integration creates  Home Assistant registry entities (managed by Home Assistant): last EPG update, saved programme count, reminder count, next reminder, update-running binary sensor and programme calendar. Names are translated into supported Home Assistant languages. Entities are linked to the integration and removed when it is deleted. Their identifiers depend on the Home Assistant entity registry and may vary if customized.
+The integration creates Home Assistant registry entities (managed by Home Assistant): last EPG update, saved programme count, reminder count, next reminder, update-running binary sensor and programme calendar. Names are translated into supported Home Assistant languages. Entities are linked to the integration and removed when it is deleted. Their identifiers depend on the Home Assistant entity registry and may vary if customized.
 
 
 ## Updates and help
