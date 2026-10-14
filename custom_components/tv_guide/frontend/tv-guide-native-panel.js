@@ -1,6 +1,6 @@
-import "./tv-guide-native-card.js?v=11";
+import "./tv-guide-card.js?v=11";
 
-class TVGuideNativePanel extends HTMLElement {
+class TVGuidePanel extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode:"open"});
@@ -19,4 +19,4 @@ class TVGuideNativePanel extends HTMLElement {
   connectedCallback() { this._resize();window.addEventListener("resize",this._resize); }
   disconnectedCallback() { window.removeEventListener("resize",this._resize); }
 }
-if (!customElements.get("tv-guide-native-panel")) customElements.define("tv-guide-native-panel",TVGuideNativePanel);
+if (!customElements.get("tv-guide-panel")) customElements.define("tv-guide-panel",TVGuidePanel);
