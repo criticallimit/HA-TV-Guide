@@ -1,0 +1,44 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "TV Guide is already configured."
+    },
+    "step": {
+      "user": {
+        "title": "TV Guide"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "epg_programmes": {
+        "name": "EPG-programmer"
+      },
+      "epg_channels": {
+        "name": "EPG-kanaler"
+      },
+      "saved_bookmarks": {
+        "name": "Gemte bogmærker"
+      },
+      "saved_reminders": {
+        "name": "Gemte påmindelser"
+      },
+      "next_reminder": {
+        "name": "Næste påmindelse"
+      },
+      "last_epg_update": {
+        "name": "Seneste EPG-opdatering"
+      }
+    },
+    "binary_sensor": {
+      "epg_refresh_running": {
+        "name": "EPG-opdatering i gang"
+      }
+    },
+    "calendar": {
+      "programmes": {
+        "name": "Programmer"
+      }
+    }
+  }
+}
