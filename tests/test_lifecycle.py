@@ -89,7 +89,8 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         stub('homeassistant.core', HomeAssistant=object)
         async def register_frontend(hass):
             pass
-        stub(PKG+'.frontend', async_register_frontend=register_frontend)
+        stub(PKG+'.frontend', async_register_frontend=register_frontend, async_remove_frontend=lambda hass:None)
+        stub(PKG+'.ha_defaults', installation_defaults=lambda config: {'country':'at','language':'de','backend_mode':'original','channels':[],'notification_service':'persistent_notification.create'})
         stub(PKG+'.ui_services', async_register_ui_services=lambda hass: self.registry.add('get_native_guide'), async_remove_ui_services=lambda hass: self.registry.discard('get_native_guide'))
         stub(PKG+'.const', DOMAIN='tv_guide')
         stub(PKG+'.coordinator', TVGuideEPGCoordinator=Coordinator)
@@ -118,6 +119,32 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         for callback in self.entry.callbacks:
             callback()  # Home Assistant processes these after success.
         self.assertTrue(self.entry.listener_removed)
+
+    async def test_preview_migration_uses_ha_locale_without_setup_inputs(self):
+        self.hass.config=object()
+        self.entry.version=1
+        self.entry.data={'country':'de','feed_url':''}
+        self.entry.options={'country':'de','columns_desktop':4}
+        def update(entry,**changes):
+            for key,value in changes.items():setattr(entry,key,value)
+        self.hass.config_entries.async_update_entry=update
+        self.assertTrue(await self.module.async_migrate_entry(self.hass,self.entry))
+        self.assertEqual(self.entry.version,2)
+        self.assertEqual(self.entry.data['country'],'at')
+        self.assertEqual(self.entry.options['language'],'de')
+        self.assertEqual(self.entry.options['columns_desktop'],4)
+        self.assertNotIn('feed_url',self.entry.data)
+
+    async def test_preview_migration_preserves_explicit_custom_feed(self):
+        self.hass.config=object()
+        self.entry.version=1
+        self.entry.data={'country':'gb','feed_url':'https://example.org/guide.xml','backend_mode':'xmltv'}
+        def update(entry,**changes):
+            for key,value in changes.items():setattr(entry,key,value)
+        self.hass.config_entries.async_update_entry=update
+        self.assertTrue(await self.module.async_migrate_entry(self.hass,self.entry))
+        self.assertEqual(self.entry.data['feed_url'],'https://example.org/guide.xml')
+        self.assertEqual(self.entry.data['country'],'gb')
 
     async def test_failed_platform_setup_unloads_partial_entities_and_runtime(self):
         self.hass.config_entries.fail = RuntimeError('partial platform failure')

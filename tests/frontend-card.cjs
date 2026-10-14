@@ -191,5 +191,19 @@ const server = http.createServer((req,res) => {
   await native.waitForFunction(()=>calls.some(call=>call.service==='native_request'&&call.service_data.endpoint==='settings'&&call.service_data.method==='POST'));
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
+  await native.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-native-panel.js',type:'module'});
+  await native.waitForFunction(()=>customElements.get('tv-guide-native-panel'));
+  await native.evaluate(()=>{
+    document.querySelector('tv-guide-native-card').remove();
+    const panel=document.createElement('tv-guide-native-panel');panel.hass=hass;panel.narrow=false;document.body.append(panel);
+  });
+  const panelFrame=native.locator('tv-guide-native-panel').locator('tv-guide-native-card').locator('iframe').contentFrame();
+  await panelFrame.locator('.channel-card').first().waitFor();
+  assert.equal(await native.locator('tv-guide-native-panel').locator('header').textContent(),'TV Guide');
+  await native.setViewportSize({width:390,height:700});
+  await native.waitForFunction(()=>parseInt(document.querySelector('tv-guide-native-panel').shadowRoot.querySelector('tv-guide-native-card').shadowRoot.querySelector('iframe').style.height)<=700);
+  assert.ok(await native.locator('tv-guide-native-panel').locator('iframe').evaluate(el=>parseInt(el.style.height)<=700));
+  assert.deepEqual(errors,[]);
+  console.log('PASS automatic sidebar panel loads the native guide and adapts to mobile');
   await browser.close();server.close();
 })().catch(error=>{console.error(error);server.close();process.exit(1);});

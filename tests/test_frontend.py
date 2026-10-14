@@ -18,7 +18,13 @@ class StaticPathConfig:
     path:str
     cache_headers:bool
 http.StaticPathConfig=StaticPathConfig
-with patch.dict(sys.modules,{PKG:pkg,'homeassistant.components.http':http}):
+ui=types.ModuleType('homeassistant.components.frontend')
+ui.add_extra_js_url=lambda hass,url:hass.data.setdefault('modules',set()).add(url)
+ui.remove_extra_js_url=lambda hass,url:hass.data['modules'].remove(url)
+ui.async_register_built_in_panel=lambda hass,name,**kwargs:hass.data.setdefault('panels',{}).update({kwargs['frontend_url_path']:kwargs})
+ui.async_remove_panel=lambda hass,path:hass.data['panels'].pop(path)
+components=types.ModuleType('homeassistant.components');components.frontend=ui
+with patch.dict(sys.modules,{PKG:pkg,'homeassistant.components':components,'homeassistant.components.frontend':ui,'homeassistant.components.http':http}):
     for name in ('const','frontend'):
         spec=importlib.util.spec_from_file_location(PKG+'.'+name,ROOT/(name+'.py'))
         module=importlib.util.module_from_spec(spec)
@@ -39,6 +45,14 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(calls[0].url_path,'/tv_guide/frontend')
         self.assertTrue((Path(calls[0].path)/'tv-guide-native-card.js').is_file())
         self.assertFalse(calls[0].cache_headers)
+        self.assertIn(frontend.MODULE_URL,hass.data['modules'])
+        self.assertIn(frontend.PANEL_PATH,hass.data['panels'])
+        frontend.async_remove_frontend(hass)
+        self.assertEqual(hass.data['panels'],{})
+        self.assertEqual(hass.data['modules'],set())
+        await frontend.async_register_frontend(hass)
+        self.assertEqual(len(calls),1)
+        self.assertIn(frontend.PANEL_PATH,hass.data['panels'])
 
     async def test_registration_failure_does_not_prevent_retry(self):
         attempts=[]

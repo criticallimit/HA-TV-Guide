@@ -1,6 +1,6 @@
 # First Home Assistant test
 
-Install the complete `custom_components/tv_guide` directory, restart HA and add TV Guide. Choose a country and leave the custom feed URL empty. For an existing preview entry, open Configure and submit these settings. Register `/tv_guide/frontend/tv-guide-native-card.js?v=3` as a module and add `type: custom:tv-guide-native-card` (`height: 1000`). Keep the existing add-on available as the comparison reference.
+Install the complete `custom_components/tv_guide` directory, restart HA and add TV Guide. The entry is created immediately without a form, using HA country/language. Open TV Guide in the sidebar; the panel and native card module are registered automatically. Existing previews with no explicit custom URL migrate automatically. Keep the add-on available as the comparison reference.
 
 1. Confirm the integration loads immediately, creates native sensors/calendar and reports background refresh. Allow several minutes for the original provider adapters to finish. Inspect Settings → System → Logs if programme data stays empty.
 2. Compare main cards, now/18:00/20:15/22:00, another date/time, desktop/mobile and light/dark with the add-on using the same country/time. Provider data can change between downloads.

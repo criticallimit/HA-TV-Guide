@@ -29,7 +29,7 @@ async def main():
         hass.config.skip_pip = True
         try:
             configured = await async_from_config_dict({
-                'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'DE'},
+                'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'AT', 'language': 'de'},
                 'http': {'server_host': '127.0.0.1', 'server_port': 8123},
                 'persistent_notification': {},
             }, hass)
@@ -37,11 +37,17 @@ async def main():
             await hass.async_start()
             from custom_components.tv_guide.original_runtime import OriginalRuntime
             with patch.object(OriginalRuntime, 'start_background', lambda *args, **kwargs: None):
-                result = await hass.config_entries.flow.async_init('tv_guide', context={'source':'user'}, data={'country':'de'})
+                result = await hass.config_entries.flow.async_init('tv_guide', context={'source':'user'})
                 assert result['type'] == 'create_entry', result
                 entry = result['result']
+                assert entry.data['country']=='at'
+                assert entry.data['language']=='de'
+                assert 'feed_url' not in entry.data
                 await hass.async_block_till_done()
                 assert entry.state.value == 'loaded', entry.state
+                from homeassistant.components import frontend
+                assert frontend.async_panel_exists(hass,'tv-guide-native')
+                assert '/tv_guide/frontend/tv-guide-native-card.js?v=4' in hass.data[frontend.DATA_EXTRA_MODULE_URL]
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 store = coordinator.backend.runtime.STORE
                 now = datetime.now(timezone.utc)
@@ -76,13 +82,17 @@ async def main():
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
                 assert len(saved['bookmarks']) == len(saved['reminders']) == 1
                 assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
+                hass.config_entries.async_update_entry(entry,version=1)
                 assert await hass.config_entries.async_reload(entry.entry_id)
                 await hass.async_block_till_done()
+                assert entry.version==2
+                assert frontend.async_panel_exists(hass,'tv-guide-native')
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)
                 assert len(saved['bookmarks']) == len(saved['reminders']) == 1
                 assert await hass.config_entries.async_unload(entry.entry_id)
                 assert not hass.services.has_service('tv_guide','native_request')
                 assert not hass.data['tv_guide']
+                assert not frontend.async_panel_exists(hass,'tv-guide-native')
                 print(f'PASS real Home Assistant {__version__}: setup, platforms, full guide, country picker, settings, saved actions, reload, unload',flush=True)
         finally:
             await hass.async_stop(force=True)

@@ -1,20 +1,16 @@
 # TV Guide – Native Home Assistant Integration
 
-Development package 0.3.1 for a first Home Assistant test. The original `criticallimit/TV-Guide` add-on stays unchanged. This integration hosts its programme engine, country catalogues and original card UI inside Home Assistant.
+Development package 0.4.0 for a first Home Assistant test. The original `criticallimit/TV-Guide` add-on stays unchanged. This integration hosts its programme engine, country catalogues and original card UI inside Home Assistant.
 
 ## Install and test
 
 1. Copy the entire `custom_components/tv_guide` directory to `/config/custom_components/tv_guide` and restart Home Assistant.
-2. Add **TV Guide** under Settings → Devices & services. Choose a country; **leave the custom feed URL empty**. This selects the original multi-provider engine. Existing preview entries can switch by opening Configure and submitting with an empty feed URL.
-3. Add `/tv_guide/frontend/tv-guide-native-card.js?v=3` as a JavaScript module in dashboard resources.
-4. Add a dashboard card:
+2. Add **TV Guide** under Settings → Devices & services. There is no input form: country and language come from Home Assistant, the original provider engine is selected, and background loading starts automatically.
+3. Open **TV Guide** in the HA sidebar. The panel and native card module are registered automatically; no feed URL, resource registration or dashboard YAML is needed.
 
-```yaml
-type: custom:tv-guide-native-card
-height: 1000
-```
+An optional dashboard card can be added using `type: custom:tv-guide-native-card` and `height: 1000`; its JavaScript is already loaded by the integration. Country/language and personal preferences can be changed later in the TV Guide settings. Supported HA countries are used directly; unsupported/missing country settings fall back to the supported country matching the HA language (DE for languages without a matching country). Norwegian locale codes are normalized to `nb`.
 
-The integration starts with its cached country data or an empty catalogue. Programme downloads/enrichment continue in the background; the card reports refresh progress. Initial provider loading may take several minutes, as with the add-on. The card updates cached snapshots automatically. A custom HTTPS feed URL selects the older standalone XMLTV mode instead.
+The integration starts with cached data or an empty catalogue. Downloads/enrichment continue in the background and can take several minutes. Older previews with no explicit custom URL are upgraded automatically to the original engine using HA locale settings. Previously configured custom URLs remain functional, but URL/technical setup forms are no longer shown.
 
 ## Original functions now included
 
@@ -38,7 +34,7 @@ The original engine's download/cache policies apply in default mode, including i
 
 ## Validation and first-test boundaries
 
-127 offline Python tests include inherited public-schedule, programme-title and UK regressions. Nine Chromium workflows cover original pixel comparisons and the full-engine route. CI additionally runs Hassfest and a real Home Assistant container smoke test for setup, native actions, platforms, reload and unload. Provider downloads are replaced by fixture data in that smoke test; check the latest CI result before treating it as passed.
+132 offline Python tests include inherited public-schedule, programme-title and UK regressions. Ten Chromium workflows cover original pixel comparisons and the full-engine route. CI additionally runs Hassfest and a real Home Assistant container smoke test for setup, native actions, platforms, reload and unload. Provider downloads are replaced by fixture data in that smoke test; check the latest CI result before treating it as passed.
 
 Live backend checks on 14 October 2026 successfully merged DE (71,995 programmes, all 50 main stations) and GB (68,398 programmes, all 20 main stations). These checks ran the native-owned engine outside HA; the real HA smoke remains fixture-backed. Some optional German teletext pages failed local TLS certificate checks, while the other sources supplied complete main-station coverage. A live installation test is still needed; use [the test checklist](docs/NATIVE_CARD_TESTING.md). Additional station logo assets outside the bundled main set currently use text-logo fallback. Legacy sensor switches are disabled because native entities are managed in HA's entity registry. Old saved data requires an explicit migration; it is not imported automatically. Power loss before durable sent-state storage can still cause a reminder to be delivered again after restart. HACS publication validation currently fails for missing repository topics and manifest reads while the repository is private; manual installation is available.
 

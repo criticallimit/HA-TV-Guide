@@ -9,7 +9,8 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .frontend import async_register_frontend
+from .frontend import async_register_frontend, async_remove_frontend
+from .ha_defaults import installation_defaults
 from .ui_services import async_register_ui_services, async_remove_ui_services
 from .coordinator import TVGuideEPGCoordinator
 from .epg_query import async_register_epg_query, async_remove_epg_query
@@ -20,6 +21,26 @@ from .saved_services import async_register_saved_services, async_remove_saved_se
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
+
+
+async def async_migrate_entry(hass, entry):
+    """Upgrade earlier previews without requiring a new setup dialogue."""
+    if entry.version > 2:
+        return False
+    if entry.version == 1:
+        defaults = installation_defaults(hass.config)
+        combined = {**entry.data, **entry.options}
+        if combined.get("feed_url"):
+            data = {**defaults, **entry.data}
+            options = dict(entry.options)
+        else:
+            data = {**entry.data, **defaults}
+            data.pop("feed_url", None)
+            options = dict(entry.options)
+            options.pop("feed_url", None)
+            options.update({key:defaults[key] for key in ("country", "language", "backend_mode")})
+        hass.config_entries.async_update_entry(entry, data=data, options=options, version=2)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -75,6 +96,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
         hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if not hass.data.get(DOMAIN + "_saved"):
+            async_remove_frontend(hass)
             async_remove_saved_services(hass)
             async_remove_ui_services(hass)
         if not hass.data.get(DOMAIN):
@@ -126,6 +148,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
         hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
         if not hass.data.get(DOMAIN + "_saved"):
+            async_remove_frontend(hass)
             async_remove_saved_services(hass)
             async_remove_ui_services(hass)
         if not hass.data.get(DOMAIN):

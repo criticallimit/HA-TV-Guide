@@ -1,41 +1,7 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "title": "TV Guide",
-        "description": "Land auswählen und die Feed-URL leer lassen: Quellen und Funktionen des Add-ons verwenden. Eine eigene URL aktiviert den einfachen XMLTV-Modus.",
-        "data": {
-          "country": "Land (optional)",
-          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)",
-          "channels": "Sender-IDs (durch Kommas getrennt, leer = alle)"
-        }
-      }
-    },
     "abort": {
       "already_configured": "TV Guide ist bereits eingerichtet."
-    },
-    "error": {
-      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben.",
-      "invalid_country": "Ungültiges Land",
-      "invalid_channels": "Ungültige Senderliste (maximal 200 Sender)"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "TV Guide",
-        "description": "Land auswählen und die Feed-URL leer lassen: Quellen und Funktionen des Add-ons verwenden. Eine eigene URL aktiviert den einfachen XMLTV-Modus.",
-        "data": {
-          "country": "Land (optional)",
-          "feed_url": "Eigene XMLTV-Feed-Adresse (optional)",
-          "channels": "Sender-IDs (durch Kommas getrennt, leer = alle)"
-        }
-      }
-    },
-    "error": {
-      "invalid_url": "Bitte eine gültige öffentliche HTTPS-Adresse eingeben.",
-      "invalid_country": "Ungültiges Land",
-      "invalid_channels": "Ungültige Senderliste (maximal 200 Sender)"
     }
   }
 }
