@@ -22,16 +22,16 @@ QUERY_SCHEMA = vol.Schema({
 })
 
 
-def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start, end, limit):
+def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start, end, limit, selected=None):
     """Return a bounded chronological subset of the cached XMLTV snapshot."""
-    ids = resolved_selection([channel_id], catalogue) if channel_id else []
-    if channel_id and not ids:
+    ids = resolved_selection([channel_id], catalogue) if channel_id else resolved_selection(selected or [], catalogue)
+    if (channel_id or selected) and not ids:
         return []
     allowed = set(ids)
     labels = channel_labels(catalogue, feed_channels)
     result = []
     for programme in programmes:
-        if channel_id and programme.get("channel") not in allowed:
+        if (channel_id or selected) and programme.get("channel") not in allowed:
             continue
         try:
             begins = datetime.fromisoformat(programme["start"])
@@ -88,10 +88,14 @@ def async_register_epg_query(hass):
         coordinator = next(iter(coordinators.values()))
         if coordinator.data is None:
             raise HomeAssistantError("No EPG snapshot available")
+        entry_id = next(iter(coordinators))
+        entry = hass.config_entries.async_get_entry(entry_id)
+        options = {**entry.data, **entry.options} if entry else {}
         records = query_programmes(
             coordinator.data, coordinator.canonical_channels,
             coordinator.channels, channel_id=call.data["channel_id"],
             start=start, end=end, limit=call.data["limit"],
+            selected=options.get("channels", []),
         )
         return {"programmes": records, "count": len(records)}
 
