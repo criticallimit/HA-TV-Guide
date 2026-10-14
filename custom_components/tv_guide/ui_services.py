@@ -8,7 +8,7 @@ from .const import DOMAIN
 from .catalogs import resolve_catalogue_channels
 from .ui_payload import build_guide, guide_at, personal_payload, ui_settings, normalize_ui_settings
 
-SERVICES=('get_guide','get_channels','get_ui_settings','set_ui_settings')
+SERVICES=('get_guide','get_personal_channels','get_ui_settings','set_ui_settings')
 PRESENTATION_OPTIONS=('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')
 
 def async_register_ui_services(hass):
@@ -60,7 +60,7 @@ def async_register_ui_services(hass):
 
                     await persist_original_settings(entry, coordinator)
                 return result
-            endpoint={'get_ui_settings':'settings','get_guide':'guide','get_channels':'personal-channels'}.get(call.service)
+            endpoint={'get_ui_settings':'settings','get_guide':'guide','get_personal_channels':'personal-channels'}.get(call.service)
             if endpoint:
                 result=await coordinator.async_original_request(endpoint)
                 if endpoint == 'guide' and requested_at is not None:
@@ -87,7 +87,7 @@ def async_register_ui_services(hass):
             hass.config_entries.async_update_entry(entry,options={**entry.options,**changes})
             return {'ok':True,'settings':ui_settings({**options,**changes})}
         data,catalogue,channels,busy=await snapshot(options)
-        if call.service=='get_channels':
+        if call.service=='get_personal_channels':
             return await hass.async_add_executor_job(personal_payload,catalogue,channels,options)
         raw=call.data.get('at')
         try:
