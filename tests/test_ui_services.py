@@ -39,7 +39,7 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(all(item['programs']==[] for item in result['channels']))
         self.assertEqual(result['country'],'de')
         self.assertEqual(result['main_channel_ids'][0],'ard')
-        choices=await self.call('get_channels')
+        choices=await self.call('get_personal_channels')
         self.assertEqual(choices['order'][0],'ard')
 
     async def test_validated_display_settings_persist_without_replacing_other_options(self):
