@@ -1,4 +1,4 @@
-"""Response action adapters validate writes and read the native snapshot only."""
+"""Response action adapters validate writes and read the guide snapshot only."""
 import importlib.util
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
@@ -33,13 +33,13 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
 
     async def call(self,name,data=None):return await self.handlers[name](types.SimpleNamespace(service=name,data=data or {}))
 
-    async def test_empty_native_snapshot_has_sender_model_without_epg_requests(self):
-        result=await self.call('get_native_guide')
+    async def test_empty_guide_snapshot_has_sender_model_without_epg_requests(self):
+        result=await self.call('get_guide')
         self.assertTrue(result['channels'])
         self.assertTrue(all(item['programs']==[] for item in result['channels']))
         self.assertEqual(result['country'],'de')
         self.assertEqual(result['main_channel_ids'][0],'ard')
-        choices=await self.call('get_native_channels')
+        choices=await self.call('get_channels')
         self.assertEqual(choices['order'][0],'ard')
 
     async def test_validated_display_settings_persist_without_replacing_other_options(self):
@@ -52,10 +52,10 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_invalid_settings_and_naive_query_do_not_mutate_entry(self):
         with self.assertRaises(exc.HomeAssistantError):await self.call('set_ui_settings',{'options':{'notification_service':'shell.execute'}})
-        with self.assertRaises(exc.HomeAssistantError):await self.call('get_native_guide',{'at':'2026-10-14T20:15:00'})
+        with self.assertRaises(exc.HomeAssistantError):await self.call('get_guide',{'at':'2026-10-14T20:15:00'})
         self.assertEqual(self.updates,[])
 
-    async def test_unload_removes_all_native_ui_actions(self):
+    async def test_unload_removes_all_guide_ui_actions(self):
         adapter.async_remove_ui_services(self.hass)
         self.assertEqual(self.handlers,{})
 
@@ -65,11 +65,11 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         guide={'country':'de','channels':[{'id':'ard','logo':'original','programs':rows}]}
         async def request(*args):return guide
         self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_original=True,async_original_request=request)}
-        window=await self.call('get_native_guide',{'at':at.isoformat()})
+        window=await self.call('get_guide',{'at':at.isoformat()})
         self.assertEqual([item['id'] for item in window['channels'][0]['programs']],[str(i) for i in range(7)])
         self.assertEqual(window['channels'][0]['logo'],'original')
         self.assertEqual(window['channels'][0]['programs'][0]['icon'],'artwork')
-        self.assertEqual(len((await self.call('get_native_guide'))['channels'][0]['programs']),11)
+        self.assertEqual(len((await self.call('get_guide'))['channels'][0]['programs']),11)
         self.assertEqual(len(guide['channels'][0]['programs']),11)
 
     async def test_original_guide_rejects_invalid_timestamp_before_dispatch(self):
@@ -77,7 +77,7 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         async def request(*args):calls.append(args);return {}
         self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_original=True,async_original_request=request)}
         for at in ('bad','2030-01-01T12:00:00','9999-12-31T23:30:00-01:00'):
-            with self.assertRaises(exc.HomeAssistantError):await self.call('get_native_guide',{'at':at})
+            with self.assertRaises(exc.HomeAssistantError):await self.call('get_guide',{'at':at})
         self.assertEqual(calls,[])
 
     async def test_original_settings_persist_normalized_values_and_notification_destination(self):
