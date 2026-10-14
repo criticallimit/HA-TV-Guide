@@ -104,6 +104,17 @@ class QueryTests(unittest.TestCase):
         result = query(programmes, [], [], channel_id="", start=start, end=end, limit=10)
         self.assertEqual([item["title"] for item in result], ["earlier", "later"])
 
+    def test_uses_saved_selection_when_channel_not_specified(self):
+        programmes = [
+            {"channel": "ard.feed", "start": "2026-10-13T19:00:00+00:00", "stop": "2026-10-13T20:00:00+00:00", "title": "ARD"},
+            {"channel": "zdf.feed", "start": "2026-10-13T19:00:00+00:00", "stop": "2026-10-13T20:00:00+00:00", "title": "ZDF"},
+        ]
+        catalogue = [{"id": "ard", "name": "Das Erste", "xmltv_id": "ard.feed"}]
+        start = datetime(2026, 10, 13, 19, 0, tzinfo=timezone.utc)
+        end = datetime(2026, 10, 13, 20, 0, tzinfo=timezone.utc)
+        result = query(programmes, catalogue, [], channel_id="", start=start, end=end, limit=100, selected=["ard"])
+        self.assertEqual([item["title"] for item in result], ["ARD"])
+
     def test_missing_canonical_sender_not_all_programmes(self):
         programmes = [{"channel": "unknown", "start": "2026-10-13T19:00:00+00:00", "stop": "2026-10-13T20:00:00+00:00"}]
         cat = [{"id": "ard", "xmltv_id": None, "name": "Das Erste"}]
