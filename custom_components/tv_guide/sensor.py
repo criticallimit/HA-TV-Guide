@@ -35,7 +35,7 @@ class TVGuideSavedCount(SensorEntity):
         self._attr_icon = "mdi:bookmark" if kind == "bookmarks" else "mdi:alarm"
 
     @property
-    def guide_value(self):
+    def native_value(self):
         if self._kind == 'reminders':
             return len(pending_reminders(self._saved.reminders))
         return len(self._saved.bookmarks)
@@ -64,7 +64,7 @@ class TVGuideNextReminder(SensorEntity):
         self._saved = saved
 
     @property
-    def guide_value(self):
+    def native_value(self):
         when, _ = next_pending_reminder(self._saved.reminders)
         return when
 
@@ -105,7 +105,7 @@ class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
 
     @property
-    def guide_value(self):
+    def native_value(self):
         return self.coordinator.last_successful_refresh
 
     @property
