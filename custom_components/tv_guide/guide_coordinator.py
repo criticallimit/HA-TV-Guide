@@ -23,6 +23,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         self._sync_pending = False
         self._sync_requested = False
         self._sync_lock = asyncio.Lock()
+        self._last_refresh_notification = None
         self._cancel_preload = None
         self._loop = asyncio.get_running_loop()
         entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.async_stop))
@@ -68,7 +69,10 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
             loaded = None
         self.last_successful_refresh = loaded if loaded is not None and loaded.tzinfo is not None else None
         self.update_interval = timedelta(minutes=status['refresh_minutes'])
-        self._notify_refresh()
+        notification = (self.country, self.refresh_running, self.last_successful_refresh)
+        if notification != self._last_refresh_notification:
+            self._last_refresh_notification = notification
+            self._notify_refresh()
         return records
 
     async def _async_update_data(self):
