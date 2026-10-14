@@ -1,4 +1,4 @@
-import "./tv-guide-native-card.js?v=9";
+import "./tv-guide-native-card.js?v=11";
 
 class TVGuideNativePanel extends HTMLElement {
   constructor() {
@@ -7,14 +7,14 @@ class TVGuideNativePanel extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {display:block;height:100%;overflow:auto;background:var(--primary-background-color)}
-        tv-guide-native-card {display:block}
+        tv-guide-card {display:block}
       </style>
-      <tv-guide-native-card></tv-guide-native-card>`;
-    this._resize = () => this.shadowRoot.querySelector("tv-guide-native-card")
+      <tv-guide-card></tv-guide-card>`;
+    this._resize = () => this.shadowRoot.querySelector("tv-guide-card")
       .setConfig({height:Math.max(240,window.innerHeight)});
   }
   set hass(hass) {
-    this.shadowRoot.querySelector("tv-guide-native-card").hass = hass;
+    this.shadowRoot.querySelector("tv-guide-card").hass = hass;
   }
   connectedCallback() { this._resize();window.addEventListener("resize",this._resize); }
   disconnectedCallback() { window.removeEventListener("resize",this._resize); }
