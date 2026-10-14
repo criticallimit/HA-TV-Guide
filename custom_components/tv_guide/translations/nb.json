@@ -11,12 +11,6 @@
   },
   "entity": {
     "sensor": {
-      "epg_programmes": {
-        "name": "EPG-programmer"
-      },
-      "epg_channels": {
-        "name": "EPG-kanaler"
-      },
       "saved_bookmarks": {
         "name": "Lagrede bokmerker"
       },
