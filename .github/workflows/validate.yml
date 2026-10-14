@@ -54,12 +54,27 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Check native card syntax
         run: node --check custom_components/tv_guide/frontend/tv-guide-native-card.js
-      - name: Check out read-only reference frontend
-        uses: actions/checkout@v4
-        with:
-          repository: criticallimit/TV-Guide
-          ref: 7871c4af8951c1f05ed012d028786181b1974b11
-          path: reference-addon
+      - name: Verify and stage pinned read-only reference frontend
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import shutil
+          from pathlib import Path
+
+          source = Path("custom_components/tv_guide/frontend/app")
+          reference = json.loads((source / "REFERENCE.json").read_text(encoding="utf-8"))
+          assert reference["repository"] == "criticallimit/TV-Guide"
+          assert reference["commit"] == "7871c4af8951c1f05ed012d028786181b1974b11"
+          for name, expected in reference["source_sha256"].items():
+              actual = hashlib.sha256((source / name).read_bytes()).hexdigest()
+              if actual != expected:
+                  raise SystemExit(f"Original frontend reference changed: {name}")
+          target = Path("reference-addon/tv-guide/www")
+          target.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copytree(source, target)
+          print("Pinned original frontend verified and staged for pixel comparison")
+          PY
       - name: Compare native card with original frontend in Chromium
         env:
           TVG_REFERENCE: reference-addon
