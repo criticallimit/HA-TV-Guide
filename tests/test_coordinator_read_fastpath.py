@@ -5,9 +5,9 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
-SOURCE = Path(__file__).resolve().parents[1] / "custom_components/tv_guide/original_coordinator.py"
+SOURCE = Path(__file__).resolve().parents[1] / "custom_components/tv_guide/guide_coordinator.py"
 TREE = ast.parse(SOURCE.read_text(encoding="utf-8"))
-CLASS = next(node for node in TREE.body if isinstance(node, ast.ClassDef) and node.name == "TVGuideOriginalCoordinator")
+CLASS = next(node for node in TREE.body if isinstance(node, ast.ClassDef) and node.name == "TVGuideCoordinator")
 METHOD = next(node for node in CLASS.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "async_original_request")
 # Exercise the real method without importing Home Assistant in offline unit tests.
 NAMESPACE = {"RuntimeError": RuntimeError}
