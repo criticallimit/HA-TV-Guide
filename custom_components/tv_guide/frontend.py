@@ -1,4 +1,4 @@
-"""Serve the bundled native card without copying files into /config/www."""
+"""Serve the bundled TV Guide card without copying files into /config/www."""
 import asyncio
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from .const import DOMAIN
 from .logo_view import TVGuideLogoView
 
 CARD_URL = "/tv_guide/frontend/tv-guide-native-card.js"
-MODULE_URL = CARD_URL + "?v=9"
+MODULE_URL = CARD_URL + "?v=11"
 PANEL_PATH = "tv-guide-native"
 
 
@@ -30,7 +30,7 @@ async def async_register_frontend(hass):
             frontend.async_register_built_in_panel(hass, "custom", sidebar_title="TV Guide",
                 sidebar_icon="mdi:television-guide", frontend_url_path=PANEL_PATH,
                 config={"_panel_custom":{"name":"tv-guide-native-panel",
-                    "module_url":"/tv_guide/frontend/tv-guide-native-panel.js?v=10",
+                    "module_url":"/tv_guide/frontend/tv-guide-native-panel.js?v=11",
                     "embed_iframe":False,"trust_external":False}})
             hass.data[DOMAIN + "_panel_registered"] = True
         frontend.add_extra_js_url(hass, MODULE_URL)
