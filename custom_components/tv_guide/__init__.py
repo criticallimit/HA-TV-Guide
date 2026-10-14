@@ -33,8 +33,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         url = effective_feed(options)
         if not options.get("feed_url"):
-            from .original_coordinator import TVGuideOriginalCoordinator
-            coordinator = TVGuideOriginalCoordinator(hass, entry, options)
+            from .guide_coordinator import TVGuideCoordinator
+            coordinator = TVGuideCoordinator(hass, entry, options)
             await coordinator.async_config_entry_first_refresh()
         elif url:
             coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""), feed_candidates(options), config_entry=entry)
