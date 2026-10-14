@@ -10,13 +10,13 @@
       try {
         const params = new URLSearchParams(window.location.search);
         if (params.get("tv_guide_card") !== "1") return;
-        const key = "tv-guide-native-dashboard-theme:" + (params.get("tv_guide_theme") || "__dashboard__");
+        const key = "tv-guide-dashboard-theme:" + (params.get("tv_guide_theme") || "__dashboard__");
         const cached = JSON.parse(sessionStorage.getItem(key) || "null");
         if (!cached?.vars) return;
         for (const [name, value] of Object.entries(cached.vars)) {
           if (value) document.documentElement.style.setProperty(name, value);
         }
-        const displayMode = sessionStorage.getItem("tv-guide-native-dashboard-display-mode") || "auto";
+        const displayMode = sessionStorage.getItem("tv-guide-dashboard-display-mode") || "auto";
         document.documentElement.dataset.haTheme =
           displayMode === "dark" || displayMode === "light"
             ? displayMode
@@ -174,7 +174,7 @@
   <script src="i18n.js?v=france-1"></script>
   <script src="guide-core.js?v=cleanup-1"></script>
   <script src="channel-picker.js?v=personal-1"></script>
-  <script src="native-transport.js"></script>
+  <script src="guide-transport.js"></script>
   <script src="app.js?v=standalone-1"></script>
 </body>
 </html>
