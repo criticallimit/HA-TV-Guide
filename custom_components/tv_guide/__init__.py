@@ -13,7 +13,7 @@ from .frontend import async_register_frontend
 from .ui_services import async_register_ui_services, async_remove_ui_services
 from .coordinator import TVGuideEPGCoordinator
 from .epg_query import async_register_epg_query, async_remove_epg_query
-from .country_sources import effective_feed
+from .country_sources import effective_feed, feed_candidates
 from .reminder_scheduler import TVGuideReminderScheduler
 from .saved_programmes import TVGuideSavedProgrammes
 from .saved_services import async_register_saved_services, async_remove_saved_services
@@ -32,7 +32,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         url = effective_feed(options)
         if url:
-            coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""))
+            coordinator = TVGuideEPGCoordinator(hass, url, options.get("country", ""), feed_candidates(options))
             coordinator.update_interval = timedelta(minutes=options.get("refresh_minutes",180))
             await coordinator.async_config_entry_first_refresh()
 
@@ -84,7 +84,7 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     options = {**entry.data, **entry.options}
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     expected_url = effective_feed(options)
-    if coordinator is not None and coordinator.url == expected_url and coordinator.country == options.get("country", "") and coordinator.update_interval == timedelta(minutes=options.get("refresh_minutes",180)):
+    if coordinator is not None and coordinator.url == expected_url and coordinator.source_urls == feed_candidates(options) and coordinator.country == options.get("country", "") and coordinator.update_interval == timedelta(minutes=options.get("refresh_minutes",180)):
         coordinator.async_update_listeners()
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
         if scheduler is not None:

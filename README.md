@@ -12,7 +12,7 @@
 - An experimental **TV Guide Native** dashboard card retaining the original add-on presentation for programme browsing, sender selection/order, bookmarks and reminders, using Home Assistant's authenticated connection.
 - Five optional state mirrors of the original add-on for the transitional bridge. These have separate unique IDs and names.
 
-This is not yet a complete replacement for the add-on: provider fallbacks/enrichment, provider-specific programme artwork, old saved-data migration and multi-country provider aggregation are pending. Keep the add-on available while testing. No production readiness or live Home Assistant compatibility is implied by offline tests.
+This is not yet a complete replacement for the add-on: broadcaster enrichment, provider-specific programme artwork, old saved-data migration and multi-country provider aggregation are pending. Keep the add-on available while testing. No production readiness or live Home Assistant compatibility is implied by offline tests.
 
 ## Manual integration installation
 
@@ -21,6 +21,8 @@ This is not yet a complete replacement for the add-on: provider fallbacks/enrich
 3. Restart Home Assistant.
 4. Go to **Settings → Devices & services → Add integration → TV Guide**.
 5. Choose a country baseline or enter a public HTTPS XMLTV feed URL. A custom URL overrides the country baseline. Leave both blank for bridge-only operation.
+
+Country baselines for Germany and Great Britain try the original add-on's EPGShare alternative if the primary feed fails, is invalid, or contains no current/future programmes. Attempts are sequential and retain the same transport limits. An explicit custom URL is used alone, even if it equals a baseline URL. Each refresh retries the primary first. The last-refresh sensor exposes `active_source` for the successful snapshot and `source_attempts` for the latest refresh; all-source failure retains the previous snapshot metadata and reports a coordinator failure.
 
 The initial feed is downloaded during setup. A failed download leaves the entry not ready for Home Assistant to retry. The download is limited to 12 MiB on the wire and 8 MiB after decompression, with at most 50,000 parsed programmes; large country feeds may exceed these preview limits. Only configure sources you are authorized to access.
 
@@ -74,13 +76,13 @@ Fresh native bookmark/reminder storage is empty. The integration does not read o
 
 ## Validation and remaining work
 
-Local validation for the native-card change: 86 Python offline tests passed; eight Chromium workflow scenarios passed (including pixel comparisons, sender picker, saved-item actions, service errors, RPC source checks and reconnect). Tests use HA doubles; they do not run a real HA server. The suite now loads pure Python helpers without inserting the integration directory into `sys.path`, avoiding accidental shadowing of Python's `calendar` module.
+Local validation for the native-card change: 93 Python offline tests passed; eight Chromium workflow scenarios passed (including pixel comparisons, sender picker, saved-item actions, service errors, RPC source checks and reconnect). Tests use HA doubles; they do not run a real HA server. The suite now loads pure Python helpers without inserting the integration directory into `sys.path`, avoiding accidental shadowing of Python's `calendar` module.
 
-The branch has passed Python/JSON checks, Chromium card tests and Hassfest on GitHub Actions. HACS publication validation still requires repository topics; project branding is bundled under `brand/` using an unchanged copy of the original TV Guide project icon (not broadcaster logos).
+The branch has passed Python/JSON checks, Chromium card tests and Hassfest on GitHub Actions. HACS publication validation currently fails while the repository is private and has no topics; project branding is bundled under `brand/` using an unchanged copy of the original TV Guide project icon (not broadcaster logos).
 
 GitHub Actions runs offline tests, Python/JSON validation, HACS, Hassfest and Chromium card tests. Check the actual results for the branch/PR; local success does not establish CI success.
 
-Before replacing the add-on, test real HA installation/reload/unload, country feed sizes and availability, mobile-notification delivery, storage failures, and card setup on desktop/mobile. Provider fallback/enrichment, multi-country personal lists, programme artwork and explicit old-data migration remain required. See [architecture](docs/ARCHITECTURE.md) and [manual test steps](docs/NATIVE_CARD_TESTING.md).
+Before replacing the add-on, test real HA installation/reload/unload, country feed sizes and availability, mobile-notification delivery, storage failures, and card setup on desktop/mobile. Broadcaster enrichment, multi-country personal lists, programme artwork and explicit old-data migration remain required. See [architecture](docs/ARCHITECTURE.md) and [manual test steps](docs/NATIVE_CARD_TESTING.md).
 
 ## Licence
 

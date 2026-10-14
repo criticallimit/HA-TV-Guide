@@ -8,7 +8,7 @@ Only `criticallimit/HA-TV-Guide` implements this port. `criticallimit/TV-Guide` 
 
 `async_setup_entry` resolves the optional country/custom feed, performs the first coordinator refresh, loads an entry-specific Home Assistant Store and forwards sensor, binary-sensor and calendar platforms. Native actions are shared by the single configured instance. The reminder scheduler uses HA time-event helpers rather than a polling worker. Unload stops timers, removes runtime references and unregisters shared actions when the last relevant entry unloads.
 
-The coordinator downloads one snapshot every three hours. Parsing, decompression and catalogue loading run in the executor. Programmes, parsed feed channels and matched canonical channels are reused by the calendar and response actions. Selected sender IDs live in config-entry options; sender-only changes do not redownload XMLTV.
+The coordinator refreshes one snapshot at the configured interval (three hours by default). Germany and Great Britain have sequential primary/EPGShare fallback attempts from the reference configuration. Explicit custom feeds have no fallback. Empty, expired and malformed feeds count as failed attempts; cancellation stops immediately. Every cycle starts at the primary. Only a complete successful attempt replaces channel metadata and the last-success timestamp. The last-refresh sensor exposes the successful source and bounded per-source attempt results; stale snapshots remain unavailable through the coordinator after all-source failure. Parsing, decompression and catalogue loading run in the executor. Programmes, parsed feed channels and matched canonical channels are reused by the calendar and response actions. Selected sender IDs live in config-entry options; sender-only changes do not redownload XMLTV.
 
 The five transitional bridge entities mirror optional add-on states using separate registry unique IDs. Native saved-list and EPG entities are independent of those states.
 
@@ -32,7 +32,7 @@ No old storage is read or overwritten. Notification service availability and per
 
 Transport uses a dedicated aiohttp connector whose resolver validates the DNS addresses used for the actual connection. Mixed or private addresses are rejected; redirects, environment proxies and automatic HTTP decompression are disabled. HTTPS certificate/hostname validation stays enabled. Incoming bytes, gzip output and parsed programme counts are bounded. This is not a claim of comprehensive transport verification.
 
-Ten country baselines and the original ordered main-channel JSON catalogues are present. Official broadcaster enrichment, alternative source fallback and production-sized feed tests are pending. Third-party EPG/logo rights from the reference add-on still apply; the native card reuses the main-channel logo subset with inherited rights notices and font licence.
+Ten country baselines and the original ordered main-channel JSON catalogues are present. Official broadcaster enrichment and production-sized feed tests are pending. Country-level XMLTV fallback is implemented for the two reference countries with configured alternatives (DE/GB); other countries retain their single baseline. Third-party EPG/logo rights from the reference add-on still apply; the native card reuses the main-channel logo subset with inherited rights notices and font licence.
 
 ## Validation boundaries
 

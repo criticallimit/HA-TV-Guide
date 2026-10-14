@@ -230,3 +230,11 @@ class TVGuideLastRefresh(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         return self.coordinator.last_successful_refresh
+
+    @property
+    def extra_state_attributes(self):
+        """Report the successful snapshot source and latest bounded attempts."""
+        return {
+            "active_source": self.coordinator.active_source,
+            "source_attempts": [dict(item) for item in self.coordinator.source_attempts],
+        }

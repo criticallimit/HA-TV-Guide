@@ -44,8 +44,9 @@ class Entries:
 
 class Coordinator:
     fail = False
-    def __init__(self, hass, url, country):
+    def __init__(self, hass, url, country, source_urls):
         self.url, self.country = url, country
+        self.source_urls = source_urls
         self.updates = 0
     async def async_config_entry_first_refresh(self):
         if self.fail:
@@ -92,7 +93,8 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         stub(PKG+'.ui_services', async_register_ui_services=lambda hass: self.registry.add('get_native_guide'), async_remove_ui_services=lambda hass: self.registry.discard('get_native_guide'))
         stub(PKG+'.const', DOMAIN='tv_guide')
         stub(PKG+'.coordinator', TVGuideEPGCoordinator=Coordinator)
-        stub(PKG+'.country_sources', effective_feed=lambda options: options.get('feed_url') or None)
+        stub(PKG+'.country_sources', effective_feed=lambda options: options.get('feed_url') or None,
+             feed_candidates=lambda options: (options['feed_url'],) if options.get('feed_url') else ())
         stub(PKG+'.reminder_scheduler', TVGuideReminderScheduler=Scheduler)
         stub(PKG+'.saved_programmes', TVGuideSavedProgrammes=Saved)
         async def register_saved(hass):

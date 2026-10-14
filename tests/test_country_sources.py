@@ -20,6 +20,19 @@ validate_feed_url = _module.validate_feed_url
 
 
 class CountrySourceTests(unittest.TestCase):
+    def test_country_fallbacks_and_explicit_override(self):
+        sources = load_module("country_sources")
+        for country in ("de", "gb"):
+            candidates = sources.feed_candidates({"country": country})
+            self.assertEqual(len(candidates), 2)
+            self.assertEqual(candidates[0], COUNTRY_FEEDS[country])
+            for url in candidates:
+                self.assertEqual(validate_feed_url(url), url)
+            # Even a manual URL identical to the baseline must stay authoritative.
+            self.assertEqual(sources.feed_candidates({"country": country, "feed_url": candidates[0]}), (candidates[0],))
+        self.assertEqual(sources.feed_candidates({"country": "at"}), (COUNTRY_FEEDS["at"],))
+        self.assertEqual(sources.feed_candidates({}), ())
+
     def test_ten_sources_have_safe_syntax(self):
         self.assertEqual(len(COUNTRY_FEEDS), 10)
         for source in COUNTRY_FEEDS.values():
