@@ -91,5 +91,5 @@ For this development version, update by copying the latest `custom_components/tv
 
 TV Guide is an independent open-source project. The project-authored code is licensed under the MIT License. Television channel names, trademarks, logos, programme data, programme descriptions and other third-party material are **not** relicensed under MIT and remain subject to the rights and terms of their respective owners and providers.
 
-See [third-party notices](https://github.com/criticallimit/TV-Guide/blob/main/THIRD_PARTY_NOTICES.md) for source, trademark and third-party rights information.
+See [third-party notices](https://github.com/criticallimit/HA-TV-Guide/blob/main/THIRD_PARTY_NOTICES.md) for source, trademark and third-party rights information.
 

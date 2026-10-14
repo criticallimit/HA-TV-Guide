@@ -23,26 +23,6 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
 
 
-async def async_migrate_entry(hass, entry):
-    """Upgrade earlier previews without requiring a new setup dialogue."""
-    if entry.version > 2:
-        return False
-    if entry.version == 1:
-        defaults = installation_defaults(hass.config)
-        combined = {**entry.data, **entry.options}
-        if combined.get("feed_url"):
-            data = {**defaults, **entry.data}
-            options = dict(entry.options)
-        else:
-            data = {**entry.data, **defaults}
-            data.pop("feed_url", None)
-            options = dict(entry.options)
-            options.pop("feed_url", None)
-            options.update({key:defaults[key] for key in ("country", "language", "backend_mode")})
-        hass.config_entries.async_update_entry(entry, data=data, options=options, version=2)
-    return True
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the integration and roll back local resources on setup failures."""
     options = {**entry.data, **entry.options}

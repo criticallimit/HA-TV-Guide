@@ -132,32 +132,6 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             callback()  # Home Assistant processes these after success.
         self.assertTrue(self.entry.listener_removed)
 
-    async def test_preview_migration_uses_ha_locale_without_setup_inputs(self):
-        self.hass.config=object()
-        self.entry.version=1
-        self.entry.data={'country':'de','feed_url':''}
-        self.entry.options={'country':'de','columns_desktop':4}
-        def update(entry,**changes):
-            for key,value in changes.items():setattr(entry,key,value)
-        self.hass.config_entries.async_update_entry=update
-        self.assertTrue(await self.module.async_migrate_entry(self.hass,self.entry))
-        self.assertEqual(self.entry.version,2)
-        self.assertEqual(self.entry.data['country'],'at')
-        self.assertEqual(self.entry.options['language'],'de')
-        self.assertEqual(self.entry.options['columns_desktop'],4)
-        self.assertNotIn('feed_url',self.entry.data)
-
-    async def test_preview_migration_preserves_explicit_custom_feed(self):
-        self.hass.config=object()
-        self.entry.version=1
-        self.entry.data={'country':'gb','feed_url':'https://example.org/guide.xml','backend_mode':'xmltv'}
-        def update(entry,**changes):
-            for key,value in changes.items():setattr(entry,key,value)
-        self.hass.config_entries.async_update_entry=update
-        self.assertTrue(await self.module.async_migrate_entry(self.hass,self.entry))
-        self.assertEqual(self.entry.data['feed_url'],'https://example.org/guide.xml')
-        self.assertEqual(self.entry.data['country'],'gb')
-
     async def test_failed_platform_setup_unloads_partial_entities_and_runtime(self):
         self.hass.config_entries.fail = RuntimeError('partial platform failure')
         with self.assertRaises(RuntimeError):
