@@ -28,8 +28,8 @@ def async_register_ui_services(hass):
         catalogue=await hass.async_add_executor_job(resolve_catalogue_channels,options.get('country',''),[])
         return [],catalogue,[],False
 
-    async def persist_original_settings(entry, coordinator):
-        settings=await coordinator.async_original_request('settings')
+    async def persist_guide_settings(entry, coordinator):
+        settings=await coordinator.async_guide_request('settings')
         changes={key:settings[key] for key in PRESENTATION_OPTIONS}
         hass.config_entries.async_update_entry(entry,options={**entry.options,**changes,'backend_mode':'original'})
         scheduler=hass.data.get(DOMAIN+'_reminder_schedulers',{}).get(entry.entry_id)
@@ -48,21 +48,21 @@ def async_register_ui_services(hass):
                 requested_at.astimezone(timezone.utc)
             except (TypeError, ValueError, OverflowError) as exc:
                 raise HomeAssistantError('Invalid guide timestamp') from exc
-        if getattr(coordinator,'is_original',False):
+        if getattr(coordinator,'is_multi_source',False):
             if call.service=='guide_request':
                 try:
                     if call.data['endpoint']=='settings' and call.data.get('method')=='POST':
                         normalize_ui_settings({'notification_service':(call.data.get('body') or {}).get('notification_service','persistent_notification.create')})
-                    result=await coordinator.async_original_request(call.data['endpoint'],call.data.get('method','GET'),call.data.get('body'))
+                    result=await coordinator.async_guide_request(call.data['endpoint'],call.data.get('method','GET'),call.data.get('body'))
                 except (ValueError,RuntimeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
                 if call.service=='guide_request' and call.data['endpoint']=='settings' and call.data.get('method')=='POST':
 
-                    await persist_original_settings(entry, coordinator)
+                    await persist_guide_settings(entry, coordinator)
                 return result
             endpoint={'get_ui_settings':'settings','get_guide':'guide','get_personal_channels':'personal-channels'}.get(call.service)
             if endpoint:
-                result=await coordinator.async_original_request(endpoint)
+                result=await coordinator.async_guide_request(endpoint)
                 if endpoint == 'guide' and requested_at is not None:
                     return await hass.async_add_executor_job(guide_at, result, requested_at)
                 return result
@@ -70,10 +70,10 @@ def async_register_ui_services(hass):
                 try:
                     if set(call.data['options'])-set(PRESENTATION_OPTIONS):
                         raise ValueError('Unknown settings')
-                    settings=await coordinator.async_original_request('settings')
+                    settings=await coordinator.async_guide_request('settings')
                     normalize_ui_settings({'notification_service':call.data['options'].get('notification_service',settings['notification_service'])})
-                    result=await coordinator.async_original_request('settings','POST',{**settings,**call.data['options']})
-                    await persist_original_settings(entry, coordinator)
+                    result=await coordinator.async_guide_request('settings','POST',{**settings,**call.data['options']})
+                    await persist_guide_settings(entry, coordinator)
                 except (ValueError,RuntimeError,TypeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
                 return result
@@ -104,7 +104,7 @@ def async_register_ui_services(hass):
     for service in SERVICES:
         schema=vol.Schema({vol.Optional('at'):str}) if service=='get_guide' else vol.Schema({vol.Required('options'):dict}) if service=='set_ui_settings' else vol.Schema({})
         hass.services.async_register(DOMAIN,service,handle,schema=schema,supports_response=SupportsResponse.ONLY)
-    if any(getattr(item,'is_original',False) for item in hass.data.get(DOMAIN,{}).values()):
+    if any(getattr(item,'is_multi_source',False) for item in hass.data.get(DOMAIN,{}).values()):
         hass.services.async_register(DOMAIN,'guide_request',handle,
             schema=vol.Schema({vol.Required('endpoint'):str,vol.Optional('method',default='GET'):vol.In(['GET','POST']),vol.Optional('body'):dict}),
             supports_response=SupportsResponse.ONLY)
