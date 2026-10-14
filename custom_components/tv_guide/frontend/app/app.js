@@ -261,6 +261,53 @@ const fmt = TVGuideCore.fmt;
 const dateFmt = TVGuideCore.dateFmt;
 
 let guide = null;
+// A tiny, short-lived first-paint snapshot, scoped to this browser tab.
+// Only store it when serialization fits the strict size budget; never add polling.
+const GUIDE_FIRST_PAINT_KEY = "tv-guide-native-first-paint-v1";
+const GUIDE_FIRST_PAINT_TTL_MS = 60 * 1000;
+const GUIDE_FIRST_PAINT_MAX_CHARS = 384 * 1024;
+function showCachedGuide() {
+  try {
+    const raw = sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY);
+    if (!raw || raw.length > GUIDE_FIRST_PAINT_MAX_CHARS) return;
+    const cached = JSON.parse(raw);
+    if (!cached || cached.version !== 1 || Date.now() - cached.at > GUIDE_FIRST_PAINT_TTL_MS ||
+        cached.at > Date.now() || !cached.guide || !Array.isArray(cached.guide.channels) ||
+        !cached.guide.ui || cached.guide.refresh_running) return;
+    guide = cached.guide;
+    globalThis.TVGuideI18n?.configure({...guide.ui, country:guide.country});
+    const columns = Number(guide.ui.columns_desktop || 5);
+    document.documentElement.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
+    mode = ["now","1800","2015","2200"].includes(guide.ui.default_view) ? guide.ui.default_view : "now";
+    document.body.dataset.initialized = "1";
+    document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    render();
+  } catch {
+    // Storage can be disabled or full; normal network-backed loading continues.
+  }
+}
+function saveFirstPaintGuide(snapshot) {
+  if (snapshot.refresh_running) return;
+  // Prepare the snapshot when idle to avoid blocking a user interaction.
+  const save = () => {
+    if (guide !== snapshot) return;
+    try {
+      // Store only a short window around the current programme per channel;
+      // avoid copying days of EPG or keeping programme history in browser storage.
+      const now = Date.now();
+      const channels = snapshot.channels.map(channel => {
+        const entries = channel.programs || [];
+        const index = entries.findIndex(item => new Date(item.end).getTime() > now);
+        return {...channel, programs:index < 0 ? [] : entries.slice(Math.max(0,index-1),index+24)};
+      });
+      const data = JSON.stringify({version:1, at:now, guide:{...snapshot, channels}});
+      if (data.length <= GUIDE_FIRST_PAINT_MAX_CHARS) sessionStorage.setItem(GUIDE_FIRST_PAINT_KEY, data);
+      else sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY);
+    } catch {}
+  };
+  if (typeof requestIdleCallback === "function") requestIdleCallback(save, {timeout: 3000});
+  else setTimeout(save, 0);
+}
 let mode = "now";
 let selectedDate = startOfDay(new Date());
 let customTarget = null;
@@ -814,6 +861,7 @@ async function loadGuide() {
   const countryChanged = guide && guide.country !== nextGuide.country;
   guide = nextGuide;
   lastGuideLoadedAt = Date.now();
+  saveFirstPaintGuide(nextGuide);
   const languageChanged = globalThis.TVGuideI18n?.configure({...guide.ui, country:guide.country});
   if (languageChanged) {
     renderBookmarks();
@@ -936,6 +984,7 @@ appSettingsDialog.addEventListener("click", e => { if (e.target === appSettingsD
 channelSettingsDialog.addEventListener("click", e => { if (e.target === channelSettingsDialog) channelSettingsDialog.close(); });
 
 watchHomeAssistantTheme();
+showCachedGuide();
 Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide()]).catch(() => {
   if (!guide) grid.innerHTML = ("<div class=\"empty-channel-list\">" + escapeHtml(t("Das TV-Programm konnte nicht geladen werden. Bitte versuche es erneut.")) + "</div>");
 });
