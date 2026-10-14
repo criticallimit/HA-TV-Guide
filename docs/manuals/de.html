@@ -11,17 +11,7 @@
 <li><strong>Auch beim Scrollen erreichbar:</strong> Die Kopfzeile mit Uhrzeiten, Senderlisten und Einstellungen bleibt oben stehen.</li>
 <li><strong>Gut lesbar in Hell und Dunkel:</strong> Passende Senderlogos und eine kompakte Programmübersicht.</li>
 </ul>
-<h2>Installation</h2>
-<p>Du benötigst eine Home-Assistant-Installation mit App-/Add-on-Store, beispielsweise Home Assistant OS.</p>
-<ol>
-<li>Öffne <strong>Einstellungen → Apps</strong> beziehungsweise <strong>Add-ons</strong> und den Store.</li>
-<li>Öffne das Menü <strong>Repositories</strong> und füge diese Adresse hinzu:
-<code>https://github.com/criticallimit/HA-TV-Guide</code></li>
-<li>Installiere <strong>TV Guide</strong> und starte die App.</li>
-<li>Aktiviere bei Bedarf <strong>In Seitenleiste anzeigen</strong> und öffne <strong>TV Guide</strong>.</li>
-</ol>
-<p>Beim ersten Start werden die Programmdaten geladen. Die Übersicht öffnet sich bereits währenddessen; bis alle verfügbaren Sender gefüllt sind, kann es einige Minuten dauern.</p>
-<h2>So nutzt du die Übersicht</h2>
+<h2>Installation</h2><p>Lade die aktuelle ZIP-Datei herunter, kopiere <code>custom_components/tv_guide</code> nach <code>/config/custom_components/tv_guide</code>, starte Home Assistant neu und füge <strong>TV Guide</strong> unter <strong>Einstellungen → Geräte &amp; Dienste</strong> hinzu.</p><p><a href="https://github.com/criticallimit/HA-TV-Guide/archive/refs/heads/main.zip">Download HA-TV-Guide (ZIP)</a></p><h2>So nutzt du die Übersicht</h2>
 <p>Wähle oben <strong>Jetzt</strong>, <strong>18:00</strong>, <strong>20:15</strong> oder <strong>22:00</strong>. Mit <strong>Andere Zeiten</strong> kannst du einen verfügbaren Tag und die gewünschte Uhrzeit auswählen. Der Fortschrittsbalken zeigt bei einer laufenden Sendung, wie weit sie bereits fortgeschritten ist.</p>
 <p><strong>Hauptsender</strong> zeigt die vorbereitete Senderliste. Unter <strong>☰ Sender</strong> legst du fest, welche Sender unter <strong>Meine Sender</strong> erscheinen und in welcher Reihenfolge. Mit <strong>Standardsortierung</strong> stellst du die Ausgangsauswahl wieder her.</p>
 <p>Tippe auf eine Sendung und wähle <strong>Merken</strong>. Deine Merkliste findest du über <strong>★ Gemerkt</strong>. Für eine gemerkte zukünftige Sendung kannst du zusätzlich <strong>Erinnern</strong> aktivieren und den gewünschten Vorlauf wählen. Im Zahnrad-Menü stellst du ein, ob die Nachricht in Home Assistant oder auf einem verbundenen Handy ankommen soll. Dort kannst du die Benachrichtigung auch testen.</p>
@@ -30,7 +20,7 @@
 <p>Am einfachsten nutzt du TV Guide über die Seitenleiste. Für dein Dashboard gibt es zusätzlich eine <strong>TV Guide-Karte</strong>.</p>
 <ol>
 <li>Starte TV Guide und öffne das <strong>Zahnrad-Menü</strong>. Dort findest du die Hilfe zur Dashboard-Karte.</li>
-<li>Füge unter <strong>Einstellungen → Dashboards → Ressourcen</strong> einmal die Adresse <code>/local/tv-guide-card-loader.js</code> mit dem Typ <strong>JavaScript-Modul</strong> hinzu. Falls „Ressourcen“ fehlt, aktiviere im Benutzerprofil den erweiterten Modus.</li>
+<li>Füge unter <strong>Einstellungen → Dashboards → Ressourcen</strong> einmal die Adresse <code>custom:tv-guide-native-card</code> mit dem Typ <strong>JavaScript-Modul</strong> hinzu. Falls „Ressourcen“ fehlt, aktiviere im Benutzerprofil den erweiterten Modus.</li>
 <li>Lade Home Assistant im Browser neu.</li>
 <li>Bearbeite dein Dashboard und wähle <strong>Karte hinzufügen → TV Guide</strong>.</li>
 </ol>
@@ -47,7 +37,7 @@
 <p><strong>Die Übersicht ist nach einem Update zunächst leer:</strong> Frühere Programmdaten werden bei Bedarf neu geladen. Lass die App einige Minuten laufen und öffne die Übersicht erneut.</p>
 <p><strong>Eine Erinnerung kommt nicht an:</strong> Prüfe im Zahnrad-Menü das Benachrichtigungsziel und sende eine Testnachricht. Für Handy-Erinnerungen muss das Gerät mit der Home-Assistant-App verbunden sein. TV Guide und Home Assistant müssen zum Erinnerungszeitpunkt laufen.</p>
 <h2>Aktualisieren und Hilfe</h2>
-<p>Updates installierst du im Home-Assistant-App-/Add-on-Store. Deine gespeicherten Einstellungen, Senderlisten und Sendungen bleiben erhalten.</p>
+<p>Updates: die aktuelle Integration erneut kopieren und Home Assistant neu starten</p>
 <p>Bei Problemen kannst du <a href="https://github.com/criticallimit/HA-TV-Guide/issues">auf GitHub einen Fehler melden</a>. Beschreibe bitte, was passiert, und nenne den betroffenen Sender, Tag und die Uhrzeit.</p>
 <p>Frankreich enthält 24 nationale Hauptsender. BFMTV bleibt vorerst ausgeschlossen.</p>
 </main></body></html>
