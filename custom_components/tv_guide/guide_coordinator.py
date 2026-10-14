@@ -79,7 +79,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
             self.backend = await self.hass.async_add_executor_job(GuideRuntime, storage, self.options, locale, self._wake)
             # Setup must not wait for all broadcaster endpoints to finish.
             await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
-            self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(seconds=120))
+            self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(minutes=5))
         else:
             await self.hass.async_add_executor_job(self.backend.refresh_active)
         return await self._snapshot()
