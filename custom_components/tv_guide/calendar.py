@@ -20,7 +20,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
     """Expose a feed's programmes as Home Assistant calendar events."""
 
-    _attr_name = "TV Guide Programmes"
+    _attr_has_entity_name = True
+    _attr_translation_key = "programmes"
     _attr_unique_id = "tv_guide_xmltv_programmes_calendar"
 
     def __init__(self, coordinator, entry):

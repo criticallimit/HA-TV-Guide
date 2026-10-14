@@ -1,0 +1,44 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "TV Guide is already configured."
+    },
+    "step": {
+      "user": {
+        "title": "TV Guide"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "epg_programmes": {
+        "name": "Programmi EPG"
+      },
+      "epg_channels": {
+        "name": "Canali EPG"
+      },
+      "saved_bookmarks": {
+        "name": "Preferiti salvati"
+      },
+      "saved_reminders": {
+        "name": "Promemoria salvati"
+      },
+      "next_reminder": {
+        "name": "Prossimo promemoria"
+      },
+      "last_epg_update": {
+        "name": "Ultimo aggiornamento EPG"
+      }
+    },
+    "binary_sensor": {
+      "epg_refresh_running": {
+        "name": "Aggiornamento EPG in corso"
+      }
+    },
+    "calendar": {
+      "programmes": {
+        "name": "Programmi"
+      }
+    }
+  }
+}
