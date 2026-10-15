@@ -859,13 +859,30 @@ function initCustomDate() {
 }
 
 let guideRequest = 0;
-function scheduleGuideReload() {
+let guideRetryDelay = 1500;
+let guidePageSuspended = false;
+function scheduleGuideReload(failed = false) {
   clearTimeout(startupReloadTimer);
-  startupReloadTimer = guide?.refresh_running && !document.hidden
-    ? setTimeout(() => loadGuide().catch(() => {}), 1500) : null;
+  startupReloadTimer = null;
+  if (document.hidden || guidePageSuspended) return;
+  const delay = failed ? guideRetryDelay : guide?.refresh_running ? 1500 : 0;
+  if (failed) guideRetryDelay = Math.min(30000, guideRetryDelay * 2);
+  else guideRetryDelay = 1500;
+  if (delay) startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), delay);
 }
 async function loadGuide(preview=false) {
+  clearTimeout(startupReloadTimer);
+  startupReloadTimer = null;
   const request = ++guideRequest;
+  try {
+    return await requestGuide(preview, request);
+  } catch (error) {
+    // Ignore stale failures; current requests retry until HA is reachable again.
+    if (request === guideRequest) scheduleGuideReload(true);
+    throw error;
+  }
+}
+async function requestGuide(preview, request) {
   const url = new URL("api/guide", window.location.href);
   if (preview) url.searchParams.set("preview","1");
   if (document.body.dataset.initialized) url.searchParams.set("at",TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString());
@@ -875,6 +892,7 @@ async function loadGuide(preview=false) {
   if (!res.ok) throw new Error(t("Programmdaten konnten nicht geladen werden."));
   const nextGuide = await res.json();
   if (request !== guideRequest) return;
+  guideRetryDelay = 1500;
   if (nextGuide.unchanged) {
     if (!guide || nextGuide.revision !== guide.revision) throw new Error("TV Guide revision mismatch");
     lastGuideLoadedAt = Date.now();
@@ -911,9 +929,7 @@ async function loadGuide(preview=false) {
     clearTimeout(startupReloadTimer);
     // Allow the seven visible rows to paint before transferring full timelines.
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (request === guideRequest) loadGuide().catch(() => {
-        if (guide?._preview && !document.hidden) startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), 1500);
-      });
+      if (request === guideRequest && !guidePageSuspended) loadGuide().catch(() => {});
     }));
   } else scheduleGuideReload();
 }
@@ -1016,7 +1032,7 @@ Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(true).catch(() =>
   if (!guide) grid.innerHTML = ("<div class=\"empty-channel-list\">" + escapeHtml(t("Das TV-Programm konnte nicht geladen werden. Bitte versuche es erneut.")) + "</div>");
 });
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
+  if (document.hidden || guidePageSuspended) {
     clearTimeout(startupReloadTimer);
     startupReloadTimer = null;
   } else {
@@ -1031,12 +1047,29 @@ document.addEventListener("visibilitychange", () => {
     }).catch(() => {});
   }
 });
+window.addEventListener("pagehide", () => {
+  guidePageSuspended = true;
+  ++guideRequest;
+  ++bookmarksRequest;
+  ++remindersRequest;
+  clearTimeout(startupReloadTimer);
+  startupReloadTimer = null;
+});
+window.addEventListener("pageshow", event => {
+  if (!event.persisted) return;
+  guidePageSuspended = false;
+  loadGuide().catch(() => {});
+  loadReminders().catch(() => {});
+  loadBookmarksRemote().then(() => {
+    if (bookmarksDialog.open) renderBookmarks();
+  }).catch(() => {});
+});
 setInterval(() => {
-  if (document.hidden) return;
+  if (document.hidden || guidePageSuspended) return;
   loadGuide().catch(() => {});
   loadReminders().catch(() => {});
   loadBookmarksRemote().then(() => {
     if (bookmarksDialog.open) renderBookmarks();
   }).catch(() => {});
 }, 5 * 60 * 1000);
-setInterval(() => { if (!document.hidden && mode === "now") render(); }, 60 * 1000);
+setInterval(() => { if (!document.hidden && !guidePageSuspended && mode === "now") render(); }, 60 * 1000);

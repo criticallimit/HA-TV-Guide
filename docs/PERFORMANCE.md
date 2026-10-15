@@ -39,3 +39,16 @@ initial data. Serialization took approximately 175 ms versus 6 ms. This measures
 payload preparation/serialization, not the user's HA rendering time or network.
 Complete timelines still transfer in the background. The installed system must
 be compared after updating and restarting Home Assistant.
+
+## Recovery after connection failures
+
+Version 0.5.4 retries failed guide requests after 1.5 seconds, doubling the delay
+up to 30 seconds. A successful response resets the delay. This also applies to
+the full timelines loaded after the first preview and to provider-completion
+polling. New requests cancel outstanding retry timers; obsolete failures cannot
+replace the current retry state. Hidden or suspended pages do not poll.
+
+Returning from browser history refreshes guide and saved lists. Leaving the page
+invalidates pending response generations before their cancellation handlers can
+schedule retries. A late response from the previous page state cannot overwrite
+the restored view.

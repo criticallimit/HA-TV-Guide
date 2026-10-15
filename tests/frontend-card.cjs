@@ -361,7 +361,7 @@ const server = http.createServer((req,res) => {
   await fast.addScriptTag({path:path.join(root,'tv-guide-card.js')});
   await fast.evaluate(data=>{
     sessionStorage.clear();
-    window.fullReleased=false;window.speedCalls=[];
+    window.fullReleased=false;window.speedCalls=[];window.initialFullAttempts=0;
     window.fullGate=new Promise(resolve=>{window.releaseFull=resolve;});
     const all=structuredClone(data);all.revision='speed-full';
     for(const ch of all.channels)ch.programs=Array.from({length:80},(_,i)=>({
@@ -375,7 +375,9 @@ const server = http.createServer((req,res) => {
       if(message.service!=='guide_request')throw new Error('Unexpected speed test service');
       if(message.service_data.body?.preview)return {response:{...structuredClone(all),_preview:true,
         channels:all.channels.map(ch=>({...ch,programs:ch.programs.slice(0,7)}))}};
-      await fullGate;fullReleased=true;return {response:structuredClone(all)};
+      await fullGate;
+      if(++initialFullAttempts<=2)throw new Error('Initial full guide temporarily unavailable');
+      fullReleased=true;return {response:structuredClone(all)};
     }};
     const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
   },fixture);
@@ -389,9 +391,9 @@ const server = http.createServer((req,res) => {
   assert.equal(await fast.evaluate(()=>speedCalls.some(c=>c.service_data?.body?.known_revision)),false,'A partial view must never claim to have the full revision');
   await fastFrame.locator('[data-mode="2200"]').click();
   await fast.evaluate(()=>releaseFull());
-  await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>{
-    const timer=setInterval(()=>{if(!guide._preview){clearInterval(timer);resolve();}},10);
-  }));
+  const fastInner=await (await fast.locator('tv-guide-card').locator('iframe').elementHandle()).contentFrame();
+  await fastInner.waitForFunction(()=>!guide._preview,null,{timeout:15000});
+  assert.equal(await fast.evaluate(()=>initialFullAttempts),3,'Initial full timelines must retry more than once');
   assert.equal(await fastFrame.locator('body').evaluate(()=>guide.channels[0].programs.length),80);
   assert.equal(await fastFrame.locator('body').evaluate(()=>mode),'2200','A background reply must preserve the selected time');
   const guideCalls=await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request').length);
@@ -399,6 +401,49 @@ const server = http.createServer((req,res) => {
   assert.equal(await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request').length),guideCalls);
   await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>requestIdleCallback(resolve)));
   assert.ok(await fastFrame.locator('body').evaluate(()=>sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY)?.length>0));
+  await fast.evaluate(()=>{
+    const previous=hass.callWS.bind(hass);
+    window.retryAttempts=0;
+    hass.callWS=async message=>{
+      if(message.service!=='guide_request')return previous(message);
+      ++retryAttempts;
+      if(retryAttempts<=2)throw new Error('Temporary HA connection failure');
+      const result=await previous(message);result.response.revision='guide-recovered';return result;
+    };
+  });
+  await fastFrame.locator('body').evaluate(()=>loadGuide().catch(()=>{}));
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guideRetryDelay),3000);
+  await fastInner.waitForFunction(()=>guide.revision==='guide-recovered',null,{timeout:15000});
+  assert.equal(await fast.evaluate(()=>retryAttempts),3,'Retry must continue after a second failure');
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guideRetryDelay),1500);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>startupReloadTimer),null);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guide.channels[0].programs.length),80);
+  console.log('PASS guide retries successive connection failures with backoff and stops after recovery');
+
+  await fast.evaluate(()=>{
+    const previous=hass.callWS.bind(hass);
+    window.historyRequestStarted=false;
+    window.oldHistoryGate=new Promise(resolve=>{window.releaseOldHistory=resolve;});
+    hass.callWS=async message=>{
+      if(message.service!=='guide_request')return previous(message);
+      if(!historyRequestStarted){historyRequestStarted=true;await oldHistoryGate;throw new Error('Obsolete history request failed');}
+      const result=await previous(message);result.response.revision='guide-after-history';return result;
+    };
+  });
+  await fastFrame.locator('body').evaluate(()=>{void loadGuide().catch(()=>{});});
+  await fast.waitForFunction(()=>historyRequestStarted);
+  await fastFrame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+  assert.equal(await fastFrame.locator('body').evaluate(()=>startupReloadTimer),null);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guidePageSuspended),true);
+  await fastFrame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+  await fastInner.waitForFunction(()=>guide.revision==='guide-after-history');
+  await fast.evaluate(()=>releaseOldHistory());
+  await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>setTimeout(resolve,100)));
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guidePageSuspended),false);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guide.revision),'guide-after-history');
+  assert.equal(await fastFrame.locator('body').evaluate(()=>startupReloadTimer),null,'A stale failure must not schedule another request');
+  assert.equal(await fastFrame.locator('body').evaluate(()=>mode),'2015');
+  console.log('PASS history restoration reloads the guide and ignores cancelled or stale requests');
   await fast.close();
   console.log('PASS first paint before delayed full guide, single prefetch, complete timelines and time selection retained');
 
