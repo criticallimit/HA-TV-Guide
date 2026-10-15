@@ -107,6 +107,20 @@ class MemoryTests(unittest.TestCase):
         self.assertEqual(restored.channels[0]["programs"][0], record)
         self.assertEqual(restored.parsed_cache_file.read_bytes(), before)
 
+    def test_malformed_inactive_country_catalogue_does_not_break_sender_picker(self):
+        path=app.country_file(app.PARSED_CACHE_FILE,'at')
+        valid={'id':'epg_extra','name':'Extra','programs':[{'title':'Do not retain'}]}
+        path.write_text(json.dumps({'country':'at','channels':[valid]}),encoding='utf-8')
+        damaged=[{'id':['invalid'],'name':'Broken'},{'id':{'bad':True}},valid,{'id':'epg_nameless','name':None}]
+        index=path.with_suffix('.catalogue.json')
+        index.write_text(json.dumps({'country':'at','cache_mtime_ns':path.stat().st_mtime_ns,'channels':damaged}),encoding='utf-8')
+        with patch.object(app,'EPGStore',side_effect=AssertionError('Inactive catalogue loaded a programme store')):
+            catalogue=app.PERSONAL_CHANNELS.catalogue(self.active)
+        self.assertEqual(catalogue['at:epg_extra']['name'],'Extra')
+        self.assertNotIn('programs',catalogue['at:epg_extra'])
+        self.assertEqual(catalogue['at:epg_nameless']['name'],'epg_nameless')
+        self.assertNotIn('at:invalid',catalogue)
+
     def test_legacy_catalogue_upgrade_does_not_keep_programmes_or_load_a_store(self):
         path = app.country_file(app.PARSED_CACHE_FILE, "at")
         path.write_text(json.dumps({"country": "at", "channels": [{

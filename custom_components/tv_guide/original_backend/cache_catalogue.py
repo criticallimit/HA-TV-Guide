@@ -20,9 +20,23 @@ def _write_index(path, value):
             os.unlink(temporary)
 
 
+def _metadata(channels):
+    """Recover usable channel metadata without retaining programme timelines."""
+    if not isinstance(channels, list):
+        return []
+    result = []
+    for item in channels:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str) or not item["id"]:
+            continue
+        channel = {key:value for key,value in item.items() if key != "programs"}
+        if not isinstance(channel.get("name"), str) or not channel["name"].strip():
+            channel["name"] = channel["id"]
+        result.append(channel)
+    return result
+
+
 def write_catalogue(cache_path, country, channels):
-    metadata = [{key: value for key, value in item.items() if key != "programs"}
-                for item in channels if isinstance(item, dict) and item.get("id")]
+    metadata = _metadata(channels)
     _write_index(cache_path.with_suffix(".catalogue.json"), {
         "country": country, "cache_mtime_ns": cache_path.stat().st_mtime_ns,
         "channels": metadata,
@@ -36,8 +50,7 @@ def read_catalogue(cache_path, country):
         index = read_json_file(cache_path.with_suffix(".catalogue.json"), {})
         if (index.get("country") == country and index.get("cache_mtime_ns") == stamp
                 and isinstance(index.get("channels"), list)):
-            return [item for item in index.get("channels", [])
-                    if isinstance(item, dict) and item.get("id")]
+            return _metadata(index["channels"])
         # Upgrade old disk caches once, without creating a resident GuideStore.
         payload = read_json_file(cache_path, {})
         if payload.get("country", "de") != country:
@@ -45,8 +58,7 @@ def read_catalogue(cache_path, country):
         channels = payload.get("channels", [])
         if not isinstance(channels, list):
             return []
-        metadata = [{key: value for key, value in item.items() if key != "programs"}
-                    for item in channels if isinstance(item, dict) and item.get("id")]
+        metadata = _metadata(channels)
         try:
             # Do not stamp an index as current if a refresh replaced the cache.
             if cache_path.stat().st_mtime_ns == stamp:
