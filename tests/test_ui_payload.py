@@ -67,6 +67,19 @@ class UIPayloadTests(unittest.TestCase):
         self.assertLessEqual(len(result['channels']),200)
         self.assertEqual(len(result['main_channel_ids']),200)
 
+    def test_feed_alias_cannot_replace_the_canonical_station(self):
+        catalogue=[{'id':'ard','name':'Das Erste','xmltv_id':'DasErste.de','available':True}]
+        feed=[{'id':'DasErste.de','name':'Das Erste'},{'id':'ard','name':'Other feed station'}]
+        records=[{**self.records[0],'channel':'DasErste.de','title':'Canonical programme'},
+                 {**self.records[0],'channel':'ard','title':'Wrong programme'}]
+        result=ui.build_guide(records,catalogue,feed,{'country':'de'},self.at)
+        self.assertEqual(len(result['channels']),1)
+        self.assertEqual(result['channels'][0]['name'],'Das Erste')
+        self.assertEqual(result['channels'][0]['programs'][0]['title'],'Canonical programme')
+        choices=ui.personal_payload(catalogue,feed,{'country':'de'})
+        self.assertEqual(choices['order'],['ard'])
+        self.assertEqual(len(choices['channels']),1)
+
     def test_settings_validation_rejects_invalid_writes(self):
         for values in ({'country':'bad'},{'columns_desktop':7},{'max_channels':-1},{'refresh_minutes':1},{'theme_mode':'other'},{'notification_service':'shell.execute'},{'unknown':'x'},{'columns_desktop':True}):
             with self.subTest(values=values),self.assertRaises(ValueError):ui.normalize_ui_settings(values)

@@ -48,6 +48,21 @@ class JsonFileTests(unittest.TestCase):
         write_json_file(self.path, {"country": "nl"})
         self.assertEqual(read_json_file(self.path, {}), {"country": "nl"})
 
+    def test_malformed_preference_fields_do_not_break_the_guide(self):
+        with patch.object(app,'CHANNEL_PREFS_FILE',self.path):
+            store=app.EPGStore('de')
+            for order,hidden in [(42,None),({'zdf':True},42),([{},'zdf','ard',None],[{},'ard',None])]:
+                with self.subTest(order=order,hidden=hidden):
+                    original=json.dumps({'order':order,'hidden':hidden})
+                    self.path.write_text(original,encoding='utf-8')
+                    prefs=app.load_channel_preferences(store)
+                    self.assertTrue(prefs['order'])
+                    self.assertTrue(all(isinstance(item,str) for item in prefs['order']))
+                    self.assertEqual(prefs['hidden'],['ard'] if isinstance(hidden,list) else [])
+                    if isinstance(order,list):
+                        self.assertLess(prefs['order'].index('zdf'),prefs['order'].index('ard'))
+                    self.assertEqual(self.path.read_text(encoding='utf-8'),original)
+
     def test_wrong_root_cannot_break_settings_or_country_preferences(self):
         with patch.multiple(app, OPTIONS_FILE=self.path, CHANNEL_PREFS_FILE=self.path):
             for value in [None, [], 42, "old"]:

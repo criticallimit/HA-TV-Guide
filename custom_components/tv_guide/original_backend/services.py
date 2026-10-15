@@ -276,8 +276,8 @@ def merge_channel_order(saved_order, store=None):
     known = known_channel_ids(store)
     order = []
 
-    for channel_id in saved_order or []:
-        if channel_id in known and channel_id not in order:
+    for channel_id in saved_order if isinstance(saved_order, list) else []:
+        if isinstance(channel_id, str) and channel_id in known and channel_id not in order:
             order.append(channel_id)
 
     # Keep the curated main channels as the default preset. Newly discovered
@@ -304,7 +304,8 @@ def load_channel_preferences(store=None):
 
     order = merge_channel_order(raw.get("order"), store)
     known = known_channel_ids(store)
-    hidden = [x for x in raw.get("hidden", []) if x in known]
+    saved_hidden = raw.get("hidden")
+    hidden = [x for x in saved_hidden if isinstance(x, str) and x in known] if isinstance(saved_hidden, list) else []
     return {"order": order, "hidden": hidden}
 
 def save_channel_preferences(order, hidden, store=None):

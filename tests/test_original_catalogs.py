@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import types
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide"
 PACKAGE = "_tvguide_bundled_catalog_tests"
@@ -37,6 +38,20 @@ class OriginalCatalogueTests(unittest.TestCase):
         self.assertTrue(matched[0]["available"])
         self.assertEqual(matched[1]["id"], "zdf")
         self.assertFalse(matched[1]["available"])
+
+    def test_exact_xmltv_id_wins_over_case_insensitive_collision(self):
+        catalogue=[{'id':'station','name':'Station','order':1,'xmltv_ids':['Station.ID']}]
+        feeds=[{'id':'Station.ID','name':'Correct'},{'id':'station.id','name':'Different'}]
+        with patch.object(loaded,'load_channel_catalog',return_value=catalogue):
+            for rows in [feeds,list(reversed(feeds))]:
+                self.assertEqual(loaded.resolve_catalogue_channels('de',rows)[0]['xmltv_id'],'Station.ID')
+
+    def test_ambiguous_case_insensitive_match_is_not_guessed(self):
+        catalogue=[{'id':'station','name':'Station','order':1,'xmltv_ids':['STATION.ID']}]
+        feeds=[{'id':'Station.ID','name':'One'},{'id':'station.id','name':'Two'}]
+        with patch.object(loaded,'load_channel_catalog',return_value=catalogue):
+            self.assertIsNone(loaded.resolve_catalogue_channels('de',feeds)[0]['xmltv_id'])
+            self.assertEqual(loaded.resolve_catalogue_channels('de',feeds[:1])[0]['xmltv_id'],'Station.ID')
 
     def test_unknown_country(self):
         self.assertEqual(loaded.resolve_catalogue_channels("invalid", []), [])

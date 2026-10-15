@@ -66,7 +66,8 @@ def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start,
 def channel_payload(coordinator, selected: list[str]) -> dict:
     """Expose main catalog and additional feed channels for future UI clients."""
     main = coordinator.canonical_channels
-    listed = {item["xmltv_id"] for item in main if item.get("xmltv_id")}
+    listed = {item["id"] for item in main}
+    listed.update(item["xmltv_id"] for item in main if item.get("xmltv_id"))
     extras = [
         {"id": item["id"], "name": item["name"], "xmltv_id": item["id"], "available": True}
         for item in coordinator.channels if item["id"] not in listed

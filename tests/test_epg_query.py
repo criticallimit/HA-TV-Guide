@@ -110,6 +110,13 @@ class QueryTests(unittest.TestCase):
         self.assertFalse(response["channels"][-1]["available"])
         self.assertFalse(response["channels"][-1]["selected"])
 
+    def test_feed_id_collision_does_not_duplicate_the_canonical_station(self):
+        from types import SimpleNamespace
+        coordinator=SimpleNamespace(country='de',canonical_channels=[{'id':'ard','name':'Das Erste','xmltv_id':'DasErste.de','available':True}],channels=[{'id':'DasErste.de','name':'Das Erste'},{'id':'ard','name':'Other feed station'}])
+        response=channel_payload(coordinator,['ard'])
+        self.assertEqual(response['count'],1)
+        self.assertEqual(response['channels'][0]['name'],'Das Erste')
+
     def test_set_channel_helper_accepts_known_ids(self):
         from types import SimpleNamespace
         coordinator = SimpleNamespace(

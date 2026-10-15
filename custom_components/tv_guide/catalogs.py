@@ -40,11 +40,20 @@ def resolve_catalogue_channels(country: str, xmltv_channels: list[dict]) -> list
     Unmatched main channels remain in the result, marked unavailable, instead
     of disappearing from the main-station list.
     """
-    feed_by_id = {item["id"].casefold(): item for item in xmltv_channels}
+    feed_by_id = {item["id"]: item for item in xmltv_channels}
+    folded = {}
+    for item in feed_by_id.values():
+        key = item["id"].casefold()
+        # Distinct XMLTV IDs are case sensitive. Only use a folded alias if unique.
+        folded[key] = None if key in folded else item
     result = []
     for channel in load_channel_catalog(country):
         candidates = [*channel.get("xmltv_ids", []), channel["id"], channel["name"], *channel.get("aliases", [])]
-        match = next((feed_by_id[value.casefold()] for value in candidates if value.casefold() in feed_by_id), None)
+        match = None
+        for value in candidates:
+            match = feed_by_id.get(value) or folded.get(value.casefold())
+            if match is not None:
+                break
         result.append({
             "id": channel["id"],
             "name": channel["name"],

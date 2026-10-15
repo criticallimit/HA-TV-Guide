@@ -110,3 +110,15 @@ rows per channel, and the card requests the selected time window on date/time
 navigation. Complete provider timelines continue to navigate locally. XMLTV
 station IDs over the supported 160-character limit are skipped consistently in
 metadata and programmes, rather than truncated into another station's ID.
+
+## XMLTV identity and preference recovery
+
+Canonical main-channel IDs take precedence over additional raw feed IDs in both
+presentation and action catalogues. A feed alias cannot replace an already mapped
+main channel or create duplicate selection keys. Each configured alias prefers
+its exact XMLTV ID; a case-insensitive match is accepted only when it identifies
+one feed station, independent of feed ordering.
+
+Legacy sender order and hidden lists recover from malformed field types and skip
+invalid entries while preserving valid preferences. Reads do not rewrite the
+source preference file.
