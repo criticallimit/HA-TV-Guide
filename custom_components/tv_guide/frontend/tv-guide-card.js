@@ -100,6 +100,7 @@ class TVGuideCard extends HTMLElement {
     this._started = false;
     this._app = null;
     this._pending = new Set();
+    this._savedWrites = Promise.resolve();
     this._generation = 0;
     this._themeProperties = new Set();
     this._themeFingerprint = "";
@@ -308,6 +309,23 @@ class TVGuideCard extends HTMLElement {
   }
 
   async _request(request) {
+    if (!this.isConnected || !this._hass) throw new Error("Card closed");
+    if (request.method === "POST" && ["bookmarks", "reminders"].includes(request.endpoint)) {
+      const generation = this._generation;
+      // Serialize the mutation and its returned snapshot together. Otherwise a
+      // delayed earlier reply can restore entries removed by a later action.
+      const result = this._savedWrites.then(() => {
+        if (generation !== this._generation) throw new Error("Card closed");
+        return this._performRequest(request);
+      });
+      // A failed mutation must not poison the queue or retain its saved data.
+      this._savedWrites = result.then(() => {}, () => {});
+      return result;
+    }
+    return this._performRequest(request);
+  }
+
+  async _performRequest(request) {
     if (!this.isConnected || !this._hass) throw new Error("Card closed");
     const generation=this._generation;
     return new Promise((resolve,reject)=>{

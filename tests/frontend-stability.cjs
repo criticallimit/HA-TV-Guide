@@ -242,6 +242,55 @@ const server=http.createServer((req,res)=>{
   await page.waitForFunction(()=>card.shadowRoot.querySelector('.channel-brand img')!==previousLogo,{},{timeout:3000});
   assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.programs')===previousProgrammes),true,'Repairing logos must preserve programme controls');
   await page.evaluate(()=>card.remove());
+  // Delayed write responses must not resurrect another deleted bookmark.
+  await page.evaluate(()=>{
+    window.savedRows=['a','b'].map(id=>({id,title:'Saved '+id,channel:'Station',channelId:'ch0',start:new Date(Date.now()+3600000).toISOString(),end:new Date(Date.now()+7200000).toISOString()}));
+    window.savedWrites=0;window.delayFirstSaved=true;
+    const savedHass={...hass,async callWS(message){
+      if(message.service!=='get_saved_programmes')return hass.callWS(message);
+      const response={bookmarks:structuredClone(savedRows),reminders:[]};
+      if(savedWrites===1&&delayFirstSaved){
+        delayFirstSaved=false;
+        await new Promise(resolve=>window.releaseSavedResponse=resolve);
+      }
+      return {response};
+    },async callService(domain,service,data){
+      if(service!=='remove_saved_programme')throw Error('Unexpected saved action');
+      savedWrites++;
+      if(window.failSavedWrite){window.failSavedWrite=false;throw Error('Temporary write failure');}
+      savedRows=savedRows.filter(row=>row.id!==data.id);
+    }};
+    window.card=document.createElement('tv-guide-card');card.hass=savedHass;document.body.append(card);
+  });
+  await page.waitForFunction(()=>card.shadowRoot.querySelector('#bookmarkCount').textContent==='2');
+  await page.locator('#showBookmarks').click();
+  await page.locator('[data-remove="a"]').click();
+  await page.waitForFunction(()=>typeof releaseSavedResponse==='function');
+  await page.locator('[data-remove="b"]').click();
+  await page.evaluate(()=>releaseSavedResponse());
+  await page.waitForFunction(()=>savedWrites===2&&card._pending.size===0);
+  await page.waitForTimeout(100);
+  assert.equal(await page.locator('#bookmarkCount').textContent(),'0','Late responses must not resurrect deleted bookmarks');
+  assert.equal(await page.locator('.bookmark-row').count(),0);
+  const recovery=await page.evaluate(async()=>{
+    window.savedRows=['a','b'].map(id=>({id}));window.failSavedWrite=true;
+    const results=await Promise.allSettled(['a','b'].map(id=>card._request({endpoint:'bookmarks',method:'POST',body:{action:'remove',id}})));
+    return {statuses:results.map(result=>result.status),remaining:savedRows.map(row=>row.id)};
+  });
+  assert.deepEqual(recovery,{statuses:['rejected','fulfilled'],remaining:['a']},'A failed write must not block subsequent saved actions');
+  await page.evaluate(()=>{
+    savedRows=['a','b'].map(id=>({id,title:'Saved '+id,channel:'Station',channelId:'ch0',start:new Date(Date.now()+3600000).toISOString(),end:new Date(Date.now()+7200000).toISOString()}));
+    savedWrites=0;delayFirstSaved=true;delete window.releaseSavedResponse;
+    window.closedWrites=Promise.allSettled(['a','b'].map(id=>card._request({endpoint:'bookmarks',method:'POST',body:{action:'remove',id}})));
+  });
+  await page.waitForFunction(()=>typeof releaseSavedResponse==='function');
+  const closedWrites=await page.evaluate(async()=>{
+    card.remove();document.body.append(card);releaseSavedResponse();
+    return {statuses:(await closedWrites).map(result=>result.status),writes:savedWrites};
+  });
+  assert.deepEqual(closedWrites,{statuses:['rejected','rejected'],writes:1},'Closing and reopening must invalidate queued writes');
+  await page.evaluate(()=>card.remove());
+  console.log('PASS',engineName,'ordered saved writes, delayed responses, failure recovery and closing queued actions');
   assert.deepEqual(errors,[]);
   console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog, XMLTV date navigation, retry recovery and fast logo repair');
   await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');
