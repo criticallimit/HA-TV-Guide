@@ -118,7 +118,7 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         await self.call('set_ui_settings',{'options':{'country':'AT','notification_service':'notify.mobile_app_test'}})
         self.assertEqual(self.entry.options['country'],'at')
         self.assertEqual(scheduler.notification_service,'notify.mobile_app_test')
-        self.assertEqual(self.entry.options['backend_mode'],'original')
+        self.assertNotIn('backend_mode',self.entry.options)
         with self.assertRaises(exc.HomeAssistantError):
             await self.call('set_ui_settings',{'options':{'notification_service':'shell.execute'}})
         self.assertEqual(scheduler.notification_service,'notify.mobile_app_test')

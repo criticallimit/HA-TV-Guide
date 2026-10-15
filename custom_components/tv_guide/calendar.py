@@ -1,4 +1,4 @@
-"""Read-only calendar of programmes obtained from the configured XMLTV feed."""
+"""Read-only calendar of programmes from the integration’s own EPG snapshot."""
 
 from datetime import datetime, timezone
 
@@ -11,14 +11,14 @@ from .channel_mapping import resolved_selection, channel_labels
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    """Create a programme calendar only when standalone EPG is enabled."""
+    """Create a programme calendar when the native EPG coordinator is loaded."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
         async_add_entities([TVGuideProgrammeCalendar(coordinator, entry)])
 
 
 class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
-    """Expose a feed's programmes as Home Assistant calendar events."""
+    """Expose the guide's programmes as Home Assistant calendar events."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "programmes"

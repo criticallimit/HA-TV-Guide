@@ -1,18 +1,10 @@
-import base64
-import hashlib
 import html
 import json
-import os
 import re
 import sys
 import threading
-import time
-from datetime import datetime, timedelta
-from functools import lru_cache
-from pathlib import Path
-from urllib.parse import quote
-from urllib.request import Request, urlopen
-from zoneinfo import ZoneInfo
+from datetime import datetime
+from urllib.request import urlopen
 
 from .api import GuideRequestHandler
 from .json_files import read_json_file, write_json_file
@@ -64,8 +56,6 @@ CACHE_FILE = GUIDE_STORAGE_ROOT / "tv_guide_epg.xml.gz"
 PARSED_CACHE_FILE = GUIDE_STORAGE_ROOT / "tv_guide_epg_parsed.json"
 PARSED_CACHE_SCHEMA_VERSION = 10
 CHANNEL_PREFS_FILE = GUIDE_STORAGE_ROOT / "tv_guide_channel_order.json"
-LOGO_CACHE_DIR = GUIDE_STORAGE_ROOT / "tv_guide_logos"
-LOGO_RENDER_VERSION = 5
 
 
 # Every curated main channel goes through the same official-source layer. Channels
@@ -78,8 +68,6 @@ OFFICIAL_PROVIDER_AUDIT = {
 
 
 DEFAULT_REFRESH_MINUTES = 180
-BACKGROUND_PRELOAD_DELAY_SECONDS = 120
-BACKGROUND_PRELOAD_POLL_SECONDS = 2
 
 LANGUAGES = {"da", "de", "en", "nl", "fr", "it", "nb", "sv"}
 TRANSLATIONS = {
@@ -91,8 +79,6 @@ TRANSLATIONS = {
 def language_code(value):
     value = str(value or "").lower().replace("_", "-").split("-")[0]
     return "nb" if value == "no" else value if value in LANGUAGES else "en"
-
-
 
 
 def home_assistant_locale(wait=True):
@@ -265,62 +251,6 @@ def _logo_source_for_channel(channel, theme):
     )
 
 
-def _logo_mime(source, content_type, data):
-    value = (content_type or "").split(";", 1)[0].strip().lower()
-    if value in {"image/svg+xml", "image/png", "image/jpeg", "image/webp", "image/gif"}:
-        return value
-    lower = str(source or "").lower()
-    if lower.endswith(".svg") or data.lstrip().startswith(b"<svg"):
-        return "image/svg+xml"
-    if data.startswith(b"\x89PNG"):
-        return "image/png"
-    if data.startswith(b"\xff\xd8"):
-        return "image/jpeg"
-    if data.startswith(b"RIFF") and b"WEBP" in data[:16]:
-        return "image/webp"
-    if data.startswith((b"GIF87a", b"GIF89a")):
-        return "image/gif"
-    return None
-
-
-def _read_logo_source(source):
-    if not source:
-        return None
-    if source.startswith(("http://", "https://")):
-        req = Request(
-            source,
-            headers={
-                "User-Agent": "Mozilla/5.0 HomeAssistant-TV-Guide/1.0",
-                "Accept": "image/avif,image/webp,image/svg+xml,image/*,*/*;q=0.8",
-            },
-        )
-        with urlopen(req, timeout=10) as response:
-            data = response.read(2 * 1024 * 1024 + 1)
-            if len(data) > 2 * 1024 * 1024:
-                return None
-            mime = _logo_mime(source, response.headers.get("Content-Type"), data)
-            return (data, mime) if mime else None
-
-    path = (WWW / source.lstrip("/")).resolve()
-    if WWW.resolve() not in path.parents:
-        return None
-    if not path.is_file() or path.stat().st_size > 2 * 1024 * 1024:
-        return None
-    data = path.read_bytes()
-    mime = _logo_mime(source, None, data)
-    return (data, mime) if mime else None
-
-
-def _normalized_logo_svg(data, mime, theme):
-    encoded = base64.b64encode(data).decode("ascii")
-    image_href = f"data:{mime};base64,{encoded}"
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="260" height="64" viewBox="0 0 260 64">
-  <image x="5" y="4" width="250" height="56" preserveAspectRatio="xMidYMid meet"
-         href="{image_href}"/>
-</svg>
-"""
-
-
 def _normalized_text_logo_svg(name, theme):
     label = html.escape(str(name or "TV"))
     length = len(str(name or "TV"))
@@ -332,118 +262,6 @@ def _normalized_text_logo_svg(name, theme):
         font-weight="700" fill="{fill}">{label}</text>
 </svg>
 """
-
-
-def normalized_logo_path(channel, theme):
-    theme = "dark" if theme == "dark" else "light"
-    source = _logo_source_for_channel(channel, theme)
-    bundled = LOGO_LIBRARY["channels"].get(str(channel.get("source_channel_id") or channel.get("id") or ""))
-    if bundled and source == bundled.get(theme):
-        path = (WWW / source).resolve()
-        if WWW.resolve() in path.parents and path.is_file():
-            # Library assets already have the final canvas and theme treatment.
-            return path
-    if source.startswith(("logos/europe/", "logos/uk/")):
-        path = (WWW / source).resolve()
-        if WWW.resolve() in path.parents and path.is_file():
-            # Shipped Europe-pack and UK fallback assets already use the final
-            # 260x64 canvas and require no runtime cache or network access.
-            return path
-    source_identity = _logo_source_identity(source) if source else f"text:{channel.get('name') or channel.get('id') or 'TV'}"
-    source_key_value = f"{LOGO_RENDER_VERSION}:{source_identity}"
-    source_key = hashlib.sha1(source_key_value.encode("utf-8")).hexdigest()[:12]
-    channel_key = re.sub(r"[^a-zA-Z0-9_.-]+", "_", str(channel.get("id") or "channel"))
-    LOGO_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    target = LOGO_CACHE_DIR / f"{channel_key}-{theme}-{source_key}.svg"
-    if target.is_file() and target.stat().st_size > 100:
-        return target
-
-    try:
-        tmp = target.with_suffix(".tmp")
-        if not source:
-            tmp.write_text(
-                _normalized_text_logo_svg(channel.get("name"), theme),
-                encoding="utf-8",
-            )
-            os.replace(tmp, target)
-            return target
-
-        loaded = _read_logo_source(source)
-        if not loaded:
-            tmp.write_text(
-                _normalized_text_logo_svg(channel.get("name"), theme),
-                encoding="utf-8",
-            )
-            os.replace(tmp, target)
-            return target
-        data, mime = loaded
-        tmp.write_text(_normalized_logo_svg(data, mime, theme), encoding="utf-8")
-        os.replace(tmp, target)
-        return target
-    except Exception as exc:
-        print(
-            f"[TV Guide] Logo konnte nicht normalisiert werden ({channel.get('name')} / {theme}): {exc}",
-            flush=True,
-        )
-        return None
-
-
-@lru_cache(maxsize=128)
-def _standalone_europe_logo(path):
-    # SVGs used as <img> cannot load external images, even local relative URLs.
-    # Keep the shipped artwork deduplicated and embed it only in the response.
-    svg = path.read_text(encoding="utf-8")
-
-    def embed(match):
-        asset = (path.parent / match[1]).resolve()
-        root = (WWW / "logos/europe/assets").resolve()
-        if root not in asset.parents or not asset.is_file():
-            raise ValueError("Invalid Europe logo asset")
-        data = asset.read_bytes()
-        mime = _logo_mime(str(asset), None, data)
-        return 'href="data:' + mime + ';base64,' + base64.b64encode(data).decode("ascii") + '"'
-
-    return re.sub(r'href="(\.\./assets/[^\"]+)"', embed, svg).encode("utf-8")
-
-
-def normalized_logo_data(channel, theme):
-    path = normalized_logo_path(channel, theme)
-    if path is None:
-        return None
-    if (WWW / "logos/europe").resolve() in path.parents:
-        return _standalone_europe_logo(path)
-    return path.read_bytes()
-
-
-@lru_cache(maxsize=None)
-def _logo_source_identity(source):
-    # Bundled files are immutable while Home Assistant is running. Hash the
-    # bytes so rebuilding artwork at the same path also invalidates logo caches.
-    path = (WWW / source).resolve()
-    if WWW.resolve() not in path.parents or not path.is_file():
-        return source
-    digest = hashlib.sha256(path.read_bytes())
-    if source.startswith("logos/europe/"):
-        for asset in EUROPE_LOGO_LIBRARY["assets"].values():
-            if source in (asset.get("light"), asset.get("dark")):
-                digest.update(asset["source_sha256"].encode("ascii"))
-                break
-    return f"{source}:{digest.hexdigest()}"
-
-
-def normalized_logo_urls(channel):
-    channel_id = str(channel.get("id") or "")
-    if not channel_id:
-        return (None, None)
-    encoded_id = quote(channel_id, safe="")
-    base = f"api/channel-logo/{encoded_id}"
-    urls = []
-    for theme in ("light", "dark"):
-        source = _logo_source_for_channel(channel, theme)
-        identity = _logo_source_identity(source) if source else f"text:{channel.get('name') or channel_id}"
-        asset_key = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:16]
-        urls.append(f"{base}/{theme}.svg?v={LOGO_RENDER_VERSION}&asset={asset_key}")
-    return tuple(urls)
 
 
 def known_channel_ids(store=None):
@@ -511,21 +329,8 @@ def reset_channel_preferences(store=None):
     return {"order": base_channel_ids(store), "hidden": []}
 
 
-
-
-
-
-
-
-
-
 def wake_sensors():
     GUIDE_WAKE()
-
-
-
-
-
 
 
 class EPGStore(GuideStore):
@@ -548,60 +353,6 @@ def prune_country_stores(keep=()):
             del COUNTRY_STORES[country]
 
 class Handler(GuideRequestHandler):
-    """HTTP handler bound to the shared application services."""
+    """Operation dispatcher bound to the shared application services."""
 
     runtime = sys.modules[__name__]
-
-
-def _wait_for_active_epg_idle():
-    while STORE.refresh_running:
-        time.sleep(BACKGROUND_PRELOAD_POLL_SECONDS)
-
-
-def preload_country_caches_once(delay_seconds=BACKGROUND_PRELOAD_DELAY_SECONDS):
-    """Warm stale caches for inactive countries sequentially.
-
-    The active country always keeps priority. Inactive countries are checked
-    one at a time, with a pause before each check, and are refreshed only when
-    their existing cache is not fresh.
-    """
-    _wait_for_active_epg_idle()
-
-    for country in COUNTRIES:
-        if country == STORE.country:
-            continue
-
-        time.sleep(delay_seconds)
-        _wait_for_active_epg_idle()
-
-        # The user may have switched countries while the worker was waiting.
-        if country == STORE.country:
-            continue
-
-        with SETTINGS_LOCK:
-            store = COUNTRY_STORES.get(country)
-            if store is None:
-                store = EPGStore(country)
-                COUNTRY_STORES[country] = store
-
-            # Reserve the store before releasing SETTINGS_LOCK so a country
-            # switch cannot start a second refresh or evict this instance.
-            refresh_needed = country != STORE.country and not store.refresh_running and not store._cache_fresh()
-            if refresh_needed:
-                store.refresh_running = True
-
-        try:
-            if refresh_needed:
-                print(
-                    f"[TV Guide] Hintergrund-Vorladen startet für {COUNTRIES[country]['name']}",
-                    flush=True,
-                )
-                store.refresh(force=False)
-        finally:
-            with SETTINGS_LOCK:
-                prune_country_stores()
-            del store
-
-
-
-

@@ -32,6 +32,8 @@ async def main():
                 'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'AT'},
                 'http': {'server_host': '127.0.0.1', 'server_port': 8123},
                 'persistent_notification': {},
+                'api': {},
+                'websocket_api': {},
             }, hass)
             assert configured is not None
             await hass.config.async_update(language='de')
@@ -45,6 +47,7 @@ async def main():
                 entry = result['result']
                 assert entry.data['country']=='at'
                 assert entry.data['language']=='de'
+                assert 'backend_mode' not in entry.data
                 assert 'feed_url' not in entry.data
                 await hass.async_block_till_done()
                 assert entry.state.value == 'loaded', entry.state
@@ -179,9 +182,23 @@ async def main():
                 assert hass.states.get(count_id).state=='0'
                 guide_saved.reminders[0]['sent']=False
                 await guide_saved.async_save()
+                from ha_acceptance import exercise_acceptance
+                await exercise_acceptance(hass, entry, coordinator)
                 assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
-                assert await hass.config_entries.async_reload(entry.entry_id)
+                hass.config_entries.async_update_entry(entry,
+                    data={**entry.data,'backend_mode':'original'},
+                    options={**entry.options,'backend_mode':'old'})
                 await hass.async_block_till_done()
+                for cycle in range(3):
+                    previous_backend = hass.data['tv_guide'][entry.entry_id].backend
+                    previous_scheduler = hass.data['tv_guide_reminder_schedulers'][entry.entry_id]
+                    assert await hass.config_entries.async_reload(entry.entry_id)
+                    await hass.async_block_till_done()
+                    assert previous_backend.closed
+                    assert previous_scheduler._stopped
+                    assert 'backend_mode' not in entry.data and 'backend_mode' not in entry.options
+                    assert len([item for item in registry.entities.values() if item.config_entry_id==entry.entry_id])==6
+                print('PASS HA acceptance: three reload cycles without entity duplication or surviving old workers/timers',flush=True)
                 assert entry.version==2
                 assert frontend.async_panel_exists(hass,'tv-guide')
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)

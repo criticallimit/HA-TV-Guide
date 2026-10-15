@@ -38,7 +38,7 @@ The logo index contains all 20,292 original image paths, mapped to 18,528 verifi
 
 ## Readiness audit
 
-The five-minute maintenance timer checks active and retained country caches before inactive preloading. This guarantees freshness even when frequent data/status notifications reschedule the DataUpdateCoordinator timer. Forced requests arriving during non-forced work request one forced follow-up within the same owned job; duplicate already-forced requests remain deduplicated. Shutdown rejects new requests and chunk reads cooperatively, preserving the original network policies; a currently blocked IO call still observes its provider timeout.
+The five-minute maintenance timer checks active and retained country caches. Unselected, idle country stores are released instead of warming every country in a separate worker. This guarantees freshness even when frequent data/status notifications reschedule the DataUpdateCoordinator timer. Forced requests arriving during non-forced work request one forced follow-up within the same owned job; duplicate already-forced requests remain deduplicated. Shutdown rejects new requests and chunk reads cooperatively, preserving the original network policies; a currently blocked IO call still observes its provider timeout.
 
 Restored native cache records are checked for valid aware date ranges and metadata containers before use. Good rows survive a partially damaged cache. Calendar label lookup happens once per snapshot/range, avoiding a catalogue scan for every programme. Main logos use their own country prefix when another country is active. Browser pixel comparisons now include all ten countries and all eight interface languages.
 
@@ -69,3 +69,17 @@ Backend construction runs in an owned shielded startup task. Cancelling setup le
 ## First display
 
 The parent card starts an authenticated seven-row guide preview while the iframe loads. The frontend paints this first response before requesting complete timelines in the background. Preview windows use the configured default time in the browser's time zone, preserve programme details, and never claim to hold a complete revision. Time/date navigation keeps the existing renderer and uses the full timelines once loaded. See `PERFORMANCE.md` for bounds and verification.
+
+## Native cleanup and HA acceptance
+
+The unused backend-mode flag is removed from existing config entries and runtime
+options without changing country, language or presentation preferences. Obsolete
+HTTP file-serving methods, the replaced logo normalizer and unused country
+preload loops are removed. Native indexed logo serving, owned workers and
+maintenance of selected countries remain. Historical entity unique IDs are kept
+to preserve the existing entity registry. Explicit XMLTV feeds remain compatible.
+
+The actual HA runtime test also exercises authenticated WebSocket services,
+rejected inputs, all ten countries and four default times in two time zones,
+next-day windows, scheduled persistent-notification delivery with on-disk sent
+state, duplicate suppression, three reload cycles and complete removal.

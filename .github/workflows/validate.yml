@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - name: Test setup, actions, reload and unload in real Home Assistant
+      - name: Test authenticated actions, countries, reminders and lifecycle in real Home Assistant
         run: docker run --rm -v "$PWD:/repo:ro" --entrypoint python ghcr.io/home-assistant/home-assistant:stable /repo/tests/ha_smoke.py
 
   hassfest:
