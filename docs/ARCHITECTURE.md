@@ -26,7 +26,7 @@ Config flow version 2 immediately creates an entry from HA country/language with
 
 ## Port audit fixes
 
-An owned HA interval timer checks one inactive country every five minutes, deferring while country refreshes are busy. Fresh caches are reused; stale caches use the same deduplicated worker pool and are pruned from memory after refresh. Unload cancels the timer and drains workers. Data and active-country status are captured together outside HA's event loop; country switches clear absent last-update timestamps, malformed timestamps report unknown, and worker wakes arriving during synchronization request another snapshot. Extracted bundled reference data is repaired/updated atomically on restart.
+An owned HA interval timer checks the active country and countries used by My Channels every five minutes. Fresh caches and refresh backoff are reused; stale caches use the same deduplicated worker pool. Unselected idle stores are pruned instead of warming all countries. Unload cancels the timer and drains workers. Data and active-country status are captured together outside HA's event loop; country switches clear absent last-update timestamps, malformed timestamps report unknown, and worker wakes arriving during synchronization request another snapshot. Extracted bundled reference data is repaired/updated atomically on restart.
 
 Both settings action paths persist normalized engine values and update the reminder destination. Native reminder count/success/time semantics match the original sensors, while state bridge code is completely removed. Test notification text uses the original frontend translations and HA timezone. Notification choices match the original Home Assistant/mobile-app targets.
 
