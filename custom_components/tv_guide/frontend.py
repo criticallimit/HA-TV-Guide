@@ -34,6 +34,31 @@ async def async_register_frontend(hass):
                     "embed_iframe":False,"trust_external":False}})
             hass.data[DOMAIN + "_panel_registered"] = True
         frontend.add_extra_js_url(hass, MODULE_URL)
+        await _async_register_dashboard_resource(hass)
+
+
+async def _async_register_dashboard_resource(hass):
+    """Let dashboards await the card module, independently of global JS loading.
+
+    Keep the resource across entry reloads: the public static path remains
+    available, and an unloaded entry must not break an existing dashboard.
+    YAML resources remain user-managed; global module loading still supports
+    those installations and the sidebar panel.
+    """
+    lovelace = hass.data.get("lovelace")
+    resources = (lovelace.get("resources") if isinstance(lovelace, dict)
+                 else getattr(lovelace, "resources", None))
+    if resources is None or not hasattr(resources, "async_create_item"):
+        return
+    await resources.async_get_info()  # Load persisted items before deduplication.
+    for item in resources.async_items():
+        if item.get("url", "").split("?", 1)[0] == CARD_URL:
+            if item["url"] != MODULE_URL or item.get("type") != "module":
+                await resources.async_update_item(item["id"], {
+                    "url": MODULE_URL, "res_type": "module",
+                })
+            return
+    await resources.async_create_item({"url": MODULE_URL, "res_type": "module"})
 
 
 def async_remove_frontend(hass):
