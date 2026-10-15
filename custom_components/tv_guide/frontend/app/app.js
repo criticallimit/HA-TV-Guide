@@ -1,7 +1,27 @@
-const fetch = window.TVGuideFetch;
-const t = (message, values) => globalThis.TVGuideI18n?.t(message, values) || message;
-const grid = document.getElementById("grid");
-const guideHeader = document.querySelector(".guide-header");
+import {createI18n} from './i18n.js';
+import {createGuideCore} from './guide-core.js';
+import {TVGuideChannelPicker} from './channel-picker.js';
+import {createPreparation} from './preparation.js';
+import {createScope} from './lifecycle.js';
+
+export function createGuideApp({root, request, getHass, getTheme}) {
+const scope = createScope();
+const setTimeout = scope.setTimeout;
+const clearTimeout = scope.clearTimeout;
+const setInterval = scope.setInterval;
+const i18n = createI18n(root, getHass);
+const TVGuideCore = createGuideCore(i18n);
+const fetch = async (input, options={}) => {
+  const url = new URL(input, new URL('/tv_guide/frontend/app/', window.location.origin));
+  const body = options.body ? JSON.parse(options.body) : url.searchParams.has('preview')
+    ? {preview:true,at:new Date().toISOString(),time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone}
+    : (url.searchParams.has('known_revision') ? {known_revision:url.searchParams.get('known_revision')} : {});
+  const data = await request({endpoint:url.pathname.split('/').pop(),method:options.method || 'GET',at:url.searchParams.get('at'),body});
+  return {ok:true,json:async()=>data};
+};
+const t = (message, values) => i18n?.t(message, values) || message;
+const grid = root.querySelector("#grid");
+const guideHeader = root.querySelector(".guide-header");
 function updateScrollEndSpace() {
   const cards = Array.from(grid.querySelectorAll(".channel-card"));
   let space = 0;
@@ -11,257 +31,85 @@ function updateScrollEndSpace() {
       const lastRowHeight = Math.max(...cards.filter(card => Math.abs(card.offsetTop - lastTop) < 1)
         .map(card => card.getBoundingClientRect().height));
       const bottomPadding = parseFloat(getComputedStyle(grid.parentElement).paddingBottom) || 0;
-      space = Math.max(0, window.innerHeight - guideHeader.offsetHeight - lastRowHeight - bottomPadding);
+      space = Math.max(0, root.clientHeight - guideHeader.offsetHeight - lastRowHeight - bottomPadding);
     }
   }
   grid.style.paddingBottom = space + "px";
 }
-new ResizeObserver(updateScrollEndSpace).observe(grid);
-window.addEventListener("resize", updateScrollEndSpace);
+scope.observe(grid, updateScrollEndSpace);
+scope.observe(root, updateScrollHeaderHeight);
 function updateScrollHeaderHeight() {
-  document.documentElement.style.setProperty("--guide-header-height", guideHeader.offsetHeight + "px");
+  root.style.setProperty("--guide-width", root.clientWidth + "px");
+  root.style.setProperty("--guide-height", root.clientHeight + "px");
+  root.style.setProperty("--guide-header-height", guideHeader.offsetHeight + "px");
   updateScrollEndSpace();
 }
-new ResizeObserver(updateScrollHeaderHeight).observe(guideHeader);
+scope.observe(guideHeader, updateScrollHeaderHeight);
 updateScrollHeaderHeight();
 let lastRowScroll = -Infinity;
-window.addEventListener("wheel", event => {
+scope.listen(root, "wheel", event => {
   if (event.ctrlKey || event.shiftKey || !event.deltaY ||
-      Math.abs(event.deltaX) > Math.abs(event.deltaY) || document.querySelector("dialog[open]")) return;
+      Math.abs(event.deltaX) > Math.abs(event.deltaY) || root.querySelector("dialog[open]")) return;
   const cards = Array.from(grid.querySelectorAll(".channel-card"));
   if (!cards.length) return;
   const headerHeight = guideHeader.offsetHeight;
   // Tall rows must remain freely scrollable so every programme is reachable.
-  if (cards.some(card => card.offsetHeight > window.innerHeight - headerHeight)) return;
-  const rows = [...new Set(cards.map(card => Math.round(card.getBoundingClientRect().top + window.scrollY)))];
+  if (cards.some(card => card.offsetHeight > root.clientHeight - headerHeight)) return;
+  const rows = [...new Set(cards.map(card => Math.round(card.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop)))];
   const stops = rows.map((top, index) => index === 0 ? 0 : Math.max(0, top - headerHeight));
   const target = event.deltaY > 0
-    ? stops.find(top => top > window.scrollY + 2)
-    : stops.reverse().find(top => top < window.scrollY - 2);
+    ? stops.find(top => top > root.scrollTop + 2)
+    : stops.reverse().find(top => top < root.scrollTop - 2);
   if (target === undefined) return;
   event.preventDefault();
   const now = performance.now();
   if (now - lastRowScroll < 300) return;
   lastRowScroll = now;
-  window.scrollTo({top:target, behavior:"instant"});
+  root.scrollTo({top:target, behavior:"instant"});
 }, {passive:false});
-const detail = document.getElementById("detail");
-const detailBody = document.getElementById("detailBody");
-const bookmarkProgram = document.getElementById("bookmarkProgram");
-const bookmarkCount = document.getElementById("bookmarkCount");
-const showBookmarks = document.getElementById("showBookmarks");
-const bookmarksDialog = document.getElementById("bookmarksDialog");
-const bookmarksBody = document.getElementById("bookmarksBody");
-const testNotification = document.getElementById("testNotification");
-const testNotificationStatus = document.getElementById("testNotificationStatus");
-const customTimeDialog = document.getElementById("customTimeDialog");
-const customDate = document.getElementById("customDate");
-const customTime = document.getElementById("customTime");
-const applyCustomTime = document.getElementById("applyCustomTime");
-const cancelCustomTime = document.getElementById("cancelCustomTime");
-const customTimeClose = document.querySelector(".custom-time-close");
-const reminderEnabled = document.getElementById("reminderEnabled");
-const reminderMinutes = document.getElementById("reminderMinutes");
-const reminderStatus = document.getElementById("reminderStatus");
-const showChannelSettings = document.getElementById("showChannelSettings");
-const channelSettingsDialog = document.getElementById("channelSettingsDialog");
-const channelPicker = new TVGuideChannelPicker(channelSettingsDialog);
-const saveChannelSettings = document.getElementById("saveChannelSettings");
-const resetChannelSettings = document.getElementById("resetChannelSettings");
-const cancelChannelSettings = document.getElementById("cancelChannelSettings");
-const channelSettingsStatus = document.getElementById("channelSettingsStatus");
-const showAppSettings = document.getElementById("showAppSettings");
-const appSettingsDialog = document.getElementById("appSettingsDialog");
-const settingLanguage = document.getElementById("settingLanguage");
-const settingCountry = document.getElementById("settingCountry");
-const settingDefaultView = document.getElementById("settingDefaultView");
-const settingColumns = document.getElementById("settingColumns");
-const settingMaxChannels = document.getElementById("settingMaxChannels");
-const settingTheme = document.getElementById("settingTheme");
-const settingRefresh = document.getElementById("settingRefresh");
-const settingNotificationService = document.getElementById("settingNotificationService");
-const saveAppSettings = document.getElementById("saveAppSettings");
-const cancelAppSettings = document.getElementById("cancelAppSettings");
-const appSettingsStatus = document.getElementById("appSettingsStatus");
-
-const THEME_VARS = [
-  "--primary-background-color",
-  "--secondary-background-color",
-  "--card-background-color",
-  "--ha-card-background",
-  "--primary-text-color",
-  "--secondary-text-color",
-  "--divider-color",
-  "--primary-color",
-  "--accent-color",
-  "--lovelace-background"
-];
-
-function rgbLuminance(value) {
-  const m = String(value || "").match(/rgba?\((\d+)\D+(\d+)\D+(\d+)/i);
-  if (!m) return null;
-  const [r,g,b] = [Number(m[1]), Number(m[2]), Number(m[3])].map(v => v / 255);
-  const linear = c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
-}
-
-const dashboardParams = new URLSearchParams(window.location.search);
-const inDashboardCard = dashboardParams.get("tv_guide_card") === "1";
-const dashboardThemeKey = "tv-guide-dashboard-theme:" + (dashboardParams.get("tv_guide_theme") || "__dashboard__");
-const dashboardDisplayModeKey = "tv-guide-dashboard-display-mode";
-let dashboardThemeState = null;
-let guideViewHasContent = false;
-let guideViewAnnounced = false;
-function notifyGuideViewReady() {
-  if (!inDashboardCard || guideViewAnnounced || !guideViewHasContent || !dashboardThemeState) return;
-  guideViewAnnounced = true;
-  window.parent.postMessage({type:"tv-guide-view-ready"}, window.location.origin);
-}
-
-function dashboardDisplayMode() {
-  const configured = guide?.ui?.theme_mode;
-  if (configured === "dark" || configured === "light" || configured === "auto") return configured;
-  try {
-    const cached = sessionStorage.getItem(dashboardDisplayModeKey);
-    if (cached === "dark" || cached === "light" || cached === "auto") return cached;
-  } catch {}
-  return "auto";
-}
-
-function applyDashboardThemeState(state) {
-  if (!state?.vars) return false;
-  for (const name of THEME_VARS) {
-    const value = String(state.vars[name] || "").trim();
-    if (value) document.documentElement.style.setProperty(name, value);
-    else document.documentElement.style.removeProperty(name);
-  }
-  dashboardThemeState = state;
-  const displayMode = dashboardDisplayMode();
-  document.documentElement.dataset.haTheme =
-    displayMode === "dark" || displayMode === "light"
-      ? displayMode
-      : (state.darkMode ? "dark" : "light");
-  document.documentElement.dataset.haThemeSource = "home-assistant";
-  return true;
-}
-
-if (inDashboardCard) {
-  try {
-    const cached = JSON.parse(sessionStorage.getItem(dashboardThemeKey) || "null");
-    applyDashboardThemeState(cached);
-  } catch {}
-}
-
-window.addEventListener("message", (event) => {
-  if (!inDashboardCard || event.source !== window.parent || event.origin !== window.location.origin) return;
-  if (event.data?.type !== "tv-guide-theme" || !event.data.vars) return;
-
-  const state = {
-    vars:event.data.vars,
-    darkMode:Boolean(event.data.darkMode)
-  };
-  applyDashboardThemeState(state);
-  try {
-    sessionStorage.setItem(dashboardThemeKey, JSON.stringify(state));
-  } catch {}
-  notifyGuideViewReady();
-});
-if (inDashboardCard) {
-  // Synchronize as soon as scripts are ready, without waiting for logo downloads.
-  window.parent.postMessage({type:"tv-guide-theme-request"}, window.location.origin);
-}
+const detail = root.querySelector("#detail");
+const detailBody = root.querySelector("#detailBody");
+const bookmarkProgram = root.querySelector("#bookmarkProgram");
+const bookmarkCount = root.querySelector("#bookmarkCount");
+const showBookmarks = root.querySelector("#showBookmarks");
+const bookmarksDialog = root.querySelector("#bookmarksDialog");
+const bookmarksBody = root.querySelector("#bookmarksBody");
+const testNotification = root.querySelector("#testNotification");
+const testNotificationStatus = root.querySelector("#testNotificationStatus");
+const customTimeDialog = root.querySelector("#customTimeDialog");
+const customDate = root.querySelector("#customDate");
+const customTime = root.querySelector("#customTime");
+const applyCustomTime = root.querySelector("#applyCustomTime");
+const cancelCustomTime = root.querySelector("#cancelCustomTime");
+const customTimeClose = root.querySelector(".custom-time-close");
+const reminderEnabled = root.querySelector("#reminderEnabled");
+const reminderMinutes = root.querySelector("#reminderMinutes");
+const reminderStatus = root.querySelector("#reminderStatus");
+const showChannelSettings = root.querySelector("#showChannelSettings");
+const channelSettingsDialog = root.querySelector("#channelSettingsDialog");
+const channelPicker = new TVGuideChannelPicker(channelSettingsDialog, i18n);
+const saveChannelSettings = root.querySelector("#saveChannelSettings");
+const resetChannelSettings = root.querySelector("#resetChannelSettings");
+const cancelChannelSettings = root.querySelector("#cancelChannelSettings");
+const channelSettingsStatus = root.querySelector("#channelSettingsStatus");
+const showAppSettings = root.querySelector("#showAppSettings");
+const appSettingsDialog = root.querySelector("#appSettingsDialog");
+const settingLanguage = root.querySelector("#settingLanguage");
+const settingCountry = root.querySelector("#settingCountry");
+const settingDefaultView = root.querySelector("#settingDefaultView");
+const settingColumns = root.querySelector("#settingColumns");
+const settingMaxChannels = root.querySelector("#settingMaxChannels");
+const settingTheme = root.querySelector("#settingTheme");
+const settingRefresh = root.querySelector("#settingRefresh");
+const settingNotificationService = root.querySelector("#settingNotificationService");
+const saveAppSettings = root.querySelector("#saveAppSettings");
+const cancelAppSettings = root.querySelector("#cancelAppSettings");
+const appSettingsStatus = root.querySelector("#appSettingsStatus");
 
 function syncHomeAssistantTheme() {
-  if (inDashboardCard) {
-    const configured = guide?.ui?.theme_mode || dashboardDisplayMode();
-    try {
-      sessionStorage.setItem(dashboardDisplayModeKey, configured);
-    } catch {}
-    if (dashboardThemeState) applyDashboardThemeState(dashboardThemeState);
-    else {
-      document.documentElement.dataset.haTheme =
-        configured === "dark" || configured === "light" ? configured : "light";
-      document.documentElement.dataset.haThemeSource = "home-assistant";
-    }
-    return true;
-  }
-
-  const configured = guide?.ui?.theme_mode || "auto";
-  if (configured === "dark" || configured === "light") {
-    for (const name of THEME_VARS) {
-      document.documentElement.style.removeProperty(name);
-    }
-    document.documentElement.dataset.haTheme = configured;
-    document.documentElement.dataset.haThemeSource = "forced";
-    return true;
-  }
-
-  try {
-    if (window.parent !== window) {
-      const parentDoc = window.parent.document;
-      const parentStyle = window.parent.getComputedStyle(parentDoc.documentElement);
-      const frameStyle = window.frameElement
-        ? window.parent.getComputedStyle(window.frameElement)
-        : null;
-      let copied = 0;
-
-      for (const name of THEME_VARS) {
-        const value =
-          frameStyle?.getPropertyValue(name).trim() ||
-          parentStyle.getPropertyValue(name).trim();
-        if (value) {
-          document.documentElement.style.setProperty(name, value);
-          copied++;
-        }
-      }
-
-      const parentBody = parentDoc.body;
-      const parentHtml = parentDoc.documentElement;
-      const bodyStyle = parentBody ? window.parent.getComputedStyle(parentBody) : null;
-      const bg =
-        frameStyle?.getPropertyValue("--primary-background-color").trim() ||
-        parentStyle.getPropertyValue("--primary-background-color").trim() ||
-        bodyStyle?.backgroundColor ||
-        "";
-      const lum = rgbLuminance(bg);
-
-      const dark =
-        parentHtml.classList.contains("dark-mode") ||
-        parentBody?.classList.contains("dark-mode") ||
-        frameStyle?.colorScheme.includes("dark") ||
-        parentStyle.colorScheme.includes("dark") ||
-        (lum !== null && lum < 0.35);
-
-      document.documentElement.dataset.haTheme = dark ? "dark" : "light";
-      document.documentElement.dataset.haThemeSource = copied > 0 ? "home-assistant" : "system";
-      if (copied > 0) return true;
-    }
-  } catch {}
-
-  document.documentElement.dataset.haTheme =
-    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  document.documentElement.dataset.haThemeSource = "system";
-  return false;
-}
-
-function watchHomeAssistantTheme() {
-  syncHomeAssistantTheme();
-  try {
-    if (window.parent === window) return;
-    const target = window.parent.document.documentElement;
-    const observer = new MutationObserver(() => {
-      syncHomeAssistantTheme();
-      if (guide && globalThis.TVGuideI18n?.configure({...guide.ui,country:guide.country})) {
-        render();
-        renderBookmarks();
-        if (activeDetail) updateDetailControls();
-      }
-    });
-    observer.observe(target, {attributes:true, attributeFilter:["class","style","lang"]});
-    if (window.parent.document.body) {
-      observer.observe(window.parent.document.body, {attributes:true, attributeFilter:["class","style"]});
-    }
-  } catch {}
+  const mode = guide?.ui?.theme_mode || "auto";
+  root.dataset.haTheme = mode === "dark" || mode === "light" ? mode : (getTheme().darkMode ? "dark" : "light");
+  root.dataset.haThemeSource = "home-assistant";
 }
 
 const fmt = TVGuideCore.fmt;
@@ -292,12 +140,12 @@ function showCachedGuide() {
         new Date(item.start).getTime() <= target && target < new Date(item.end).getTime());
     })) return;
     guide = cached.guide;
-    globalThis.TVGuideI18n?.configure({...guide.ui, country:guide.country});
+    i18n?.configure({...guide.ui, country:guide.country});
     const columns = Number(guide.ui.columns_desktop || 5);
-    document.documentElement.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
+    root.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
     mode = ["now","1800","2015","2200"].includes(guide.ui.default_view) ? guide.ui.default_view : "now";
-    document.body.dataset.initialized = "1";
-    document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    root.dataset.initialized = "1";
+    root.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
     syncHomeAssistantTheme();
     render();
   } catch {
@@ -325,8 +173,7 @@ function saveFirstPaintGuide(snapshot) {
       else sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY);
     } catch {}
   };
-  if (typeof requestIdleCallback === "function") requestIdleCallback(save, {timeout: 3000});
-  else setTimeout(save, 0);
+  scope.idle(save);
 }
 let mode = "now";
 let selectedDate = startOfDay(new Date());
@@ -358,7 +205,7 @@ function updateBookmarkCount() {
 async function syncBookmark(action, item) {
   ++bookmarksRevision;
   if (action === "remove") ++remindersRevision;
-  const url = new URL("api/bookmarks", window.location.href);
+  const url = new URL("api/bookmarks", new URL('/tv_guide/frontend/app/', window.location.origin));
   const body = action === "remove"
     ? {action:"remove", id:item.id}
     : {action:"upsert", ...item};
@@ -380,7 +227,7 @@ async function loadBookmarksRemote() {
   let revision = bookmarksRevision;
   const isCurrent = () => request === bookmarksRequest && revision === bookmarksRevision;
   try {
-    const url = new URL("api/bookmarks", window.location.href);
+    const url = new URL("api/bookmarks", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {cache:"no-store"});
     if (!res.ok) throw new Error(t("Merkliste konnte nicht geladen werden."));
     const payload = await res.json();
@@ -450,7 +297,7 @@ function updateDetailControls() {
 async function loadReminders() {
   const request = ++remindersRequest, revision = remindersRevision;
   try {
-    const url = new URL("api/reminders", window.location.href);
+    const url = new URL("api/reminders", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {cache:"no-store"});
     if (!res.ok) throw new Error(t("Erinnerungen konnten nicht geladen werden."));
     const payload = await res.json();
@@ -467,7 +314,7 @@ async function saveReminderForActiveDetail(enabled, minutes) {
   const {channel, program} = activeDetail;
   const id = bookmarkId(channel, program);
 
-  const url = new URL("api/reminders", window.location.href);
+  const url = new URL("api/reminders", new URL('/tv_guide/frontend/app/', window.location.origin));
   const body = enabled
     ? {
         action:"upsert",
@@ -478,7 +325,7 @@ async function saveReminderForActiveDetail(enabled, minutes) {
         start:program.start,
         end:program.end,
         minutes,
-        language:globalThis.TVGuideI18n?.language || "de"
+        language:i18n?.language || "de"
       }
     : {action:"remove", id};
 
@@ -547,7 +394,7 @@ async function toggleBookmark() {
 }
 
 function renderBookmarks() {
-  document.querySelector("#bookmarksStatus").textContent = "";
+  root.querySelector("#bookmarksStatus").textContent = "";
   const now = new Date();
   bookmarks = bookmarks.filter(x => new Date(x.end) > now);
   updateBookmarkCount();
@@ -573,7 +420,7 @@ function renderBookmarks() {
         reminders = reminders.filter(item => item.id !== id);
         renderBookmarks();
       } catch (err) {
-        document.querySelector("#bookmarksStatus").textContent = t(err.message) || t("Sendung konnte nicht gelöscht werden.");
+        root.querySelector("#bookmarksStatus").textContent = t(err.message) || t("Sendung konnte nicht gelöscht werden.");
         btn.disabled = false;
       }
     });
@@ -584,11 +431,11 @@ async function testConfiguredNotification() {
   testNotification.disabled = true;
   testNotificationStatus.textContent = t("Wird gesendet …");
   try {
-    const url = new URL("api/test-notification", window.location.href);
+    const url = new URL("api/test-notification", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({test:true, language:globalThis.TVGuideI18n?.language || "de"})
+      body:JSON.stringify({test:true, language:i18n?.language || "de"})
     });
     const payload = await res.json();
     if (!res.ok || !payload.ok) throw new Error(t(payload.error) || t("Testbenachrichtigung konnte nicht gesendet werden."));
@@ -602,7 +449,7 @@ async function testConfiguredNotification() {
 
 async function loadNotificationServiceChoices(currentService, isCurrent = () => true) {
   const fallback = currentService || "persistent_notification.create";
-  const url = new URL("api/notification-services", window.location.href);
+  const url = new URL("api/notification-services", new URL('/tv_guide/frontend/app/', window.location.origin));
   let services = [];
 
   try {
@@ -646,12 +493,12 @@ async function openAppSettings() {
   appSettingsDialog.showModal();
   appSettingsDialog.scrollTop = 0;
   try {
-    const url = new URL("api/settings", window.location.href);
+    const url = new URL("api/settings", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {cache:"no-store"});
     if (!res.ok) throw new Error(t("Einstellungen konnten nicht geladen werden."));
     const settings = await res.json();
     if (!isCurrent()) return;
-    globalThis.TVGuideI18n?.configure(settings);
+    i18n?.configure(settings);
     settingLanguage.value = settings.language || "auto";
     settingCountry.value = settings.country ?? "";
     settingDefaultView.value = settings.default_view || "now";
@@ -676,7 +523,7 @@ async function persistAppSettings() {
   appSettingsStatus.textContent = t("Wird gespeichert …");
   saveAppSettings.disabled = true;
   try {
-    const url = new URL("api/settings", window.location.href);
+    const url = new URL("api/settings", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -698,7 +545,7 @@ async function persistAppSettings() {
     appSettingsStatus.textContent = payload.refresh_started
       ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.")
       : t("Gespeichert.");
-    window.setTimeout(() => { if (isCurrent()) appSettingsDialog.close(); }, 500);
+    setTimeout(() => { if (isCurrent()) appSettingsDialog.close(); }, 500);
   } catch (err) {
     if (isCurrent()) appSettingsStatus.textContent = t(err.message);
   } finally {
@@ -714,7 +561,7 @@ async function openChannelSettings() {
   resetChannelSettings.disabled = true;
   channelSettingsDialog.showModal();
   try {
-    const url = new URL("api/personal-channels", window.location.href);
+    const url = new URL("api/personal-channels", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {cache:"no-store"});
     if (!res.ok) throw new Error(t("Senderliste konnte nicht geladen werden."));
     const settings = await res.json();
@@ -736,7 +583,7 @@ async function persistChannelSettings(reset = false) {
   resetChannelSettings.disabled = true;
 
   try {
-    const url = new URL("api/personal-channels", window.location.href);
+    const url = new URL("api/personal-channels", new URL('/tv_guide/frontend/app/', window.location.origin));
     const res = await fetch(url, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -762,7 +609,7 @@ async function persistChannelSettings(reset = false) {
     if (isCurrent()) {
       channelSettingsDialog.close();
       channelView = "custom";
-      document.querySelectorAll("[data-channel-view]").forEach(button =>
+      root.querySelectorAll("[data-channel-view]").forEach(button =>
         button.classList.toggle("active", button.dataset.channelView === channelView));
     }
     await loadGuide();
@@ -790,7 +637,6 @@ grid.addEventListener("click", event => {
 
 function render(retryLogos = false) {
   if (!guide) return;
-  guideViewHasContent = true;
   if (mode === "now") selectedDate = startOfDay(new Date());
   const channels = activeChannels();
   renderedChannels = new Map(channels.map(channel => [String(channel.id), channel]));
@@ -803,7 +649,6 @@ function render(retryLogos = false) {
       grid.replaceChildren(empty);
     }
     if (grid.firstElementChild.textContent !== message) grid.firstElementChild.textContent = message;
-    notifyGuideViewReady();
     return;
   }
 
@@ -817,7 +662,7 @@ function render(retryLogos = false) {
   channels.forEach((channel, index) => {
     const id = String(channel.id);
     // Progress changes independently of programme content and must not replace focused buttons.
-    const markup = TVGuideCore.renderChannelCard(channel, mode, selectedDate, customTarget, "", false);
+    const markup = TVGuideCore.renderChannelCard(channel, mode, selectedDate, customTarget, "/tv_guide/frontend/app/", false);
     let card = renderedCards.get(id);
     if (!card || card.markup !== markup) {
       const template = document.createElement("template");
@@ -831,7 +676,7 @@ function render(retryLogos = false) {
       // Replace only the branding so programme controls and focus remain intact.
       const brand = document.createElement("div");
       brand.className = "channel-brand";
-      brand.innerHTML = TVGuideCore.channelHeader(channel, "");
+      brand.innerHTML = TVGuideCore.channelHeader(channel, "/tv_guide/frontend/app/");
       card.element.querySelector(".channel-brand").replaceWith(brand);
     }
     if (grid.children[index] !== card.element) grid.insertBefore(card.element, grid.children[index] || null);
@@ -842,7 +687,6 @@ function render(retryLogos = false) {
       progress.style.width = TVGuideCore.pct(programme.start, programme.end, now) + "%";
     }
   });
-  notifyGuideViewReady();
 }
 
 function setMode(nextMode) {
@@ -854,7 +698,7 @@ function setMode(nextMode) {
 
   mode = nextMode;
   if (nextMode === "now") selectedDate = startOfDay(new Date());
-  document.querySelectorAll(".tab").forEach(b =>
+  root.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === nextMode));
   // The TV Guide guide response contains complete channel timelines. Re-render
   // an already loaded guide locally instead of waiting for a Home Assistant
@@ -882,6 +726,7 @@ function initCustomDate() {
 let guideRequest = 0;
 let guideRetryDelay = 1500;
 let guidePageSuspended = false;
+let lifecycleRevision = 0;
 function scheduleGuideReload(failed = false) {
   clearTimeout(startupReloadTimer);
   startupReloadTimer = null;
@@ -905,9 +750,9 @@ async function loadGuide(preview=false) {
   }
 }
 async function requestGuide(preview, request) {
-  const url = new URL("api/guide", window.location.href);
+  const url = new URL("api/guide", new URL('/tv_guide/frontend/app/', window.location.origin));
   if (preview) url.searchParams.set("preview","1");
-  if (document.body.dataset.initialized) url.searchParams.set("at",TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString());
+  if (root.dataset.initialized) url.searchParams.set("at",TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString());
   // Only a complete in-memory guide may opt into the minimal unchanged reply.
   if (!preview && guide?.revision && lastGuideLoadedAt) url.searchParams.set("known_revision",guide.revision);
   const res = await fetch(url, {cache:"no-store"});
@@ -926,26 +771,26 @@ async function requestGuide(preview, request) {
   guide = nextGuide;
   lastGuideLoadedAt = nextGuide._preview ? 0 : Date.now();
   saveFirstPaintGuide(nextGuide);
-  const languageChanged = globalThis.TVGuideI18n?.configure({...guide.ui, country:guide.country});
+  const languageChanged = i18n?.configure({...guide.ui, country:guide.country});
   if (languageChanged) {
     renderBookmarks();
     if (activeDetail) updateDetailControls();
   }
 
   const columns = Number(guide.ui?.columns_desktop || 5);
-  document.documentElement.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
+  root.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
   syncHomeAssistantTheme();
 
-  if (!document.body.dataset.initialized) {
+  if (!root.dataset.initialized) {
     mode = ["now","1800","2015","2200"].includes(guide.ui?.default_view) ? guide.ui.default_view : "now";
-    document.body.dataset.initialized = "1";
+    root.dataset.initialized = "1";
     updateBookmarkCount();
   }
   initCustomDate();
-  document.querySelectorAll(".tab").forEach(b =>
+  root.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === mode));
   render();
-  if (countryChanged) window.scrollTo({top:0, behavior:"instant"});
+  if (countryChanged) root.scrollTo({top:0, behavior:"instant"});
 
   if (nextGuide._preview) {
     clearTimeout(startupReloadTimer);
@@ -956,13 +801,13 @@ async function requestGuide(preview, request) {
   } else scheduleGuideReload();
 }
 
-document.querySelectorAll(".tab").forEach(btn =>
+root.querySelectorAll(".tab").forEach(btn =>
   btn.addEventListener("click", () => setMode(btn.dataset.mode)));
 
-document.querySelectorAll("[data-channel-view]").forEach(button =>
+root.querySelectorAll("[data-channel-view]").forEach(button =>
   button.addEventListener("click", () => {
     channelView = button.dataset.channelView === "custom" ? "custom" : "main";
-    document.querySelectorAll("[data-channel-view]").forEach(item =>
+    root.querySelectorAll("[data-channel-view]").forEach(item =>
       item.classList.toggle("active", item.dataset.channelView === channelView));
     initCustomDate();
       render();
@@ -976,7 +821,7 @@ applyCustomTime.addEventListener("click", () => {
   selectedDate = startOfDay(target);
   customTarget = target;
   mode = "other";
-  document.querySelectorAll(".tab").forEach(b =>
+  root.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === "other"));
   customTimeDialog.close();
   if (guide) render();
@@ -1048,14 +893,16 @@ bookmarksDialog.addEventListener("click", e => { if (e.target === bookmarksDialo
 appSettingsDialog.addEventListener("click", e => { if (e.target === appSettingsDialog) appSettingsDialog.close(); });
 channelSettingsDialog.addEventListener("click", e => { if (e.target === channelSettingsDialog) channelSettingsDialog.close(); });
 
-watchHomeAssistantTheme();
+syncHomeAssistantTheme();
 showCachedGuide();
-Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(true).catch(() => loadGuide())]).catch(() => {
+const startupRevision = lifecycleRevision;
+Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(true).catch(() => {
+  if (startupRevision === lifecycleRevision && !guidePageSuspended) return loadGuide();
+})]).catch(() => {
+  if (startupRevision !== lifecycleRevision || guidePageSuspended) return;
   if (!guide) grid.innerHTML = ("<div class=\"empty-channel-list\">" + escapeHtml(t("Das TV-Programm konnte nicht geladen werden. Bitte versuche es erneut.")) + "</div>");
-  guideViewHasContent = true;
-  notifyGuideViewReady();
 });
-document.addEventListener("visibilitychange", () => {
+scope.listen(document, "visibilitychange", () => {
   if (document.hidden || guidePageSuspended) {
     clearTimeout(startupReloadTimer);
     startupReloadTimer = null;
@@ -1071,15 +918,16 @@ document.addEventListener("visibilitychange", () => {
     }).catch(() => {});
   }
 });
-window.addEventListener("pagehide", () => {
+scope.listen(window, "pagehide", () => {
   guidePageSuspended = true;
+  ++lifecycleRevision;
   ++guideRequest;
   ++bookmarksRequest;
   ++remindersRequest;
   clearTimeout(startupReloadTimer);
   startupReloadTimer = null;
 });
-window.addEventListener("pageshow", event => {
+scope.listen(window, "pageshow", event => {
   if (!event.persisted) return;
   guidePageSuspended = false;
   loadGuide().catch(() => {});
@@ -1097,3 +945,38 @@ setInterval(() => {
   }).catch(() => {});
 }, 5 * 60 * 1000);
 setInterval(() => { if (!document.hidden && !guidePageSuspended && mode === "now") render(); }, 60 * 1000);
+
+const preparation = createPreparation({root, fetch, scope, render:()=>{if (guide) render(true);}});
+function suspend() {
+  guidePageSuspended = true;
+  ++lifecycleRevision;
+  ++guideRequest; ++bookmarksRequest; ++remindersRequest;
+  clearTimeout(startupReloadTimer); startupReloadTimer = null;
+  root.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
+  preparation.suspend();
+  scope.pause();
+}
+function resume() {
+  scope.resume();
+  guidePageSuspended = false;
+  syncHomeAssistantTheme();
+  if (guide && mode === 'now') render();
+  if (!guide || guide.refresh_running || Date.now()-lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) loadGuide().catch(()=>{});
+  loadReminders().catch(()=>{});
+  loadBookmarksRemote().then(()=>{if(bookmarksDialog.open)renderBookmarks();}).catch(()=>{});
+  preparation.resume();
+}
+return {
+  suspend, resume,
+  updateTheme() {
+    syncHomeAssistantTheme();
+    if (guide && i18n.configure({...guide.ui,country:guide.country})) {
+      render(); renderBookmarks(); if(activeDetail)updateDetailControls();
+    }
+  },
+  get guide(){return guide;}, get mode(){return mode;}, get i18n(){return i18n;},
+  loadGuide, get lastGuideLoadedAt(){return lastGuideLoadedAt;},
+  get guideRetryDelay(){return guideRetryDelay;}, get startupReloadTimer(){return startupReloadTimer;},
+  get suspended(){return guidePageSuspended;}
+};
+}

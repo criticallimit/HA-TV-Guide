@@ -12,10 +12,11 @@
   },
   "bundled_sha256": {
     "styles.css": "4cc5324656bdf297f721ea66be947007fc3d473c0898fc26ac25b08abeec0080",
-    "guide-core.js": "70a822439c5f97589044738a3cc0ab58b9f304e2b5cb4096a085ad8aaf2090b9",
-    "channel-picker.js": "b2506cb12750ad9754b49ebb9dc1513580ae03ca63285a06e5416a485e5447a3",
-    "translations.js": "5213a9b87064d5c9f317044a1499675863cba5cbf6abc2bcf59d7053f5e96769",
-    "i18n.js": "d565f8e10c51a128c57673f50a6be0f6beb3c2f69819b487315dbc5ef540db64"
+    "guide-core.js": "062d77bfd1608b8bd1d4d154ba7602bae020bc6a3adc3f4711d997b4ee0bd61f",
+    "channel-picker.js": "484dedf5c81c71a481a34b4f4b9c3c8d4c65651e3cd8846717c4201d7b5d288a",
+    "translations.js": "d010d1435dad6808334aa35a72cf0110f2ed7c783e4b7f706242e0eb473f77e4",
+    "i18n.js": "72e2df1901b08555440dfcbe876aca7104fc74b84c801fdb8308b5ddc897c327"
   },
-  "line_endings": "Pinned source fixtures use LF; unchanged bundled rendering assets retain their imported CRLF bytes."
+  "line_endings": "Pinned source fixtures use LF; imported CSS and adapted helper modules retain CRLF bytes.",
+  "adaptation": "Rendering helpers are per-card ES module factories; view.html and styles.css generate view-template.js. Source fixtures remain unchanged."
 }
