@@ -1,0 +1,26 @@
+name: Validate HACS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hacs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate repository with the official HACS action
+        uses: hacs/action@main
+        with:
+          category: integration
+          comment: 'false'
