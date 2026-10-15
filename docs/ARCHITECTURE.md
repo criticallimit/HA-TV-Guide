@@ -132,3 +132,14 @@ successful response clears that failure state. Hidden views still do not poll.
 Small inactive-country catalogue files validate station IDs, recover missing
 names from their IDs and discard programme timelines. Malformed catalogue rows
 cannot prevent the sender picker from loading or retain full EPG data in memory.
+
+## Settings cancellation and logo repair
+
+Settings transactions remain owned when their caller is cancelled: backend writes
+and HA option persistence complete under the shared lock before cancellation is
+propagated. Entry unload and HA shutdown wait for that lock before closing the
+programme backend.
+
+An explicit logo retry refreshes failed branding after successful verification
+even when all packages were repaired between polls and the completed count is
+unchanged. Programme controls and their DOM remain intact.

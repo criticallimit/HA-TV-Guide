@@ -40,17 +40,31 @@ def async_register_ui_services(hass):
             scheduler.notification_service=settings['notification_service']
 
     async def update_guide_settings(entry, coordinator, changes, *, partial=False):
-        # A partial read/modify/write and its HA persistence must stay together.
-        # Otherwise simultaneous automation calls can overwrite unrelated fields.
-        async with settings_lock:
+        async def commit():
+            values=changes
             if partial:
                 if set(changes)-set(PRESENTATION_OPTIONS):
                     raise ValueError('Unknown settings')
                 settings=await coordinator.async_guide_request('settings')
-                changes={**settings,**changes}
-            normalize_ui_settings({'notification_service':changes.get('notification_service','persistent_notification.create')})
-            result=await coordinator.async_guide_request('settings','POST',changes)
+                values={**settings,**changes}
+            normalize_ui_settings({'notification_service':values.get('notification_service','persistent_notification.create')})
+            result=await coordinator.async_guide_request('settings','POST',values)
             await persist_guide_settings(entry, coordinator)
+            return result
+
+        # Executor writes can outlive a cancelled caller. Keep the transaction
+        # and lock owned until backend and HA option persistence both finish.
+        async with settings_lock:
+            persistence=asyncio.create_task(commit())
+            cancelled=False
+            while not persistence.done():
+                try:
+                    await asyncio.shield(persistence)
+                except asyncio.CancelledError:
+                    cancelled=True
+            result=persistence.result()
+            if cancelled:
+                raise asyncio.CancelledError
             return result
 
     async def handle(call):

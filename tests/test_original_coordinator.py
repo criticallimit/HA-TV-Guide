@@ -87,6 +87,22 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
             await self.coordinator._snapshot()
             self.assertIsNone(self.coordinator.last_successful_refresh)
 
+    async def test_shutdown_waits_for_an_owned_settings_commit(self):
+        lock=asyncio.Lock()
+        self.hass.data={'tv_guide_settings_lock':lock}
+        closed=[]
+        self.coordinator.backend.close=lambda:closed.append(True)
+        await lock.acquire()
+        stop=asyncio.create_task(self.coordinator._async_stop_on_shutdown(None))
+        await asyncio.sleep(0)
+        pending=not stop.done()
+        stopped=self.coordinator._closed
+        lock.release()
+        await stop
+        self.assertTrue(pending)
+        self.assertFalse(stopped)
+        self.assertEqual(closed,[True])
+
     async def test_unload_cancels_preload_timer_before_closing_workers(self):
         calls=[]
         c=self.coordinator

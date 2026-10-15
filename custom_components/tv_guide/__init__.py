@@ -137,9 +137,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Release TV Guide resources after platforms unload."""
     success = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if success:
-        coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-        if getattr(coordinator, "is_multi_source", False):
-            await coordinator.async_stop()
+        async with hass.data.setdefault(DOMAIN + "_settings_lock", asyncio.Lock()):
+            coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+            if getattr(coordinator, "is_multi_source", False):
+                await coordinator.async_stop()
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if scheduler is not None:
             await scheduler.async_stop()

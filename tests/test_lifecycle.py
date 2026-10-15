@@ -198,6 +198,21 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.entry.version,3)
         self.assertEqual(self.entry.data,{'country':'at'})
 
+    async def test_unload_drains_settings_before_stopping_the_backend(self):
+        await self.module.async_setup_entry(self.hass,self.entry)
+        coordinator=self.hass.data['tv_guide']['entry']
+        lock=self.hass.data.setdefault('tv_guide_settings_lock',asyncio.Lock())
+        await lock.acquire()
+        unload=asyncio.create_task(self.module.async_unload_entry(self.hass,self.entry))
+        await asyncio.sleep(0)
+        pending=not unload.done()
+        stopped=coordinator.stopped
+        lock.release()
+        self.assertTrue(await unload)
+        self.assertTrue(pending,'Unload must wait for the settings commit')
+        self.assertFalse(stopped,'Backend must remain usable until settings persistence finishes')
+        self.assertTrue(coordinator.stopped)
+
     async def test_obsolete_mode_flag_is_removed_without_losing_user_settings(self):
         self.entry.data={'country':'at','backend_mode':'original'}
         self.entry.options={'language':'en','backend_mode':'old','columns_desktop':4}

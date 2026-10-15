@@ -22,7 +22,7 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   badge.id = 'preparationBadge'; badge.hidden = true; badge.type = 'button';
   root.append(dialog, badge);
   const node = id => dialog.querySelector('#preparation' + id);
-  let timer, stopped = false, current, shown = false, lastLogos = 0, key = '', sequence = 0;
+  let timer, stopped = false, current, shown = false, lastLogos = 0, key = '', sequence = 0, repairPending = false;
   const text = () => messages[root.lang] || messages.en;
   const dismissed = () => { try { return sessionStorage.getItem(key) === '1'; } catch { return shown; } };
   dialog.addEventListener('close', () => { try { sessionStorage.setItem(key, '1'); } catch {} });
@@ -30,7 +30,7 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   badge.onclick = () => { if (!dialog.open) dialog.showModal(); };
   node('Retry').onclick = async () => {
     node('Retry').disabled = true;
-    try { await requestAction({endpoint:'preparation',method:'POST'}); }
+    try { await requestAction({endpoint:'preparation',method:'POST'}); repairPending = true; }
     catch { node('Error').textContent = text()[9]; }
     finally { node('Retry').disabled = false; if (!stopped) {clearTimeout(timer); void poll();} }
   };
@@ -58,7 +58,9 @@ export function createPreparation({root, request:requestAction, scope, render}) 
       if (!shown && current.first_install && !current.complete && !dismissed() && !root.querySelector('dialog[open]')) {
         shown = true; dialog.showModal();
       }
-      if (logos.completed !== lastLogos) {
+      const repairComplete = repairPending && logos.ready;
+      if (logos.completed !== lastLogos || repairComplete) {
+        if (repairComplete) repairPending = false;
         lastLogos = logos.completed;
         render();
       }

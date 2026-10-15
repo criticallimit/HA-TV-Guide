@@ -128,6 +128,30 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.entry.options['language'],'en')
         self.assertEqual(self.entry.options['columns_desktop'],4)
 
+    async def test_cancelled_settings_write_finishes_ha_persistence_before_releasing_lock(self):
+        settings={'country':'de','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
+        entered, release=asyncio.Event(), asyncio.Event()
+        async def request(endpoint,method='GET',body=None):
+            if method=='POST':
+                settings.update(body)
+                entered.set()
+                await release.wait()
+                return {'ok':True}
+            return dict(settings)
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_multi_source=True,async_guide_request=request)}
+        adapter.async_register_ui_services(self.hass)
+        task=asyncio.create_task(self.call('set_ui_settings',{'options':{'language':'en'}}))
+        await entered.wait()
+        task.cancel()
+        await asyncio.sleep(0)
+        pending=not task.done()
+        locked=self.hass.data['tv_guide_settings_lock'].locked()
+        release.set()
+        with self.assertRaises(asyncio.CancelledError):await task
+        self.assertTrue(pending,'Caller cancellation must not abandon the settings commit')
+        self.assertTrue(locked,'Keep concurrent writes outside the in-flight transaction')
+        self.assertEqual(self.entry.options['language'],'en')
+
     async def test_original_settings_persist_normalized_values_and_notification_destination(self):
         settings={'country':'at','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
         async def request(endpoint,method='GET',body=None):
