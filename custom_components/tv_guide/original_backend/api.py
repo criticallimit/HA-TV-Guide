@@ -213,6 +213,7 @@ class GuideRequestHandler:
                     "country": country,
                     "country_changed": country_changed,
                     "refresh_started": bool(refresh_needed),
+                    "settings": new_options,
                 })
 
             return self._json({"ok": False, "error": "Nicht gefunden."}, status=404)

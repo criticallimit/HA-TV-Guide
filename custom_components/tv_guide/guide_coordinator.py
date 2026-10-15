@@ -115,6 +115,14 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         if self._closed:
             raise RuntimeError("TV Guide is unloading")
         result = await self.hass.async_add_executor_job(self.backend.request, endpoint, method, body)
+        if endpoint == "settings" and method == "POST":
+            # The settings file is committed. Publish its small routing fields
+            # immediately so the HA options listener does not reload the entry.
+            # Rebuilding the EPG may be busy; it must not delay this response.
+            self.country = result["country"]
+            self.update_interval = timedelta(minutes=body["refresh_minutes"])
+            self._schedule_sync()
+            return result
         # Pure reads must not rebuild the entire HA coordinator snapshot before
         # the already prepared EPG response reaches the frontend. Provider
         # refreshes still notify through _wake; writes retain synchronous updates.

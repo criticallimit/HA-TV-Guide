@@ -81,6 +81,25 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.coordinator.data,[2])
         self.assertFalse(self.coordinator._sync_pending)
 
+    async def test_settings_commit_returns_before_busy_epg_snapshot(self):
+        c = self.coordinator
+        c.country = 'de'
+        c.backend.request = lambda *args: {'ok':True, 'country':'at'}
+        c.backend.state_snapshot = lambda: ([], [], [], {'country':'at', 'last_loaded':None,
+            'refresh_running':False, 'source_attempts':[], 'refresh_minutes':360})
+        await c._sync_lock.acquire()
+        request = asyncio.create_task(c.async_guide_request('settings', 'POST', {'refresh_minutes':360}))
+        for _ in range(10):
+            await asyncio.sleep(0)
+        returned_before_snapshot = request.done()
+        country_before_snapshot = c.country
+        c._sync_lock.release()
+        await request
+        await asyncio.gather(*self.tasks)
+        self.assertTrue(returned_before_snapshot, 'Saving settings must not wait for EPG snapshot synchronization')
+        self.assertEqual(country_before_snapshot, 'at')
+        self.assertEqual(c.update_interval.total_seconds(), 360*60)
+
     async def test_malformed_cached_success_timestamp_does_not_break_setup(self):
         for value in ('invalid','2026-10-14T11:00:00','9999-12-31T23:30:00-01:00',None):
             self.coordinator.backend.state_snapshot=lambda:([],[],[],{'country':'de','last_loaded':value,'refresh_running':False,'source_attempts':[],'refresh_minutes':180})
