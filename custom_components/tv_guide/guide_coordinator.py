@@ -21,6 +21,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         self.backend = None
         self._closed = False
         self._stop_task = None
+        self._startup_task = None
         self._sync_pending = False
         self._sync_requested = False
         self._sync_lock = asyncio.Lock()
@@ -77,17 +78,31 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         return records
 
     async def _async_update_data(self):
+        if self._closed:
+            raise RuntimeError("TV Guide is unloading")
         if self.backend is None:
-            locale = {"language": self.hass.config.language, "country": self.hass.config.country,
-                      "time_zone": self.hass.config.time_zone}
-            storage = Path(self.hass.config.path(".storage", "tv_guide_store", self.entry.entry_id))
-            self.backend = await self.hass.async_add_executor_job(GuideRuntime, storage, self.options, locale, self._wake)
-            # Setup must not wait for all broadcaster endpoints to finish.
-            await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
-            self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(minutes=5))
+            if self._startup_task is None:
+                self._startup_task = asyncio.create_task(self._async_start_backend())
+            # Cancelling setup cannot cancel the executor's constructor. Retain
+            # ownership until its result can be closed by async_stop instead.
+            await asyncio.shield(self._startup_task)
         else:
             await self.hass.async_add_executor_job(self.backend.refresh_active)
+        if self._closed:
+            raise RuntimeError("TV Guide is unloading")
         return await self._snapshot()
+
+    async def _async_start_backend(self):
+        locale = {"language": self.hass.config.language, "country": self.hass.config.country,
+                  "time_zone": self.hass.config.time_zone}
+        storage = Path(self.hass.config.path(".storage", "tv_guide_store", self.entry.entry_id))
+        self.backend = await self.hass.async_add_executor_job(GuideRuntime, storage, self.options, locale, self._wake)
+        if self._closed:
+            return
+        # Setup must not wait for all broadcaster endpoints to finish.
+        await self.hass.async_add_executor_job(self.backend.runtime.STORE.ensure_fresh_async)
+        if not self._closed:
+            self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(minutes=5))
 
     async def _async_preload(self, _now):
         if not self._closed and self.backend is not None:
@@ -112,6 +127,8 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         await asyncio.shield(self._stop_task)
 
     async def _async_close_resources(self):
+        if self._startup_task is not None:
+            await asyncio.gather(asyncio.shield(self._startup_task), return_exceptions=True)
         if self._cancel_preload is not None:
             self._cancel_preload()
             self._cancel_preload = None

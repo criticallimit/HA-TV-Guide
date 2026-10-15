@@ -850,6 +850,11 @@ function initCustomDate() {
 }
 
 let guideRequest = 0;
+function scheduleGuideReload() {
+  clearTimeout(startupReloadTimer);
+  startupReloadTimer = guide?.refresh_running && !document.hidden
+    ? setTimeout(() => loadGuide().catch(() => {}), 1500) : null;
+}
 async function loadGuide() {
   const request = ++guideRequest;
   const url = new URL("api/guide", window.location.href);
@@ -864,6 +869,7 @@ async function loadGuide() {
     if (!guide || nextGuide.revision !== guide.revision) throw new Error("TV Guide revision mismatch");
     lastGuideLoadedAt = Date.now();
     if (mode === "now") render();
+    scheduleGuideReload();
     return;
   }
   const countryChanged = guide && guide.country !== nextGuide.country;
@@ -891,12 +897,7 @@ async function loadGuide() {
   render();
   if (countryChanged) window.scrollTo({top:0, behavior:"instant"});
 
-  clearTimeout(startupReloadTimer);
-  if (guide.refresh_running && !document.hidden) {
-    startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), 1500);
-  } else {
-    startupReloadTimer = null;
-  }
+  scheduleGuideReload();
 }
 
 document.querySelectorAll(".tab").forEach(btn =>

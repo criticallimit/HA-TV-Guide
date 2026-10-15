@@ -19,7 +19,7 @@ All ten countries have prepared main-channel lists, individual channel selection
 - Create **My channels** with your own selection and order. Combine channels from all supported countries in one personal list. Your selection stays when you change country.
 - Open a programme for details, save it and set a reminder 5, 10, 15 or 30 minutes before it starts.
 - Use four Home Assistant sensors, one binary sensor and a programme calendar for automations.
-- Use **Danish, German, English, Spanish, Dutch, French, Italian, Norwegian or Swedish**. The automatic setting follows your Home Assistant profile.
+- Use **Danish, German, English, Dutch, French, Italian, Norwegian or Swedish**. The automatic setting follows your Home Assistant profile.
 
 ## Install
 

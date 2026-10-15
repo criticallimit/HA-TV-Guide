@@ -229,7 +229,7 @@ const server = http.createServer((req,res) => {
       calls.push(message);
       const {endpoint,method,body}=message.service_data;
       let response;
-      if(endpoint==='guide')response=model;
+      if(endpoint==='guide')response=body?.known_revision && body.known_revision===model.revision ? {unchanged:true,revision:model.revision} : model;
       else if(endpoint==='personal-channels'&&method==='GET')response={channels:model.channels.map(ch=>({...ch,id:'de:'+ch.id})),order:model.main_channel_ids.map(id=>'de:'+id),countries:['de'],supported_countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
       else if(endpoint==='personal-channels')response={ok:true,order:body.order,countries:body.countries};
       else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de'};
@@ -270,6 +270,20 @@ const server = http.createServer((req,res) => {
   console.log('PASS automatic setup settings omit manual controls; refresh and guidePage test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
+  await guidePage.evaluate(()=>{
+    model.revision='refresh-in-progress';model.refresh_running=true;
+  });
+  await frame.locator('body').evaluate(()=>loadGuide());
+  const keepsRefreshing=await frame.locator('body').evaluate(async()=>{
+    clearTimeout(startupReloadTimer);startupReloadTimer=null;
+    await loadGuide();
+    return startupReloadTimer!==null;
+  });
+  assert.equal(keepsRefreshing,true,'An unchanged guide must keep checking an active provider refresh');
+  assert.ok(await guidePage.evaluate(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.body?.known_revision==='refresh-in-progress')),'Guide revision must reach the HA action');
+  await guidePage.evaluate(()=>{model.revision='refresh-complete';model.refresh_running=false;});
+  assert.equal(await frame.locator('body').evaluate(async()=>{await loadGuide();return startupReloadTimer;}),null);
+  console.log('PASS conditional guide revisions reach HA and retain refresh completion polling');
   await guidePage.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});
   await guidePage.waitForFunction(()=>customElements.get('tv-guide-panel'));
   await guidePage.evaluate(()=>{
