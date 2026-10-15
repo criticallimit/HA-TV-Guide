@@ -49,6 +49,9 @@ class GuideRuntime:
         self._logos.configure_cache(storage / 'logos')
         self.logo_download = LogoDownload(self._logos)
         self._lock = threading.RLock()
+        self._request_lock = threading.RLock()
+        self._settings_request_lock = threading.RLock()
+        self._snapshot_lock = threading.Lock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
         self._wake = wake
@@ -167,14 +170,12 @@ class GuideRuntime:
         with self._lock:
             if self.closed:
                 return
-            with self.runtime.SETTINGS_LOCK:
-                # Retain the active country and countries represented in My Channels.
-                # Drop unselected, idle stores before scheduling network refreshes.
-                self.runtime.prune_country_stores()
-                active = self.runtime.STORE
-                stores = [active, *(store for store in self.runtime.COUNTRY_STORES.values() if store is not active)]
-            for store in stores:
-                store.ensure_fresh_async()
+        with self.runtime.SETTINGS_LOCK:
+            self.runtime.prune_country_stores()
+            active = self.runtime.STORE
+            stores = [active, *(store for store in self.runtime.COUNTRY_STORES.values() if store is not active)]
+        for store in stores:
+            store.ensure_fresh_async()
         self.start_logo_download()
 
     def start_logo_download(self, force=False):
@@ -227,18 +228,24 @@ class GuideRuntime:
         encoded = json.dumps(body or {}).encode("utf-8")
         if len(encoded) > 65536:
             raise ValueError("Request is too large")
-        with self._lock:
-            if self.closed:
-                raise RuntimeError("TV Guide is unloading")
+        # Large guide rendering must not monopolize settings reads/writes or
+        # worker notifications. Only cache bookkeeping uses the shared lock.
+        request_lock = self._settings_request_lock if endpoint == "settings" else self._request_lock
+        with request_lock:
             preview = method == "GET" and endpoint == "guide" and isinstance(body, dict) and body.get("preview") is True
-            if method == "GET" and endpoint == "guide" and not preview and isinstance(body, dict) and body.get("known_revision") == f"{self._guide_revision}:{self._guide_generation}":
-                return {"unchanged": True, "revision": f"{self._guide_revision}:{self._guide_generation}"}
-            if method == "GET" and endpoint == "guide" and self._guide_cache is not None and monotonic() - self._guide_cached_at < 10:
-                return guide_preview(self._guide_cache, body) if preview else self._guide_cache
-            if method == "POST":
-                self._guide_cache = None
-                self._guide_generation += 1
-                self._snapshot_cache = None
+            with self._lock:
+                if self.closed:
+                    raise RuntimeError("TV Guide is unloading")
+                if method == "GET" and endpoint == "guide" and not preview and isinstance(body, dict) and body.get("known_revision") == f"{self._guide_revision}:{self._guide_generation}":
+                    return {"unchanged": True, "revision": f"{self._guide_revision}:{self._guide_generation}"}
+                cached = self._guide_cache if monotonic() - self._guide_cached_at < 10 else None
+                if method == "POST":
+                    self._guide_cache = None
+                    self._guide_generation += 1
+                    self._snapshot_cache = None
+                generation = self._guide_generation
+            if method == "GET" and endpoint == "guide" and cached is not None:
+                return guide_preview(cached, body) if preview else cached
             started = perf_counter()
             handler = object.__new__(self.runtime.Handler)
             handler.path = "/api/" + endpoint
@@ -261,14 +268,16 @@ class GuideRuntime:
                         start = datetime.fromisoformat(programme["start"]).astimezone(timezone.utc)
                         key = f"{channel_id}\n{start.isoformat()}"
                         programme["id"] = "guide_" + sha256(key.encode()).hexdigest()
-                result["revision"] = f"{self._guide_revision}:{self._guide_generation}"
-                self._guide_cache = result
-                self._guide_cached_at = monotonic()
+                result["revision"] = f"{self._guide_revision}:{generation}"
+                with self._lock:
+                    if generation == self._guide_generation and not self.closed:
+                        self._guide_cache = result
+                        self._guide_cached_at = monotonic()
                 _LOGGER.debug("TV Guide prepared guide in %.1f ms", (perf_counter() - started) * 1000)
             return guide_preview(result, body) if preview else result
 
-    def snapshot(self):
-        store = self.runtime.STORE
+    def snapshot(self, store=None):
+        store = store if store is not None else self.runtime.STORE
         channels = list(store.channels)
         records = [{"channel": channel["id"], "start": item["start"], "stop": item["end"],
                     "title": item["title"], "description": item.get("desc", ""),
@@ -279,22 +288,31 @@ class GuideRuntime:
         return records, catalogue, [{"id": ch["id"], "name": ch["name"]} for ch in channels]
 
     def state_snapshot(self):
-        """Capture data and active-country status together, outside HA's loop."""
-        with self._lock, self.runtime.SETTINGS_LOCK:
-            store = self.runtime.STORE
-            if self._snapshot_cache is None:
-                self._snapshot_cache = self.snapshot()
-            records, catalogue, channels = self._snapshot_cache
-            return records, catalogue, channels, {
-                'country': store.country,
-                'refresh_running': store.refresh_running,
-                'source_attempts': list(store.source_metrics),
-                'last_loaded': store.last_loaded,
-                'refresh_minutes': store.options.get('refresh_minutes', 180),
-            }
+        """Capture metadata quickly; build large EPG snapshots outside shared locks."""
+        with self._snapshot_lock:
+            with self.runtime.SETTINGS_LOCK:
+                store = self.runtime.STORE
+                status = {
+                    'country': store.country,
+                    'refresh_running': store.refresh_running,
+                    'source_attempts': list(store.source_metrics),
+                    'last_loaded': store.last_loaded,
+                    'refresh_minutes': store.options.get('refresh_minutes', 180),
+                }
+                with self._lock:
+                    generation = self._guide_generation
+                    cached = self._snapshot_cache
+            snapshot = cached if cached is not None else self.snapshot(store)
+            with self._lock:
+                if generation == self._guide_generation and not self.closed:
+                    self._snapshot_cache = snapshot
+            return (*snapshot, status)
 
     def close(self):
         with self._lock:
             self.closed = True
+        # Retain ownership of active requests after marking the runtime closed.
+        with self._request_lock, self._settings_request_lock, self._snapshot_lock:
+            pass
         self._pool.shutdown(wait=True, cancel_futures=True)
         sys.modules.pop(self._module_name, None)
