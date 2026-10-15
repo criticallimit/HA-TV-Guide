@@ -37,33 +37,44 @@ class LogoDownload:
         self._ready = set()
         self._error = None
         self._bytes = 0
-        self._verified = set()
+        self._verified = {}
 
     def status(self):
         with self._lock:
-            return {'running': self._running, 'ready': len(self._ready) == len(self.packages),
+            return {'running': self._running, 'ready': len(self._ready) == len(self.packages) and self._error is None and not self._running,
                     'completed': len(self._ready), 'total': len(self.packages),
                     'bytes': self._bytes, 'total_bytes': sum(p['size'] for p in self.packages.values()),
                     'error': self._error}
 
-    def run(self, stopped, opener=None):
+    def run(self, stopped, opener=None, *, verify=False):
         with self._lock:
             if self._running:
                 return
             self._running = True
             self._error = None
-        opener = opener or build_opener(NoRedirects()).open
+            if verify:
+                self._verified.clear()
         try:
+            opener = opener or build_opener(NoRedirects()).open
             self.library.archive_root.mkdir(parents=True, exist_ok=True)
             for name, item in self.packages.items():
                 if stopped():
                     return
                 target = self.library.archive_root / name
-                if name in self._verified and target.is_file():
+                try:
+                    stat = target.stat()
+                except FileNotFoundError:
+                    stat = None
+                signature = (stat.st_size, stat.st_mtime_ns) if stat else None
+                if signature is not None and self._verified.get(name) == signature:
                     continue
-                if target.is_file() and target.stat().st_size == item['size'] and sha256(target.read_bytes()).hexdigest() == item['sha256']:
+                if stat and stat.st_size == item['size'] and sha256(target.read_bytes()).hexdigest() == item['sha256']:
                     self._mark_ready(name)
                     continue
+                with self._lock:
+                    self._ready.discard(name)
+                    self._verified.pop(name, None)
+                    self._bytes = sum(self.packages[key]['size'] for key in self._ready)
                 temporary = target.with_suffix('.part')
                 digest, received = sha256(), 0
                 try:
@@ -96,7 +107,8 @@ class LogoDownload:
                 self._running = False
 
     def _mark_ready(self, name):
+        stat = (self.library.archive_root / name).stat()
         with self._lock:
             self._ready.add(name)
-            self._verified.add(name)
+            self._verified[name] = (stat.st_size, stat.st_mtime_ns)
             self._bytes = sum(self.packages[key]['size'] for key in self._ready)

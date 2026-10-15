@@ -11,3 +11,11 @@ Downloads stop cooperatively on unload. Network or integrity errors retain valid
 On the first opening of the sidebar or dashboard card during initial preparation, a translated dialog shows programme activity, source attempts and the exact number of installed logo packages. It can be closed while background work continues. A small status button reopens it; failed downloads provide Retry. Completion is persisted in the integration's own storage. There is no progress percentage or ETA for programme providers, whose total workload is unknown.
 
 Offline tests use small original logo samples and simulated downloads to verify size, hash, restart, failed downloads, interruption, cache repair and unsafe metadata. The real HA smoke uses those same samples, never live logo or programme providers. A separate development check downloaded and verified all 37 pinned packages and all original object hashes. Browser checks retain the original country/language pixel comparisons and exercise progress, dismissal, reopening, retry and completion.
+
+## Follow-up lifecycle audit
+
+Maintenance checks cached archive signatures, revalidating and repairing changed or deleted files. An explicit retry verifies all archive hashes even if timestamps and sizes match, without unnecessarily refreshing healthy programme data. Connection-setup failures leave a retryable status. Queued or running verification and failed providers cannot produce a successful completion marker.
+
+The preparation view pauses polling while hidden, resumes after visibility changes or browser history restoration, and keeps errors visible even if a stale completion flag arrives. Conditional programme revisions reach the authenticated action and retain the short refresh-completion timer.
+
+Saved-list writes retain their shared lock until the storage commit finishes, even if the initiating caller is cancelled. Unload waits for those writes; operations queued against an unloaded store are rejected. Cancelled shutdown waiters do not cancel an already running reminder delivery or its sent-state persistence.

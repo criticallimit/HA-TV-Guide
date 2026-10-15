@@ -167,6 +167,31 @@ class GuideRuntimeTests(unittest.TestCase):
         self.backend.close()
         with self.assertRaises(RuntimeError):self.backend.request('refresh','GET')
 
+    def test_cached_programmes_with_source_failure_do_not_complete_preparation(self):
+        self.runtime.STORE.channels[0]['programs']=[{'title':'cached'}]
+        self.runtime.STORE.refresh_running=False
+        self.runtime.STORE.last_error='all providers offline'
+        with patch.object(self.backend.logo_download,'status',return_value={'ready':True}):
+            status=self.backend.preparation_status()
+            self.assertFalse(status['complete'])
+            self.assertTrue(status['programmes']['error'])
+            self.assertFalse(self.backend._preparation_marker.exists())
+            self.runtime.STORE.last_error=None
+            self.assertTrue(self.backend.preparation_status()['complete'])
+            self.assertTrue(self.backend._preparation_marker.exists())
+            self.assertFalse(self.backend.preparation_status()['first_install'])
+
+    def test_queued_logo_verification_cannot_report_preparation_complete(self):
+        self.runtime.STORE.channels[0]['programs']=[{'title':'cached'}]
+        self.runtime.STORE.refresh_running=False
+        self.backend._jobs[self.backend._download_logos]={'queued':True}
+        with patch.object(self.backend.logo_download,'status',return_value={'ready':True,'running':False}):
+            status=self.backend.preparation_status()
+            self.assertFalse(status['complete'])
+            self.assertTrue(status['logos']['running'])
+            self.assertFalse(status['logos']['ready'])
+        self.backend._jobs.clear()
+
     def test_foreign_main_logo_uses_its_country_even_when_another_is_active(self):
         channel=self.runtime.COUNTRY_CATALOGS['gb']['channels'][0]
         for logo in self.backend.logo_urls(channel):

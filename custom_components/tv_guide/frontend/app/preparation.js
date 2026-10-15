@@ -34,7 +34,7 @@
     finally { node('Retry').disabled = false; if (!stopped) {clearTimeout(timer); void poll();} }
   };
   async function poll() {
-    if (stopped) return;
+    if (stopped || document.hidden) return;
     const request = ++sequence;
     try {
       const response = await window.TVGuideFetch('api/preparation');
@@ -54,7 +54,7 @@
       node('Hint').textContent = m[6]; node('Close').textContent = m[7];
       node('Retry').textContent = m[8]; node('Retry').hidden = !error;
       badge.textContent = error ? m[9] : m[0] + ' · ' + logos.completed + '/' + logos.total;
-      badge.hidden = current.complete;
+      badge.hidden = current.complete && !error;
       if (!shown && current.first_install && !current.complete && !dismissed() && !document.querySelector('dialog[open]')) {
         shown = true; dialog.showModal();
       }
@@ -62,12 +62,20 @@
         lastLogos = logos.completed;
         if (typeof guide !== 'undefined' && guide && typeof render === 'function') render();
       }
-      if (!current.complete) timer = setTimeout(poll, error ? 10000 : 2000);
+      if (!current.complete || error) timer = setTimeout(poll, error ? 10000 : 2000);
     } catch {
       // A temporary HA disconnection must not discard progress or stop retries.
       if (!stopped && request === sequence) timer = setTimeout(poll, 10000);
     }
   }
-  window.addEventListener('pagehide', () => {stopped = true; clearTimeout(timer);});
+  window.addEventListener('pagehide', () => {stopped = true; ++sequence; clearTimeout(timer);});
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) {stopped = false; void poll();}
+  });
+  document.addEventListener('visibilitychange', () => {
+    clearTimeout(timer);
+    ++sequence;
+    if (!document.hidden && (!current?.complete || current?.logos?.error || current?.programmes?.error)) void poll();
+  });
   void poll();
 })();

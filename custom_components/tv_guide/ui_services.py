@@ -43,8 +43,9 @@ def async_register_ui_services(hass):
             if not getattr(coordinator,'is_multi_source',False):
                 return {'complete': True, 'first_install': False}
             if call.service == 'retry_preparation':
-                await hass.async_add_executor_job(coordinator.backend.start_logo_download)
-                if not coordinator.refresh_running:
+                status = await hass.async_add_executor_job(coordinator.backend.preparation_status)
+                await hass.async_add_executor_job(coordinator.backend.start_logo_download, True)
+                if not status['programmes']['running'] and (not status['programmes']['ready'] or status['programmes']['error']):
                     await coordinator.async_guide_request('refresh')
             return await hass.async_add_executor_job(coordinator.backend.preparation_status)
         requested_at = None

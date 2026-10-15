@@ -29,6 +29,7 @@ class TVGuideReminderScheduler:
         self._generation = 0
         self._tasks = set()
         self._pending_sent = set()
+        self._stop_task = None
 
     def stop(self):
         self._stopped = True
@@ -37,6 +38,11 @@ class TVGuideReminderScheduler:
     async def async_stop(self):
         """Stop new work and finish any delivery already using the saved store."""
         self.stop()
+        if self._stop_task is None:
+            self._stop_task = asyncio.create_task(self._async_drain())
+        await asyncio.shield(self._stop_task)
+
+    async def _async_drain(self):
         if self._tasks:
             await asyncio.gather(*tuple(self._tasks), return_exceptions=True)
 

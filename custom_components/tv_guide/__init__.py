@@ -125,14 +125,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if scheduler is not None:
             await scheduler.async_stop()
-        hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
-        hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
-        if not hass.data.get(DOMAIN + "_saved"):
-            async_remove_frontend(hass)
-            async_remove_saved_services(hass)
-            async_remove_ui_services(hass)
-        if not hass.data.get(DOMAIN):
-            async_remove_epg_query(hass)
+        async with hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock()):
+            hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+            hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
+            if not hass.data.get(DOMAIN + "_saved"):
+                async_remove_frontend(hass)
+                async_remove_saved_services(hass)
+                async_remove_ui_services(hass)
+            if not hass.data.get(DOMAIN):
+                async_remove_epg_query(hass)
     return success
 
 

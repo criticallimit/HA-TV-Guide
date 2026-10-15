@@ -42,8 +42,10 @@ async def async_register_saved_services(hass):
         stores = hass.data.get(DOMAIN + "_saved", {})
         if len(stores) != 1:
             raise HomeAssistantError("Exactly one TV Guide entry must be loaded")
-        saved = next(iter(stores.values()))
+        entry_id, saved = next(iter(stores.items()))
         async with lock:
+            if hass.data.get(DOMAIN + "_saved", {}).get(entry_id) is not saved:
+                raise HomeAssistantError("TV Guide is unloading")
             # A read does not write storage, send notifications or expose expired items.
             return {
                 "bookmarks": normalize_items(saved.bookmarks),
@@ -59,9 +61,11 @@ async def async_register_saved_services(hass):
         stores = hass.data.get(DOMAIN + "_saved", {})
         if len(stores) != 1:
             raise HomeAssistantError("Exactly one TV Guide entry must be loaded")
-        saved = next(iter(stores.values()))
+        entry_id, saved = next(iter(stores.items()))
         action = call.service
         async with lock:
+            if hass.data.get(DOMAIN + "_saved", {}).get(entry_id) is not saved:
+                raise HomeAssistantError("TV Guide is unloading")
             previous_bookmarks = [dict(item) for item in saved.bookmarks]
             previous_reminders = [dict(item) for item in saved.reminders]
             if action == SERVICE_REMOVE:
@@ -97,15 +101,26 @@ async def async_register_saved_services(hass):
                 if len(remaining) >= MAX_ITEMS:
                     raise HomeAssistantError(f"The saved list is limited to {MAX_ITEMS} programmes")
                 setattr(saved, key, remaining + normalized)
+            cancelled = False
             try:
-                await saved.async_save()
-            except Exception:
+                persistence = asyncio.create_task(saved.async_save())
+                # Store writes can outlive their cancelled caller. Keep the
+                # lock until the commit finishes, including on unload.
+                while not persistence.done():
+                    try:
+                        await asyncio.shield(persistence)
+                    except asyncio.CancelledError:
+                        cancelled = True
+                persistence.result()
+            except (Exception, asyncio.CancelledError):
                 saved.bookmarks = previous_bookmarks
                 saved.reminders = previous_reminders
                 raise
-            scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(next(iter(stores)))
+            scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry_id)
             if scheduler is not None:
                 scheduler.reschedule()
+            if cancelled:
+                raise asyncio.CancelledError
 
     hass.services.async_register(DOMAIN, SERVICE_BOOKMARK, handle, schema=BOOKMARK_SCHEMA)
     hass.services.async_register(DOMAIN, SERVICE_REMINDER, handle, schema=REMINDER_SCHEMA)

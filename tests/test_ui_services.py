@@ -61,14 +61,23 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_preparation_progress_and_retry_use_owned_runtime(self):
         calls=[]
-        status={'first_install':True,'complete':False,'logos':{'total':37}}
-        backend=types.SimpleNamespace(preparation_status=lambda:dict(status),start_logo_download=lambda:calls.append('logos'))
+        status={'first_install':True,'complete':False,'logos':{'total':37},'programmes':{'running':False,'ready':False,'error':False}}
+        backend=types.SimpleNamespace(preparation_status=lambda:dict(status),start_logo_download=lambda force:calls.append(('logos',force)))
         async def request(*args):calls.append(args)
         self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_multi_source=True,backend=backend,refresh_running=False,async_guide_request=request)}
         self.assertEqual(await self.call('get_preparation_status'),status)
         self.assertEqual(calls,[])
         await self.call('retry_preparation')
-        self.assertEqual(calls,['logos',('refresh',)])
+        self.assertEqual(calls,[('logos',True),('refresh',)])
+
+    async def test_logo_retry_does_not_redownload_healthy_programmes(self):
+        calls=[]
+        status={'complete':False,'logos':{'error':True},'programmes':{'running':False,'ready':True,'error':False}}
+        backend=types.SimpleNamespace(preparation_status=lambda:dict(status),start_logo_download=lambda force:calls.append(force))
+        async def request(*args):self.fail('Unnecessary programme refresh')
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_multi_source=True,backend=backend,async_guide_request=request)}
+        await self.call('retry_preparation')
+        self.assertEqual(calls,[True])
 
     async def test_custom_feed_does_not_need_logo_preparation(self):
         self.assertEqual(await self.call('get_preparation_status'),{'complete':True,'first_install':False})

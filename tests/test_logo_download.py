@@ -66,12 +66,44 @@ class DownloadTests(unittest.TestCase):
         self.assertFalse(downloader.status()['running'])
         self.assertFalse(list(self.library.archive_root.glob('*')))
         downloader.run(lambda:True,lambda *a,**k:self.fail('opened after unload'))
+
+    def test_connection_setup_failure_cannot_leave_download_marked_running(self):
+        downloader=module.LogoDownload(self.library)
+        with patch.object(module,'build_opener',side_effect=OSError('TLS setup failed')):
+            downloader.run(lambda:False)
+        self.assertFalse(downloader.status()['running'])
+        self.assertEqual(downloader.status()['error'],'download_failed')
+        downloader.run(lambda:False,self.opener)
+        self.assertTrue(downloader.status()['ready'])
     def test_corrupt_existing_file_is_replaced(self):
         self.library.archive_root.mkdir()
         (self.library.archive_root/'logos-000.zip').write_bytes(b'corrupt')
         downloader=module.LogoDownload(self.library)
         downloader.run(lambda:False,self.opener)
         self.assertEqual((self.library.archive_root/'logos-000.zip').read_bytes(),self.data['logos-000.zip'])
+
+    def test_deleted_verified_package_reopens_progress_and_can_be_repaired(self):
+        downloader=module.LogoDownload(self.library)
+        downloader.run(lambda:False,self.opener)
+        (self.library.archive_root/'logos-000.zip').unlink()
+        def offline(*args,**kwargs):raise OSError('offline')
+        downloader.run(lambda:False,offline)
+        self.assertFalse(downloader.status()['ready'])
+        self.assertEqual(downloader.status()['completed'],1)
+        self.calls.clear();downloader.run(lambda:False,self.opener)
+        self.assertTrue(downloader.status()['ready'])
+        self.assertEqual(self.calls,['logos-000.zip'])
+
+    def test_explicit_retry_verifies_same_size_same_timestamp_corruption(self):
+        import os
+        downloader=module.LogoDownload(self.library)
+        downloader.run(lambda:False,self.opener)
+        path=self.library.archive_root/'logos-000.zip';stat=path.stat()
+        path.write_bytes(b'x'*len(self.data[path.name]))
+        os.utime(path,ns=(stat.st_atime_ns,stat.st_mtime_ns))
+        self.calls.clear();downloader.run(lambda:False,self.opener,verify=True)
+        self.assertEqual(self.calls,['logos-000.zip'])
+        self.assertEqual(path.read_bytes(),self.data[path.name])
     def test_manifest_rejects_external_sources_and_unsafe_names(self):
         self.manifest['base_url']='https://example.org/'
         self.write_manifest()

@@ -229,7 +229,7 @@ const server = http.createServer((req,res) => {
       calls.push(message);
       const {endpoint,method,body}=message.service_data;
       let response;
-      if(endpoint==='guide')response=model;
+      if(endpoint==='guide')response=body?.known_revision && body.known_revision===model.revision ? {unchanged:true,revision:model.revision} : model;
       else if(endpoint==='personal-channels'&&method==='GET')response={channels:model.channels.map(ch=>({...ch,id:'de:'+ch.id})),order:model.main_channel_ids.map(id=>'de:'+id),countries:['de'],supported_countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
       else if(endpoint==='personal-channels')response={ok:true,order:body.order,countries:body.countries};
       else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de'};
@@ -270,6 +270,17 @@ const server = http.createServer((req,res) => {
   console.log('PASS automatic setup settings omit manual controls; refresh and guidePage test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
+  await guidePage.evaluate(()=>{model.revision='refresh-in-progress';model.refresh_running=true;});
+  await frame.locator('body').evaluate(()=>loadGuide());
+  const keepsRefreshing=await frame.locator('body').evaluate(async()=>{
+    clearTimeout(startupReloadTimer);startupReloadTimer=null;
+    await loadGuide();return startupReloadTimer!==null;
+  });
+  assert.equal(keepsRefreshing,true);
+  assert.ok(await guidePage.evaluate(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.body?.known_revision==='refresh-in-progress')));
+  await guidePage.evaluate(()=>{model.revision='refresh-complete';model.refresh_running=false;});
+  assert.equal(await frame.locator('body').evaluate(async()=>{await loadGuide();return startupReloadTimer;}),null);
+  console.log('PASS conditional guide revisions and provider completion polling');
   await guidePage.evaluate(()=>{
     const previous=hass.callWS.bind(hass);
     window.preparation={installation_id:'browser-test',first_install:true,complete:false,
@@ -277,7 +288,7 @@ const server = http.createServer((req,res) => {
       programmes:{running:true,ready:false,sources_completed:1,error:false}};
     hass.callWS=async message=>{
       if(message.service==='get_preparation_status')return {response:structuredClone(preparation)};
-      if(message.service==='retry_preparation'){calls.push(message);preparation.logos.error=null;return {response:preparation};}
+      if(message.service==='retry_preparation'){calls.push(message);preparation.logos.error=null;preparation.complete=false;return {response:preparation};}
       return previous(message);
     };
   });
@@ -286,9 +297,14 @@ const server = http.createServer((req,res) => {
   await frame.locator('#preparationClose').click();
   await frame.locator('#preparationDialog').waitFor({state:'hidden'});
   assert.equal(await frame.locator('#preparationBadge').isVisible(),true);
+  await frame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+  await guidePage.evaluate(()=>{preparation.logos.completed=5;});
+  await frame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+  await frame.locator('#preparationLogos').filter({hasText:'5 / 37'}).waitFor({state:'attached'});
   await frame.locator('#preparationBadge').click();
-  await guidePage.evaluate(()=>{preparation.logos.error='download_failed';preparation.logos.running=false;});
+  await guidePage.evaluate(()=>{preparation.logos.error='download_failed';preparation.logos.running=false;preparation.complete=true;});
   await frame.locator('#preparationRetry').waitFor({state:'visible'});
+  assert.equal(await frame.locator('#preparationBadge').isVisible(),true,'Errors must remain visible even with a stale complete flag');
   await frame.locator('#preparationRetry').click();
   await guidePage.waitForFunction(()=>calls.some(c=>c.service==='retry_preparation'));
   await guidePage.evaluate(()=>{preparation.complete=true;preparation.logos.completed=37;preparation.logos.ready=true;preparation.programmes={running:false,ready:true,sources_completed:3,error:false};});

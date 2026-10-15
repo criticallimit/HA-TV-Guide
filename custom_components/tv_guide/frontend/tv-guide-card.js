@@ -377,7 +377,7 @@ class TVGuideCard extends HTMLElement {
       if (endpoint === "preparation" && ["GET","POST"].includes(method)) {
         response = await this._response(method === "POST" ? "retry_preparation" : "get_preparation_status");
       } else if (this._hass.services?.tv_guide?.guide_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
-        response = await this._response("guide_request",{endpoint,method,...(method === "POST" ? {body} : {})});
+        response = await this._response("guide_request",{endpoint,method,...(method === "POST" || (endpoint === "guide" && typeof body.known_revision === "string") ? {body} : {})});
       } else if (method === "GET" && endpoint === "guide") response = await this._response("get_guide", request.at ? {at:request.at} : {});
       else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_personal_channels");
       else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");

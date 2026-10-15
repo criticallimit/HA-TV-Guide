@@ -70,7 +70,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=13' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=14' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -114,6 +114,13 @@ async def main():
                         {'endpoint':endpoint,'method':method,**({'body':body} if body is not None else {})},
                         blocking=True,return_response=True)
                 guide = await request('guide')
+                unchanged=await request('guide',body={'known_revision':guide['revision']})
+                assert unchanged=={'unchanged':True,'revision':guide['revision']}
+                with patch.object(coordinator.backend,'start_logo_download') as retry_logos, \
+                        patch.object(coordinator,'async_guide_request',side_effect=AssertionError('Healthy EPG must not redownload')):
+                    retried=await hass.services.async_call('tv_guide','retry_preparation',{},blocking=True,return_response=True)
+                    retry_logos.assert_called_once_with(True)
+                    assert retried['logos']['total']==37
                 programme = guide['channels'][0]['programs'][0]
                 assert programme['icon'].endswith('programme.jpg')
                 window=await hass.services.async_call('tv_guide','get_guide',

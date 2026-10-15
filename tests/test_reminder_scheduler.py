@@ -217,6 +217,28 @@ class SchedulerTests(unittest.TestCase):
             self.assertEqual(saved.saves, 1)
         asyncio.run(run())
 
+    def test_cancelled_shutdown_waiter_cannot_cancel_delivery_or_persistence(self):
+        async def run():
+            scheduler,saved,hass=self._make()
+            entered,release=asyncio.Event(),asyncio.Event()
+            async def deliver(*args,**kwargs):
+                entered.set();await release.wait()
+            hass.services.async_call=deliver
+            scheduler.reschedule()
+            timers[0]['callback'](datetime.now(timezone.utc))
+            await entered.wait()
+            first=asyncio.create_task(scheduler.async_stop())
+            await asyncio.sleep(0)
+            first.cancel()
+            with self.assertRaises(asyncio.CancelledError):await first
+            second=asyncio.create_task(scheduler.async_stop())
+            await asyncio.sleep(0)
+            self.assertFalse(second.done())
+            release.set();await second
+            self.assertTrue(saved.reminders[0]['sent'])
+            self.assertEqual(saved.saves,1)
+        asyncio.run(run())
+
     def test_notify_destination_uses_notify_service(self):
         async def run():
             scheduler, saved, hass = self._make()

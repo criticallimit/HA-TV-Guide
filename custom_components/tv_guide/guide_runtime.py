@@ -175,12 +175,12 @@ class GuideRuntime:
                 store.ensure_fresh_async()
         self.start_logo_download()
 
-    def start_logo_download(self):
-        if not self.closed and not self.logo_download.status()['ready']:
-            return self.start_background(self._download_logos)
+    def start_logo_download(self, force=False):
+        if not self.closed:
+            return self.start_background(self._download_logos, force=force)
 
-    def _download_logos(self):
-        self.logo_download.run(lambda: self.closed)
+    def _download_logos(self, force=False):
+        self.logo_download.run(lambda: self.closed, verify=force)
 
     def preparation_status(self):
         with self._lock:
@@ -190,7 +190,9 @@ class GuideRuntime:
                           'sources_completed': len(store.source_metrics),
                           'error': bool(store.last_error) and not store.refresh_running}
             logos = self.logo_download.status()
-            complete = logos['ready'] and programmes['ready'] and not programmes['running']
+            if self._download_logos in self._jobs:
+                logos = {**logos, 'running': True, 'ready': False}
+            complete = logos['ready'] and programmes['ready'] and not programmes['running'] and not programmes['error']
             first_install = self._first_install
             if complete and self._first_install:
                 temporary = self._preparation_marker.with_suffix('.tmp')
