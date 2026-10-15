@@ -8,6 +8,7 @@ import logging
 from hashlib import sha256
 from zoneinfo import ZoneInfo
 
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import callback
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from .reminder_times import next_reminder_time, retry_time, reminder_expiry
@@ -30,9 +31,20 @@ class TVGuideReminderScheduler:
         self._tasks = set()
         self._pending_sent = set()
         self._stop_task = None
+        self._cancel_shutdown = hass.bus.async_listen_once(
+            EVENT_HOMEASSISTANT_STOP, self._async_stop_on_shutdown
+        )
+
+    async def _async_stop_on_shutdown(self, _event):
+        # The one-shot bus listener has already removed itself.
+        self._cancel_shutdown = None
+        await self.async_stop()
 
     def stop(self):
         self._stopped = True
+        if self._cancel_shutdown is not None:
+            self._cancel_shutdown()
+            self._cancel_shutdown = None
         self._cancel_timers()
 
     async def async_stop(self):
