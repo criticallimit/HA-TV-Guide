@@ -9,5 +9,13 @@
     "translations.js": "3964cad29202d7f9df66c11468693dc8cfeca14347a69f2f2a1d5902aba99a4c",
     "i18n.js": "b8474cc0800e4f95eb29cd9c2b395217576526bbad65550e84883ce4e88ca003",
     "app.js": "576b3baf75674cea66e713731fe8e1f7f15f2162b7ad8b36c54e4ca0362fa6bb"
-  }
+  },
+  "bundled_sha256": {
+    "styles.css": "4cc5324656bdf297f721ea66be947007fc3d473c0898fc26ac25b08abeec0080",
+    "guide-core.js": "70a822439c5f97589044738a3cc0ab58b9f304e2b5cb4096a085ad8aaf2090b9",
+    "channel-picker.js": "b2506cb12750ad9754b49ebb9dc1513580ae03ca63285a06e5416a485e5447a3",
+    "translations.js": "5213a9b87064d5c9f317044a1499675863cba5cbf6abc2bcf59d7053f5e96769",
+    "i18n.js": "d565f8e10c51a128c57673f50a6be0f6beb3c2f69819b487315dbc5ef540db64"
+  },
+  "line_endings": "Pinned source fixtures use LF; unchanged bundled rendering assets retain their imported CRLF bytes."
 }

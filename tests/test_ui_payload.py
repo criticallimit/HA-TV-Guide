@@ -53,11 +53,15 @@ class UIPayloadTests(unittest.TestCase):
         result=ui.normalize_ui_settings({'country':'de','columns_desktop':5,'refresh_minutes':60,'notification_service':'notify.mobile_app_test'})
         self.assertEqual(result['notification_service'],'notify.mobile_app_test')
 
-    def test_styles_and_renderer_remain_byte_identical_to_imported_reference(self):
+    def test_styles_and_renderer_match_pinned_reference(self):
         app=ROOT/'frontend'/'app'
         provenance=json.loads((app/'REFERENCE.json').read_text(encoding='utf-8'))
         for name in ('styles.css','guide-core.js','channel-picker.js','translations.js','i18n.js'):
-            self.assertEqual(hashlib.sha256((app/name).read_bytes()).hexdigest(),provenance['source_sha256'][name],name)
+            bundled = (app/name).read_bytes()
+            original = (ROOT.parents[1]/'tests'/'reference-frontend'/name).read_bytes()
+            self.assertEqual(hashlib.sha256(bundled).hexdigest(),provenance['bundled_sha256'][name],name)
+            self.assertEqual(hashlib.sha256(original).hexdigest(),provenance['source_sha256'][name],name)
+            self.assertEqual(bundled.replace(b'\r\n', b'\n'), original.replace(b'\r\n', b'\n'), name)
         logos=json.loads((app/'logo_catalog.json').read_text(encoding='utf-8'))
         self.assertEqual(len(logos),10)
         for country in logos.values():
