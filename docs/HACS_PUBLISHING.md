@@ -1,6 +1,6 @@
 # HACS-Veröffentlichung vorbereiten und abschließen
 
-Stand: 15. Oktober 2026. Repository: `criticallimit/HA-TV-Guide`, Kategorie **Integration**, Domain `tv_guide`, Version `0.5.5`.
+Stand: 15. Oktober 2026. Repository: `criticallimit/HA-TV-Guide`, Kategorie **Integration**, Domain `tv_guide`, Version `1.0.0`.
 
 ## Bereits vorbereitet
 
@@ -9,7 +9,7 @@ Stand: 15. Oktober 2026. Repository: `criticallimit/HA-TV-Guide`, Kategorie **In
 - `.github/workflows/hacs.yml`: offizielle HACS-Prüfung bei Änderungen, veröffentlichten Releases, wöchentlich und manuell. Keine Prüfungen werden ignoriert. Die Action schreibt keine PR-Kommentare.
 - Vorhandene Hassfest-, Python-, Browser- und echte Home-Assistant-Prüfungen bleiben aktiv.
 - Eigenes Icon unter `custom_components/tv_guide/brand/icon.png`. Der aktuelle HACS-Validator akzeptiert dieses lokale Branding; ein zusätzlicher Antrag bei `home-assistant/brands` ist dafür nicht erforderlich.
-- Veröffentlichungstext in [RELEASE-0.5.5.md](RELEASE-0.5.5.md).
+- Versionskennung `1.0.0` im Integrationsmanifest; das GitHub-Release verwendet den Tag `v1.0.0`.
 
 HACS lädt den vollständigen Ordner `custom_components/tv_guide` aus dem gewählten Git-Stand. `zip_release` wird bewusst nicht verwendet: Es ist kein besonderes Release-ZIP nötig. Die automatisch von GitHub angebotenen Quellarchive reichen aus. Programm- und Logo-Daten bleiben in der eigenen HA-Speicherung außerhalb des von HACS ersetzten Integrationsordners.
 
@@ -28,8 +28,8 @@ Unter [Actions](https://github.com/criticallimit/HA-TV-Guide/actions) müssen **
 ## 3. Erste Version veröffentlichen
 
 1. [Neues Release öffnen](https://github.com/criticallimit/HA-TV-Guide/releases/new).
-2. Als Tag **`v0.5.5`** eingeben und auf dem geprüften **main** erstellen. Die Manifest-Version bleibt `0.5.5`.
-3. Titel: **TV Guide 0.5.5**. Inhalt aus [RELEASE-0.5.5.md](RELEASE-0.5.5.md) übernehmen.
+2. Als Tag **`v1.0.0`** eingeben und auf dem geprüften **main** erstellen. Die Manifest-Version bleibt `1.0.0`.
+3. Titel: **TV Guide 1.0.0**. Die automatische Seitenleiste, optionale Karte mit Theme-Auswahl, zehn TV-Länder, persönliche Senderlisten, gespeicherte Sendungen, Erinnerungen, Sensoren und Kalender beschreiben. Es wird keine separate Changelog-Datei geführt.
 4. Zunächst **Save draft** verwenden und den Zielstand kontrollieren. Wenn alle Prüfungen erfolgreich sind und die Version freigegeben werden soll, **Publish release** wählen. Für eine reguläre stabile Veröffentlichung **Pre-release** nicht aktivieren.
 
 Ein Tag allein genügt nicht für die HACS-Versionsauswahl: Dazu muss das GitHub-Release veröffentlicht sein. Zusätzliche ZIP-Anhänge sind bei dieser Konfiguration optional. Bei späteren Versionen zuerst die Manifest-Version erhöhen, prüfen und danach das passende Release erstellen.
