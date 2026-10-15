@@ -38,6 +38,12 @@ class XMLTVTests(unittest.TestCase):
         self.assertEqual(result[0]["title"], "Film")
         self.assertEqual(result[0]["description"], "Beschreibung")
 
+    def test_overlong_station_ids_are_not_merged_by_truncation(self):
+        prefix='x'*160
+        xml=('<tv>'+''.join(f'<programme channel="{station}" start="20300101120000 +0000" stop="20300101130000 +0000"><title>Station {i}</title></programme>' for i,station in enumerate([prefix,prefix+'a',prefix+'b']))+'</tv>').encode()
+        records=parse_xmltv(xml)
+        self.assertEqual([(row['channel'],row['title']) for row in records],[(prefix,'Station 0')])
+
     def test_utf16_cannot_bypass_dtd_rejection(self):
         xml = '<!DOCTYPE tv [<!ENTITY x "expanded">]><tv><programme channel="a" start="20261014190000 +0000" stop="20261014200000 +0000"><title>&x;</title></programme></tv>'
         with self.assertRaises(ValueError):

@@ -668,8 +668,9 @@ function setMode(nextMode) {
     b.classList.toggle("active", b.dataset.mode === nextMode));
   // The TV Guide guide response contains complete channel timelines. Re-render
   // an already loaded guide locally instead of waiting for a Home Assistant
-  // websocket round trip on every time-tab click.
-  if (guide) render();
+  // websocket round trip on every time-tab click. Custom XMLTV responses are
+  // bounded windows and must request rows for the newly selected time instead.
+  if (guide && !guide._windowed) render();
   else loadGuide().catch(() => {});
 }
 
@@ -790,7 +791,7 @@ applyCustomTime.addEventListener("click", () => {
   root.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === "other"));
   customTimeDialog.close();
-  if (guide) render();
+  if (guide && !guide._windowed) render();
   else loadGuide().catch(() => {});
 });
 

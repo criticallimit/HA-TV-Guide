@@ -73,7 +73,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=22' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=23' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -187,7 +187,7 @@ async def main():
                 assert any(state.entity_id.startswith('calendar.') for state in hass.states.async_all())
                 hass.config_entries.async_update_entry(entry,
                     data={**entry.data,'backend_mode':'original'},
-                    options={**entry.options,'backend_mode':'old'})
+                    options={**entry.options,'backend_mode':'old'},version=1,minor_version=1)
                 await hass.async_block_till_done()
                 for cycle in range(3):
                     previous_backend = hass.data['tv_guide'][entry.entry_id].backend
@@ -196,9 +196,10 @@ async def main():
                     await hass.async_block_till_done()
                     assert previous_backend.closed
                     assert previous_scheduler._stopped
+                    assert entry.version==2
                     assert 'backend_mode' not in entry.data and 'backend_mode' not in entry.options
                     assert len([item for item in registry.entities.values() if item.config_entry_id==entry.entry_id])==6
-                print('PASS HA acceptance: three reload cycles without entity duplication or surviving old workers/timers',flush=True)
+                print('PASS HA acceptance: version-one migration and three reload cycles without entity duplication or surviving old workers/timers',flush=True)
                 assert entry.version==2
                 assert frontend.async_panel_exists(hass,'tv-guide')
                 saved = await hass.services.async_call('tv_guide','get_saved_programmes',{},blocking=True,return_response=True)

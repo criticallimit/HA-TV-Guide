@@ -1,4 +1,5 @@
 """Response action adapters validate writes and read the guide snapshot only."""
+import asyncio
 import importlib.util
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
@@ -102,6 +103,30 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         for at in ('bad','2030-01-01T12:00:00','9999-12-31T23:30:00-01:00'):
             with self.assertRaises(exc.HomeAssistantError):await self.call('get_guide',{'at':at})
         self.assertEqual(calls,[])
+
+    async def test_concurrent_partial_settings_updates_preserve_both_changes(self):
+        settings={'country':'de','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
+        entered, release = asyncio.Event(), asyncio.Event()
+        async def request(endpoint, method='GET', body=None):
+            if method == 'GET':
+                snapshot = dict(settings)
+                entered.set()
+                await release.wait()
+                return snapshot
+            settings.update(body)
+            return {'ok':True}
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_multi_source=True,async_guide_request=request)}
+        adapter.async_register_ui_services(self.hass)
+        first=asyncio.create_task(self.call('set_ui_settings',{'options':{'language':'en'}}))
+        await entered.wait()
+        second=asyncio.create_task(self.call('set_ui_settings',{'options':{'columns_desktop':4}}))
+        await asyncio.sleep(0)
+        release.set()
+        await asyncio.gather(first,second)
+        self.assertEqual(settings['language'],'en')
+        self.assertEqual(settings['columns_desktop'],4)
+        self.assertEqual(self.entry.options['language'],'en')
+        self.assertEqual(self.entry.options['columns_desktop'],4)
 
     async def test_original_settings_persist_normalized_values_and_notification_destination(self):
         settings={'country':'at','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}

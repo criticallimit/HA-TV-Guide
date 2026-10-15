@@ -1,6 +1,6 @@
-"""DNS address filtering for a future dedicated EPG HTTP connector.
+"""DNS address policy used at connection time by the XMLTV HTTP connector.
 
-Do not use this module as a substitute for checking the actual connection peer.
+Validate the actual resolver results, never a separate preflight DNS lookup.
 """
 
 import ipaddress

@@ -126,7 +126,31 @@ const server=http.createServer((req,res)=>{
   const sizes=await page.evaluate(()=>({card:card.getBoundingClientRect().width,dialog:card.shadowRoot.querySelector('#preparationDialog').getBoundingClientRect().width}));
   assert.ok(sizes.dialog<=sizes.card-32,`Preparation dialog must fit its card: ${JSON.stringify(sizes)}`);
   await page.evaluate(()=>card.remove());
+  // A bounded custom XMLTV response needs a new window after date/time navigation.
+  await page.evaluate(()=>{
+    window.feedCalls=[];
+    const programmes=Array.from({length:48},(_,i)=>({id:'feed'+i,title:'Feed '+i,start:new Date(Date.now()+i*3600000).toISOString(),end:new Date(Date.now()+(i+1)*3600000).toISOString()}));
+    const feedHass={...hass,services:{},async callWS(message){
+      if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+      if(message.service==='get_preparation_status')return {response:{complete:true}};
+      if(message.service!=='get_guide')throw Error('Unexpected feed service');
+      const at=message.service_data.at||new Date().toISOString();feedCalls.push(at);
+      return {response:{_windowed:true,country:'de',ui:model.ui,feed_latest_end:programmes.at(-1).end,main_channel_ids:['feed'],custom_channel_ids:['feed'],channels:[{id:'feed',name:'Custom XMLTV',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:programmes.filter(p=>Date.parse(p.end)>Date.parse(at)).slice(0,7)}]}};
+    }};
+    window.card=document.createElement('tv-guide-card');card.hass=feedHass;document.body.append(card);
+  });
+  await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+  await page.locator('[data-mode="other"]').click();
+  await page.locator('#customDate').fill('2026-10-15');
+  await page.locator('#customTime').fill('12:00');
+  await page.locator('#applyCustomTime').click();
+  await page.waitForFunction(()=>feedCalls.length===2,{},{timeout:5000});
+  assert.equal(await page.locator('.program-link strong').first().textContent(),'Feed 16');
+  await page.locator('[data-mode="now"]').click();
+  await page.waitForFunction(()=>feedCalls.length===3);
+  assert.equal(await page.locator('.program-link strong').first().textContent(),'Feed 0');
+  await page.evaluate(()=>card.remove());
   assert.deepEqual(errors,[]);
-  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits and narrow preparation dialog');
+  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog and XMLTV date navigation');
   await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');
 })().catch(error=>{console.error(error);server.close();process.exit(1);});

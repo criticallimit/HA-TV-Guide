@@ -1,7 +1,7 @@
 """Feed URL policy for an opt-in external XMLTV source.
 
-Network-layer DNS resolution must additionally reject private/reserved targets
-before this downloader is enabled in a config flow.
+The dedicated transport also rejects private/reserved DNS answers when opening
+the connection; URL validation alone is insufficient.
 """
 
 from urllib.parse import urlsplit
