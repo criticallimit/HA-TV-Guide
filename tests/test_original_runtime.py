@@ -147,6 +147,48 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertIn('official_metrics',status)
         self.assertIn('coverage_metrics',status)
 
+    def test_settings_save_does_not_wait_for_guide_build(self):
+        settings=self.backend.request('settings','GET')
+        entered,release=threading.Event(),threading.Event()
+        original=self.runtime.PERSONAL_CHANNELS.guide
+        def blocked(store):
+            entered.set()
+            release.wait(5)
+            return original(store)
+        with patch.object(self.runtime.PERSONAL_CHANNELS,'guide',blocked), ThreadPoolExecutor(max_workers=2) as pool:
+            guide=pool.submit(self.backend.request,'guide','GET')
+            self.assertTrue(entered.wait(2))
+            save=pool.submit(self.backend.request,'settings','POST',{**settings,'language':'en'})
+            try:
+                result=save.result(timeout=1)
+            finally:
+                release.set()
+                guide.result(timeout=5)
+            self.assertTrue(result['ok'])
+            self.assertEqual(self.backend.request('settings','GET')['language'],'en')
+            self.assertIsNone(self.backend._guide_cache, 'A guide built across a settings change must not be cached')
+
+    def test_settings_save_does_not_wait_for_epg_snapshot_build(self):
+        settings=self.backend.request('settings','GET')
+        entered,release=threading.Event(),threading.Event()
+        original=self.backend.snapshot
+        def blocked(*args):
+            entered.set()
+            release.wait(5)
+            return original(*args)
+        with patch.object(self.backend,'snapshot',blocked), ThreadPoolExecutor(max_workers=2) as pool:
+            snapshot=pool.submit(self.backend.state_snapshot)
+            self.assertTrue(entered.wait(2))
+            save=pool.submit(self.backend.request,'settings','POST',{**settings,'language':'en'})
+            try:
+                result=save.result(timeout=1)
+            finally:
+                release.set()
+                snapshot.result(timeout=5)
+            self.assertTrue(result['ok'])
+            self.assertEqual(self.backend.request('settings','GET')['language'],'en')
+            self.assertIsNone(self.backend._snapshot_cache)
+
     def test_original_settings_switch_country_and_persist(self):
         settings=self.backend.request('settings','GET')
         result=self.backend.request('settings','POST',{**settings,'country':'at','max_channels':500})
