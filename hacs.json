@@ -1,0 +1,5 @@
+{
+  "name": "TV Guide",
+  "homeassistant": "2026.10.1",
+  "country": ["AT", "BE", "CH", "DE", "DK", "FR", "GB", "NL", "NO", "SE"]
+}
