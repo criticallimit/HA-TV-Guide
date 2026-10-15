@@ -5,6 +5,7 @@ from pathlib import Path
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.helpers.event import async_track_time_interval
 
+from .const import DOMAIN
 from .coordinator import TVGuideEPGCoordinator
 from .guide_runtime import GuideRuntime
 
@@ -28,7 +29,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         self._last_refresh_notification = None
         self._cancel_preload = None
         self._loop = asyncio.get_running_loop()
-        entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.async_stop))
+        entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_stop_on_shutdown))
 
     def _wake(self):
         if not self._closed:
@@ -120,6 +121,11 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         if method != "GET" or endpoint == "refresh":
             await self._async_sync()
         return result
+
+    async def _async_stop_on_shutdown(self, event):
+        # Shutdown can arrive independently of config-entry unload.
+        async with self.hass.data.setdefault(DOMAIN + "_settings_lock", asyncio.Lock()):
+            await self.async_stop(event)
 
     async def async_stop(self, event=None):
         """Wait for the same cleanup when unload and shutdown overlap."""

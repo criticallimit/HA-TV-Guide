@@ -43,6 +43,10 @@ const server=http.createServer((req,res)=>{
     window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
       if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
       if(message.service==='get_preparation_status')return {response:structuredClone(window.preparation||{complete:true})};
+      if(message.service==='retry_preparation'){
+        preparation.logos.error=false;preparation.logos.ready=true;preparation.complete=true;
+        return {response:structuredClone(preparation)};
+      }
       if(message.service!=='guide_request')throw Error('Unexpected test service');
       const request=message.service_data;requests.push(request);
       if(request.endpoint==='guide'&&window.failNextGuide){window.failNextGuide=false;throw Error('Temporary disconnect');}
@@ -174,7 +178,26 @@ const server=http.createServer((req,res)=>{
   await page.waitForTimeout(100);
   assert.equal(await page.evaluate(()=>requests.length),recovered,'A successful recovery must clear the failure state');
   await page.evaluate(()=>{delete document.hidden;card.remove();});
+  // A fast repair can complete between polls without changing the package count.
+  await page.evaluate(()=>{
+    model.channels=[{id:'logo',name:'Logo repair',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:[{id:'logo-programme',title:'Programme',start:new Date().toISOString(),end:new Date(Date.now()+3600000).toISOString()}]}];
+    model.main_channel_ids=model.custom_channel_ids=['logo'];
+    window.preparation={installation_id:'fast-repair',first_install:false,complete:false,logos:{completed:37,total:37,ready:false,error:'damaged',running:false},programmes:{ready:true,running:false,error:false,sources_completed:1}};
+    window.card=mount();
+  });
+  await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+  await page.locator('#preparationBadge').waitFor({state:'visible'});
+  await page.evaluate(()=>{
+    window.previousBrand=card.shadowRoot.querySelector('.channel-brand');
+    window.previousProgrammes=card.shadowRoot.querySelector('.programs');
+    previousBrand.querySelectorAll('img').forEach(image=>image.style.display='none');
+  });
+  await page.locator('#preparationBadge').click();
+  await page.locator('#preparationRetry').click();
+  await page.waitForFunction(()=>card.shadowRoot.querySelector('.channel-brand')!==previousBrand,{},{timeout:3000});
+  assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.programs')===previousProgrammes),true,'Repairing logos must preserve programme controls');
+  await page.evaluate(()=>card.remove());
   assert.deepEqual(errors,[]);
-  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog, XMLTV date navigation and retry recovery');
+  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog, XMLTV date navigation, retry recovery and fast logo repair');
   await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');
 })().catch(error=>{console.error(error);server.close();process.exit(1);});
