@@ -181,6 +181,23 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(await unload)
         self.assertEqual(self.hass.data['tv_guide_saved'],{})
 
+    async def test_version_one_migration_preserves_feed_selection_and_saved_store_identity(self):
+        self.entry.version=1
+        self.entry.data={'country':'at','feed_url':'https://example.org/feed.xml','backend_mode':'xmltv'}
+        self.entry.options={'channels':['zdf'],'notification_service':'notify.test','backend_mode':'old'}
+        self.assertTrue(await self.module.async_migrate_entry(self.hass,self.entry))
+        self.assertEqual(self.entry.version,2)
+        self.assertEqual(self.entry.entry_id,'entry')
+        self.assertEqual(self.entry.data,{'country':'at','feed_url':'https://example.org/feed.xml'})
+        self.assertEqual(self.entry.options,{'channels':['zdf'],'notification_service':'notify.test'})
+
+    async def test_migration_rejects_future_config_versions_without_changing_data(self):
+        self.entry.version=3
+        self.entry.data={'country':'at'}
+        self.assertFalse(await self.module.async_migrate_entry(self.hass,self.entry))
+        self.assertEqual(self.entry.version,3)
+        self.assertEqual(self.entry.data,{'country':'at'})
+
     async def test_obsolete_mode_flag_is_removed_without_losing_user_settings(self):
         self.entry.data={'country':'at','backend_mode':'original'}
         self.entry.options={'language':'en','backend_mode':'old','columns_desktop':4}

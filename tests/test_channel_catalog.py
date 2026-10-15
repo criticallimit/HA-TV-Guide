@@ -34,6 +34,11 @@ class ChannelCatalogTests(unittest.TestCase):
     def test_missing_display_name(self):
         self.assertEqual(parse_channel_catalog(b'<tv><channel id="a" /></tv>'), [{"id": "a", "name": "a"}])
 
+    def test_overlong_station_ids_are_not_merged_by_truncation(self):
+        prefix='x'*160
+        xml=('<tv>'+''.join(f'<channel id="{station}"><display-name>Station {i}</display-name></channel>' for i,station in enumerate([prefix,prefix+'a',prefix+'b']))+'</tv>').encode()
+        self.assertEqual(parse_channel_catalog(xml),[{'id':prefix,'name':'Station 0'}])
+
     def test_utf16_cannot_bypass_dtd_rejection(self):
         with self.assertRaises(ValueError):
             parse_channel_catalog('<!DOCTYPE tv [<!ENTITY x "expanded">]><tv><channel id="a"><display-name>&x;</display-name></channel></tv>'.encode('utf-16'))

@@ -22,6 +22,18 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
 
 
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Upgrade the former manual setup without replacing entry-owned storage."""
+    if entry.version == 1:
+        hass.config_entries.async_update_entry(entry,
+            data={key:value for key,value in entry.data.items() if key != "backend_mode"},
+            options={key:value for key,value in entry.options.items() if key != "backend_mode"},
+            version=2, minor_version=1)
+        return True
+    # Never reinterpret a newer configuration when an older release is installed.
+    return entry.version == 2
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the integration and roll back local resources on setup failures."""
     obsolete = {}

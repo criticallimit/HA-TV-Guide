@@ -22,6 +22,7 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(result['custom_channel_ids'],['ard'])
         first=result['channels'][0]
         self.assertEqual(len(first['programs']),7)
+        self.assertTrue(result['_windowed'])
         self.assertEqual(result['feed_latest_end'],(self.at+timedelta(hours=20)).isoformat())
         self.assertEqual(first['programs'][0]['desc'],'Description')
         self.assertEqual(first['programs'][0]['category'],'News')

@@ -96,3 +96,17 @@ selection and reloads complete timelines without claiming a complete revision.
 The original standalone frontend under `tests/reference-frontend` is an immutable
 pixel-comparison fixture, not shipped runtime code. Its original embedding and
 message handling are intentionally preserved so the comparison stays independent.
+
+## Configuration upgrades and concurrent writes
+
+Version-one config entries migrate to version two with their entry ID, explicit
+XMLTV URL, sender selection and notification destination preserved. The obsolete
+backend flag is removed; newer unsupported config versions are not downgraded.
+Concurrent partial settings actions serialize the backend read/modify/write and
+HA option persistence, so unrelated changes do not overwrite each other.
+
+Explicit XMLTV responses carry `_windowed: true`: they contain seven programme
+rows per channel, and the card requests the selected time window on date/time
+navigation. Complete provider timelines continue to navigate locally. XMLTV
+station IDs over the supported 160-character limit are skipped consistently in
+metadata and programmes, rather than truncated into another station's ID.

@@ -1,4 +1,5 @@
 """Authenticated response actions backing the TV Guide presentation."""
+import asyncio
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import voluptuous as vol
@@ -12,6 +13,7 @@ SERVICES=('get_guide','get_personal_channels','get_ui_settings','set_ui_settings
 PRESENTATION_OPTIONS=('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')
 
 def async_register_ui_services(hass):
+    settings_lock = hass.data.setdefault(DOMAIN + "_settings_lock", asyncio.Lock())
     def entry_and_options():
         stores=hass.data.get(DOMAIN+'_saved',{})
         if len(stores)!=1:
@@ -36,6 +38,20 @@ def async_register_ui_services(hass):
         scheduler=hass.data.get(DOMAIN+'_reminder_schedulers',{}).get(entry.entry_id)
         if scheduler is not None:
             scheduler.notification_service=settings['notification_service']
+
+    async def update_guide_settings(entry, coordinator, changes, *, partial=False):
+        # A partial read/modify/write and its HA persistence must stay together.
+        # Otherwise simultaneous automation calls can overwrite unrelated fields.
+        async with settings_lock:
+            if partial:
+                if set(changes)-set(PRESENTATION_OPTIONS):
+                    raise ValueError('Unknown settings')
+                settings=await coordinator.async_guide_request('settings')
+                changes={**settings,**changes}
+            normalize_ui_settings({'notification_service':changes.get('notification_service','persistent_notification.create')})
+            result=await coordinator.async_guide_request('settings','POST',changes)
+            await persist_guide_settings(entry, coordinator)
+            return result
 
     async def handle(call):
         entry,options=entry_and_options()
@@ -62,14 +78,10 @@ def async_register_ui_services(hass):
             if call.service=='guide_request':
                 try:
                     if call.data['endpoint']=='settings' and call.data.get('method')=='POST':
-                        normalize_ui_settings({'notification_service':(call.data.get('body') or {}).get('notification_service','persistent_notification.create')})
-                    result=await coordinator.async_guide_request(call.data['endpoint'],call.data.get('method','GET'),call.data.get('body'))
-                except (ValueError,RuntimeError) as exc:
+                        return await update_guide_settings(entry, coordinator, call.data.get('body') or {})
+                    return await coordinator.async_guide_request(call.data['endpoint'],call.data.get('method','GET'),call.data.get('body'))
+                except (ValueError,RuntimeError,TypeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
-                if call.service=='guide_request' and call.data['endpoint']=='settings' and call.data.get('method')=='POST':
-
-                    await persist_guide_settings(entry, coordinator)
-                return result
             endpoint={'get_ui_settings':'settings','get_guide':'guide','get_personal_channels':'personal-channels'}.get(call.service)
             if endpoint:
                 result=await coordinator.async_guide_request(endpoint)
@@ -78,15 +90,9 @@ def async_register_ui_services(hass):
                 return result
             if call.service=='set_ui_settings':
                 try:
-                    if set(call.data['options'])-set(PRESENTATION_OPTIONS):
-                        raise ValueError('Unknown settings')
-                    settings=await coordinator.async_guide_request('settings')
-                    normalize_ui_settings({'notification_service':call.data['options'].get('notification_service',settings['notification_service'])})
-                    result=await coordinator.async_guide_request('settings','POST',{**settings,**call.data['options']})
-                    await persist_guide_settings(entry, coordinator)
+                    return await update_guide_settings(entry, coordinator, call.data['options'], partial=True)
                 except (ValueError,RuntimeError,TypeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
-                return result
         if call.service=='get_ui_settings':
             return ui_settings(options)
         if call.service=='set_ui_settings':

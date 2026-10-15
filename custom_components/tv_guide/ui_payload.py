@@ -133,4 +133,4 @@ def build_guide(programmes,catalogue,feed_channels,options,at,refresh_running=Fa
     for channel in visible.values():
         channel['programs']=grouped.get(channel.get('xmltv_id'),[])[:7]
         channel['data_state']='available' if channel['programs'] else 'no_programmes'
-    return {'channels':[visible[key] for key in ids if key in visible],'main_channel_ids':main,'custom_channel_ids':custom,'country':country,'ui':ui_settings(options),'refresh_running':refresh_running,'feed_latest_end':latest.isoformat() if latest else None}
+    return {'_windowed':True,'channels':[visible[key] for key in ids if key in visible],'main_channel_ids':main,'custom_channel_ids':custom,'country':country,'ui':ui_settings(options),'refresh_running':refresh_running,'feed_latest_end':latest.isoformat() if latest else None}

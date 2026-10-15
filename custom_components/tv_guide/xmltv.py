@@ -11,6 +11,7 @@ from xml.etree import ElementTree as ET
 
 MAX_XML_SIZE = 8 * 1024 * 1024
 MAX_PROGRAMMES = 50000
+MAX_CHANNEL_ID_LENGTH = 160
 _XMLTV_TIME = re.compile(r"^(\d{14})(?:\s*([+-]\d{4}))?$")
 
 
@@ -42,14 +43,14 @@ def parse_xmltv(payload: bytes, *, limit: int = MAX_PROGRAMMES) -> list[dict]:
         channel = element.attrib.get("channel", "").strip()
         start = parse_xmltv_time(element.attrib.get("start"))
         stop = parse_xmltv_time(element.attrib.get("stop"))
-        if channel and start and stop and stop > start:
+        if channel and len(channel) <= MAX_CHANNEL_ID_LENGTH and start and stop and stop > start:
             title_node = element.find("title")
             desc_node = element.find("desc")
             title = "".join(title_node.itertext()).strip()[:300] if title_node is not None else ""
             desc = "".join(desc_node.itertext()).strip()[:2000] if desc_node is not None else ""
             if title:
                 results.append({
-                    "channel": channel[:160],
+                    "channel": channel,
                     "start": start.isoformat(),
                     "stop": stop.isoformat(),
                     "title": title,
