@@ -27,6 +27,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.imports.start();self.addCleanup(self.imports.stop)
         spec=importlib.util.spec_from_file_location(PKG+'.guide_coordinator',ROOT/'guide_coordinator.py')
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        self.module = module
         self.tasks=[]
         def create(coro):
             task=asyncio.create_task(coro);self.tasks.append(task);return task
@@ -145,3 +146,58 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.coordinator.async_set_updated_data([])
         await self.coordinator._async_preload(None)
         self.assertEqual(calls,['check','check'])
+
+    async def test_cancelled_setup_closes_backend_created_after_cancellation(self):
+        entered, release = asyncio.Event(), asyncio.Event()
+        calls = []
+        backend = types.SimpleNamespace(
+            runtime=types.SimpleNamespace(STORE=types.SimpleNamespace(
+                ensure_fresh_async=lambda: calls.append('refresh'))),
+            close=lambda: calls.append('closed'),
+        )
+        self.hass.config = types.SimpleNamespace(
+            language='de', country='DE', time_zone='Europe/Berlin',
+            path=lambda *parts: str(Path(*parts)),
+        )
+        self.coordinator.entry.entry_id = 'entry'
+        self.coordinator.backend = None
+        def constructor(*args):
+            return backend
+        async def executor(fn, *args):
+            if fn is constructor:
+                entered.set()
+                await release.wait()
+            return fn(*args)
+        self.hass.async_add_executor_job = executor
+        with patch.object(self.module, 'GuideRuntime', constructor):
+            setup = asyncio.create_task(self.coordinator._async_update_data())
+            await entered.wait()
+            setup.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await setup
+            stop = asyncio.create_task(self.coordinator.async_stop())
+            await asyncio.sleep(0)
+            self.assertFalse(stop.done())
+            release.set()
+            await stop
+        self.assertIs(self.coordinator.backend, backend)
+        self.assertEqual(calls, ['closed'])
+        self.assertIsNone(self.coordinator._cancel_preload)
+
+    async def test_failed_constructor_does_not_hide_original_setup_error(self):
+        self.coordinator.backend = None
+        self.hass.config = types.SimpleNamespace(
+            language='de', country='DE', time_zone='Europe/Berlin',
+            path=lambda *parts: str(Path(*parts)),
+        )
+        self.coordinator.entry.entry_id = 'entry'
+        with patch.object(self.module, 'GuideRuntime', side_effect=ValueError('broken cache')):
+            with self.assertRaisesRegex(ValueError, 'broken cache'):
+                await self.coordinator._async_update_data()
+            await self.coordinator.async_stop()
+
+    async def test_stopped_coordinator_cannot_restart_backend(self):
+        self.coordinator.backend.close = lambda: None
+        await self.coordinator.async_stop()
+        with self.assertRaisesRegex(RuntimeError, 'unloading'):
+            await self.coordinator._async_update_data()

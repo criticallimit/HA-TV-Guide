@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .frontend import async_register_frontend, async_remove_frontend
-from .ha_defaults import installation_defaults
 from .ui_services import async_register_ui_services, async_remove_ui_services
 from .coordinator import TVGuideEPGCoordinator
 from .epg_query import async_register_epg_query, async_remove_epg_query
@@ -125,14 +124,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).pop(entry.entry_id, None)
         if scheduler is not None:
             await scheduler.async_stop()
-        hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
-        hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
-        if not hass.data.get(DOMAIN + "_saved"):
-            async_remove_frontend(hass)
-            async_remove_saved_services(hass)
-            async_remove_ui_services(hass)
-        if not hass.data.get(DOMAIN):
-            async_remove_epg_query(hass)
+        async with hass.data.setdefault(DOMAIN + "_saved_lock", asyncio.Lock()):
+            hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+            hass.data.get(DOMAIN + "_saved", {}).pop(entry.entry_id, None)
+            if not hass.data.get(DOMAIN + "_saved"):
+                async_remove_frontend(hass)
+                async_remove_saved_services(hass)
+                async_remove_ui_services(hass)
+            if not hass.data.get(DOMAIN):
+                async_remove_epg_query(hass)
     return success
 
 

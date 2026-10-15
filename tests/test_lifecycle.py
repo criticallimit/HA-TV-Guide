@@ -166,6 +166,18 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('entry',self.hass.data['tv_guide_saved'])
         self.assertIn('save_bookmark',self.registry)
 
+    async def test_unload_waits_for_saved_store_write_before_removing_data(self):
+        await self.module.async_setup_entry(self.hass,self.entry)
+        lock=self.hass.data['tv_guide_saved_lock']
+        await lock.acquire()
+        unload=asyncio.create_task(self.module.async_unload_entry(self.hass,self.entry))
+        await asyncio.sleep(0)
+        self.assertFalse(unload.done())
+        self.assertIn('entry',self.hass.data['tv_guide_saved'])
+        lock.release()
+        self.assertTrue(await unload)
+        self.assertEqual(self.hass.data['tv_guide_saved'],{})
+
     async def test_sender_options_notify_calendar_without_feed_reload(self):
         self.entry.data = {'feed_url':'https://example.org/feed.xml','country':'de'}
         await self.module.async_setup_entry(self.hass,self.entry)

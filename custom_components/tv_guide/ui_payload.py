@@ -4,6 +4,7 @@ from functools import lru_cache
 import json
 from pathlib import Path
 from hashlib import sha256
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 COUNTRY_NAMES={'de':'Deutschland','at':'Österreich','ch':'Schweiz','nl':'Niederlande','be':'Belgien','dk':'Dänemark','no':'Norwegen','fr':'Frankreich','se':'Schweden','gb':'Großbritannien'}
 UI_DEFAULTS={'language':'auto','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
@@ -78,6 +79,25 @@ def guide_at(payload, at):
         programmes.sort(key=lambda item: datetime.fromisoformat(item['start']).timestamp())
         channels.append({**channel, 'programs': programmes[:7]})
     return {**payload, 'channels': channels}
+
+
+def guide_preview(payload, body):
+    """First paint uses the same seven rows and default time as the full view."""
+    at = datetime.now(timezone.utc)
+    try:
+        candidate = datetime.fromisoformat(body.get('at', ''))
+        if candidate.tzinfo is not None:
+            at = candidate.astimezone(timezone.utc)
+    except (TypeError, ValueError, OverflowError):
+        pass
+    try:
+        local = at.astimezone(ZoneInfo(body.get('time_zone', 'UTC')))
+    except (TypeError, ValueError, OverflowError, ZoneInfoNotFoundError):
+        local = at
+    mode = payload.get('ui', {}).get('default_view', 'now')
+    if mode in ('1800', '2015', '2200'):
+        local = local.replace(hour=int(mode[:2]), minute=int(mode[2:]), second=0, microsecond=0)
+    return {**guide_at(payload, local), '_preview': True}
 
 
 def build_guide(programmes,catalogue,feed_channels,options,at,refresh_running=False):

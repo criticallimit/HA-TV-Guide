@@ -229,7 +229,7 @@ const server = http.createServer((req,res) => {
       calls.push(message);
       const {endpoint,method,body}=message.service_data;
       let response;
-      if(endpoint==='guide')response=model;
+      if(endpoint==='guide')response=body?.known_revision && body.known_revision===model.revision ? {unchanged:true,revision:model.revision} : model;
       else if(endpoint==='personal-channels'&&method==='GET')response={channels:model.channels.map(ch=>({...ch,id:'de:'+ch.id})),order:model.main_channel_ids.map(id=>'de:'+id),countries:['de'],supported_countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
       else if(endpoint==='personal-channels')response={ok:true,order:body.order,countries:body.countries};
       else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de'};
@@ -270,6 +270,70 @@ const server = http.createServer((req,res) => {
   console.log('PASS automatic setup settings omit manual controls; refresh and guidePage test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
+  await guidePage.evaluate(()=>{model.revision='refresh-in-progress';model.refresh_running=true;});
+  await frame.locator('body').evaluate(()=>loadGuide());
+  const keepsRefreshing=await frame.locator('body').evaluate(async()=>{
+    clearTimeout(startupReloadTimer);startupReloadTimer=null;
+    await loadGuide();return startupReloadTimer!==null;
+  });
+  assert.equal(keepsRefreshing,true);
+  assert.ok(await guidePage.evaluate(()=>calls.some(call=>call.service==='guide_request'&&call.service_data.body?.known_revision==='refresh-in-progress')));
+  await guidePage.evaluate(()=>{model.revision='refresh-complete';model.refresh_running=false;});
+  assert.equal(await frame.locator('body').evaluate(async()=>{await loadGuide();return startupReloadTimer;}),null);
+  console.log('PASS conditional guide revisions and provider completion polling');
+  await guidePage.evaluate(()=>{
+    const previous=hass.callWS.bind(hass);
+    window.preparation={installation_id:'browser-test',first_install:true,complete:false,
+      logos:{running:true,ready:false,completed:2,total:37,error:null},
+      programmes:{running:true,ready:false,sources_completed:1,error:false}};
+    hass.callWS=async message=>{
+      if(message.service==='get_preparation_status')return {response:structuredClone(preparation)};
+      if(message.service==='retry_preparation'){calls.push(message);preparation.logos.error=null;preparation.complete=false;return {response:preparation};}
+      return previous(message);
+    };
+  });
+  await frame.locator('#preparationDialog').waitFor({state:'visible',timeout:15000});
+  assert.match(await frame.locator('#preparationLogos').textContent(),/2 \/ 37/);
+  await frame.locator('#preparationClose').click();
+  await frame.locator('#preparationDialog').waitFor({state:'hidden'});
+  assert.equal(await frame.locator('#preparationBadge').isVisible(),true);
+  let downloadedLogoAvailable=false;
+  await guidePage.route('**/download-logo-test.svg',route=>route.fulfill({
+    status:downloadedLogoAvailable?200:404,contentType:'image/svg+xml',
+    headers:{'Cache-Control':'no-store'},
+    body:downloadedLogoAvailable?'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="red"/></svg>':''}));
+  await frame.locator('body').evaluate(()=>{
+    const channel=activeChannels()[0];
+    channel.logo_normalized_light=channel.logo_normalized_dark='/download-logo-test.svg';
+    // Both normalized and raw fallback URLs deliberately fail until download.
+    channel.logo_file_light=channel.logo_file='/download-logo-test.svg';
+    render();
+    window.retainedProgrammes=document.querySelector('.channel-card .programs');
+    window.retainedFocus=retainedProgrammes.querySelector('[data-program-start]');
+    retainedFocus.focus();
+  });
+  const logoFrame=await (await card.locator('iframe').elementHandle()).contentFrame();
+  await logoFrame.waitForFunction(()=>Array.from(document.querySelectorAll('.channel-card:first-child .channel-logo')).some(img=>img.style.display==='none'));
+  downloadedLogoAvailable=true;
+  await guidePage.evaluate(()=>{preparation.logos.completed=3;});
+  await logoFrame.waitForFunction(()=>Array.from(document.querySelectorAll('.channel-card:first-child .channel-logo')).some(img=>img.complete&&img.naturalWidth>0&&img.style.display!=='none'));
+  assert.equal(await frame.locator('body').evaluate(()=>document.querySelector('.channel-card .programs')===retainedProgrammes),true);
+  assert.equal(await frame.locator('body').evaluate(()=>document.activeElement===retainedFocus),true);
+  console.log('PASS downloaded logos replace failed image fallbacks without replacing programme controls or focus');
+  await frame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+  await guidePage.evaluate(()=>{preparation.logos.completed=5;});
+  await frame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+  await frame.locator('#preparationLogos').filter({hasText:'5 / 37'}).waitFor({state:'attached'});
+  await frame.locator('#preparationBadge').click();
+  await guidePage.evaluate(()=>{preparation.logos.error='download_failed';preparation.logos.running=false;preparation.complete=true;});
+  await frame.locator('#preparationRetry').waitFor({state:'visible'});
+  assert.equal(await frame.locator('#preparationBadge').isVisible(),true,'Errors must remain visible even with a stale complete flag');
+  await frame.locator('#preparationRetry').click();
+  await guidePage.waitForFunction(()=>calls.some(c=>c.service==='retry_preparation'));
+  await guidePage.evaluate(()=>{preparation.complete=true;preparation.logos.completed=37;preparation.logos.ready=true;preparation.programmes={running:false,ready:true,sources_completed:3,error:false};});
+  await frame.locator('#preparationBadge').waitFor({state:'hidden',timeout:15000});
+  await frame.locator('#preparationClose').click();
+  console.log('PASS initial preparation progress, dismissal, reopening, failure retry and completion');
   await guidePage.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});
   await guidePage.waitForFunction(()=>customElements.get('tv-guide-panel'));
   await guidePage.evaluate(()=>{
@@ -288,6 +352,55 @@ const server = http.createServer((req,res) => {
   assert.equal(await guidePage.evaluate(()=>{const card=document.createElement('tv-guide-card');card.setConfig({height:'auto'});return card.getCardSize();}),20);
   assert.deepEqual(errors,[]);
   console.log('PASS automatic sidebar panel loads the guide and adapts to mobile');
+
+  // Deliberately hold back full timelines: initial rows must already be visible.
+  const fast=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+  fast.on('pageerror',error=>errors.push(error.message));
+  await fast.clock.setFixedTime(new Date(fixed));
+  await fast.goto(base);
+  await fast.addScriptTag({path:path.join(root,'tv-guide-card.js')});
+  await fast.evaluate(data=>{
+    sessionStorage.clear();
+    window.fullReleased=false;window.speedCalls=[];
+    window.fullGate=new Promise(resolve=>{window.releaseFull=resolve;});
+    const all=structuredClone(data);all.revision='speed-full';
+    for(const ch of all.channels)ch.programs=Array.from({length:80},(_,i)=>({
+      ...ch.programs[0],id:`${ch.id}_${i}`,title:`Programme ${i}`,
+      start:new Date(Date.now()+(i-1)*3600000).toISOString(),
+      end:new Date(Date.now()+i*3600000+1800000).toISOString()}));
+    window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
+      speedCalls.push(message);
+      if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+      if(message.service==='get_preparation_status')return {response:{first_install:false,complete:true}};
+      if(message.service!=='guide_request')throw new Error('Unexpected speed test service');
+      if(message.service_data.body?.preview)return {response:{...structuredClone(all),_preview:true,
+        channels:all.channels.map(ch=>({...ch,programs:ch.programs.slice(0,7)}))}};
+      await fullGate;fullReleased=true;return {response:structuredClone(all)};
+    }};
+    const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
+  },fixture);
+  const fastFrame=fast.locator('tv-guide-card').locator('iframe').contentFrame();
+  await fastFrame.locator('.channel-card').first().waitFor();
+  await fast.waitForFunction(()=>speedCalls.filter(c=>c.service==='guide_request').length===2);
+  assert.equal(await fast.evaluate(()=>fullReleased),false,'First view must not wait for full timelines');
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guide._preview),true);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>lastGuideLoadedAt),0);
+  assert.equal(await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request'&&c.service_data.body?.preview).length),1,'Prefetch must be consumed without another preview request');
+  assert.equal(await fast.evaluate(()=>speedCalls.some(c=>c.service_data?.body?.known_revision)),false,'A partial view must never claim to have the full revision');
+  await fastFrame.locator('[data-mode="2200"]').click();
+  await fast.evaluate(()=>releaseFull());
+  await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>{
+    const timer=setInterval(()=>{if(!guide._preview){clearInterval(timer);resolve();}},10);
+  }));
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guide.channels[0].programs.length),80);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>mode),'2200','A background reply must preserve the selected time');
+  const guideCalls=await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request').length);
+  await fastFrame.locator('[data-mode="2015"]').click();
+  assert.equal(await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request').length),guideCalls);
+  await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>requestIdleCallback(resolve)));
+  assert.ok(await fastFrame.locator('body').evaluate(()=>sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY)?.length>0));
+  await fast.close();
+  console.log('PASS first paint before delayed full guide, single prefetch, complete timelines and time selection retained');
 
   const countryInfo=JSON.parse(fs.readFileSync(path.join(reference,'..','data','countries.json'),'utf8'));
   const languageFor={at:'de',be:'fr',dk:'da',fr:'fr',de:'de',nl:'nl',no:'nb',se:'sv',ch:'it',gb:'en'};

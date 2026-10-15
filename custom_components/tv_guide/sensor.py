@@ -1,7 +1,6 @@
 """Sensors backed exclusively by this integration's own data."""
 
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
-from datetime import datetime, timezone
 from .next_reminder import next_pending_reminder, pending_reminders
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import callback

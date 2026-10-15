@@ -79,6 +79,35 @@ class SavedServiceTests(unittest.IsolatedAsyncioTestCase):
         services_module.async_remove_saved_services(self.hass)
         self.assertEqual(self.hass.services.handlers, {})
 
+    async def test_cancelled_write_finishes_commit_before_releasing_shared_lock(self):
+        entered,release=asyncio.Event(),asyncio.Event()
+        async def save():
+            entered.set();await release.wait();self.saved.saves+=1
+        self.saved.async_save=save
+        scheduled=[]
+        self.hass.data['tv_guide_reminder_schedulers']={'entry':types.SimpleNamespace(reschedule=lambda:scheduled.append('rescheduled'))}
+        operation=asyncio.create_task(self.call('save_reminder',{**self.record,'minutes':10}))
+        await entered.wait();operation.cancel();await asyncio.sleep(0)
+        self.assertFalse(operation.done())
+        self.assertTrue(self.hass.data['tv_guide_saved_lock'].locked())
+        release.set()
+        with self.assertRaises(asyncio.CancelledError):await operation
+        self.assertEqual(self.saved.saves,1)
+        self.assertEqual(scheduled,['rescheduled'])
+        self.assertEqual(len(self.saved.reminders),1)
+        self.assertFalse(self.hass.data['tv_guide_saved_lock'].locked())
+
+    async def test_queued_write_rejects_store_removed_during_unload(self):
+        lock=self.hass.data['tv_guide_saved_lock']
+        await lock.acquire()
+        operation=asyncio.create_task(self.call('save_bookmark',self.record))
+        await asyncio.sleep(0)
+        self.hass.data['tv_guide_saved'].pop('entry')
+        lock.release()
+        with self.assertRaisesRegex(exc.HomeAssistantError,'unloading'):await operation
+        self.assertEqual(self.saved.bookmarks,[])
+        self.assertEqual(self.saved.saves,0)
+
     async def test_bookmark_and_reminder_preserve_long_channel_identifiers(self):
         record={**self.record,'channel_id':'at:'+'x'*160}
         await self.call('save_bookmark',record)

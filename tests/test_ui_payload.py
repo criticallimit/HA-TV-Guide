@@ -36,6 +36,25 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(first[0]['title'],'9')
         self.assertEqual(len(first),7)
 
+    def test_preview_uses_default_view_in_browser_time_zone(self):
+        payload = {'ui': {'default_view': '2015'}, 'channels': [{'id': 'ard', 'programs': [
+            {'title': str(i), 'start': (self.at+timedelta(minutes=30*i)).isoformat(),
+             'end': (self.at+timedelta(minutes=30*(i+1))).isoformat()} for i in range(30)]}]}
+        preview = ui.guide_preview(payload, {'at': '2026-10-14T08:00:00Z', 'time_zone': 'Europe/Berlin'})
+        self.assertEqual(preview['channels'][0]['programs'][0]['title'], '0')
+        self.assertEqual(len(preview['channels'][0]['programs']), 7)
+        self.assertEqual(len(payload['channels'][0]['programs']), 30)
+        utc = ui.guide_preview(payload, {'at': '2026-10-14T08:00:00Z', 'time_zone': 'UTC'})
+        self.assertEqual(utc['channels'][0]['programs'][0]['title'], '4')
+
+    def test_preview_invalid_time_zone_and_timestamp_fall_back(self):
+        for body in ({}, {'at': None, 'time_zone': None}, {'at': 'bad', 'time_zone': '../../bad'},
+                     {'at': '2026-10-14T08:00:00', 'time_zone': 123}):
+            with self.subTest(body=body):
+                result = ui.guide_preview({'ui': {}, 'channels': []}, body)
+                self.assertEqual(result['channels'], [])
+                self.assertTrue(result['_preview'])
+
     def test_personal_sender_order_and_raw_alias_resolve_without_duplicates(self):
         result=ui.personal_payload(self.catalogue,self.feed,{'country':'de','channels':['extra.tv','DasErste.de','ard','zdf']})
         self.assertEqual(result['order'],['extra.tv','ard','zdf'])
@@ -53,11 +72,15 @@ class UIPayloadTests(unittest.TestCase):
         result=ui.normalize_ui_settings({'country':'de','columns_desktop':5,'refresh_minutes':60,'notification_service':'notify.mobile_app_test'})
         self.assertEqual(result['notification_service'],'notify.mobile_app_test')
 
-    def test_styles_and_renderer_remain_byte_identical_to_imported_reference(self):
+    def test_styles_and_renderer_match_pinned_reference(self):
         app=ROOT/'frontend'/'app'
         provenance=json.loads((app/'REFERENCE.json').read_text(encoding='utf-8'))
         for name in ('styles.css','guide-core.js','channel-picker.js','translations.js','i18n.js'):
-            self.assertEqual(hashlib.sha256((app/name).read_bytes()).hexdigest(),provenance['source_sha256'][name],name)
+            bundled = (app/name).read_bytes()
+            original = (ROOT.parents[1]/'tests'/'reference-frontend'/name).read_bytes()
+            self.assertEqual(hashlib.sha256(bundled).hexdigest(),provenance['bundled_sha256'][name],name)
+            self.assertEqual(hashlib.sha256(original).hexdigest(),provenance['source_sha256'][name],name)
+            self.assertEqual(bundled.replace(b'\r\n', b'\n'), original.replace(b'\r\n', b'\n'), name)
         logos=json.loads((app/'logo_catalog.json').read_text(encoding='utf-8'))
         self.assertEqual(len(logos),10)
         for country in logos.values():

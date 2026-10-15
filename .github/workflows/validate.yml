@@ -68,7 +68,6 @@ jobs:
           assert reference["repository"] == "criticallimit/TV-Guide"
           assert reference["commit"] == "7871c4af8951c1f05ed012d028786181b1974b11"
           # Git blob object IDs taken directly from the pinned original commit.
-          # REFERENCE.json has stale SHA-256 values; verify exact original blobs.
           import subprocess
           original_blobs = {
               "index.html": "f4538c6afd893be51782b1bd74bf9492f93c7afe",
@@ -84,6 +83,8 @@ jobs:
               actual = subprocess.check_output(["git", "hash-object", str(fixture / name)], text=True).strip()
               if actual != expected:
                   raise SystemExit(f"Pinned original frontend fixture changed: {name}")
+              if hashlib.sha256((fixture / name).read_bytes()).hexdigest() != reference["source_sha256"][name]:
+                  raise SystemExit(f"Original frontend SHA-256 mismatch: {name}")
           target = Path("reference-addon/tv-guide/www")
           target.parent.mkdir(parents=True, exist_ok=True)
           shutil.copytree(source, target)

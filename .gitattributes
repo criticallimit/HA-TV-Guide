@@ -1,0 +1,8 @@
+# Reference checks compare the exact upstream LF bytes on every platform.
+tests/reference-frontend/* text eol=lf
+# Imported rendering assets retain their pinned CRLF bytes.
+custom_components/tv_guide/frontend/app/styles.css -text
+custom_components/tv_guide/frontend/app/guide-core.js -text
+custom_components/tv_guide/frontend/app/channel-picker.js -text
+custom_components/tv_guide/frontend/app/translations.js -text
+custom_components/tv_guide/frontend/app/i18n.js -text

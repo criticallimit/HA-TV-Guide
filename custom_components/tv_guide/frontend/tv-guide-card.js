@@ -87,6 +87,7 @@ class TVGuideCard extends HTMLElement {
     this._hass = null;
     this._started = false;
     this._iframe = null;
+    this._guidePreview = null;
     this._themeProperties = new Set();
     this._themeFingerprint = "";
     this._lastThemeMessageSignature = "";
@@ -295,6 +296,7 @@ class TVGuideCard extends HTMLElement {
     this._started = false;
     this._iframe?.remove();
     this._iframe = null;
+    this._guidePreview = null;
   }
 
   getCardSize() {
@@ -374,8 +376,14 @@ class TVGuideCard extends HTMLElement {
       const method = request.method;
       const body = request.body || {};
       let response;
-      if (this._hass.services?.tv_guide?.guide_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
-        response = await this._response("guide_request",{endpoint,method,...(method === "POST" ? {body} : {})});
+      if (endpoint === "preparation" && ["GET","POST"].includes(method)) {
+        response = await this._response(method === "POST" ? "retry_preparation" : "get_preparation_status");
+      } else if (this._hass.services?.tv_guide?.guide_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
+        if (endpoint === "guide" && method === "GET" && body.preview === true && this._guidePreview) {
+          const pending = this._guidePreview;
+          this._guidePreview = null;
+          response = await pending;
+        } else response = await this._response("guide_request",{endpoint,method,...(method === "POST" || (endpoint === "guide" && (body.preview === true || typeof body.known_revision === "string")) ? {body} : {})});
       } else if (method === "GET" && endpoint === "guide") response = await this._response("get_guide", request.at ? {at:request.at} : {});
       else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_personal_channels");
       else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");
@@ -422,6 +430,11 @@ class TVGuideCard extends HTMLElement {
   _start() {
     if (!this.isConnected || this._started || !this._hass || this._isCardPicker()) return;
     this._started = true;
+    // Overlap the small authenticated first view with iframe resource loading.
+    if (this._hass.services?.tv_guide?.guide_request) {
+      this._guidePreview = this._response("guide_request",{endpoint:"guide",method:"GET",body:{preview:true,at:new Date().toISOString(),time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone}});
+      this._guidePreview.catch(() => {});
+    }
     this._renderShell();
     const card = this.shadowRoot.querySelector("ha-card");
     if (!card) return;

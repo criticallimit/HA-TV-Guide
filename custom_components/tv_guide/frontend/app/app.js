@@ -265,7 +265,7 @@ let guide = null;
 // Only store it when serialization fits the strict size budget; never add polling.
 const GUIDE_FIRST_PAINT_KEY = "tv-guide-first-paint-v1";
 const GUIDE_FIRST_PAINT_TTL_MS = 60 * 1000;
-const GUIDE_FIRST_PAINT_MAX_CHARS = 384 * 1024;
+const GUIDE_FIRST_PAINT_MAX_CHARS = 1024 * 1024;
 function showCachedGuide() {
   try {
     const raw = sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY);
@@ -295,10 +295,12 @@ function saveFirstPaintGuide(snapshot) {
       // Store only a short window around the current programme per channel;
       // avoid copying days of EPG or keeping programme history in browser storage.
       const now = Date.now();
+      const initialMode = snapshot.ui?.default_view || "now";
+      const target = TVGuideCore.targetForMode(initialMode,startOfDay(new Date()),null).getTime();
       const channels = snapshot.channels.map(channel => {
         const entries = channel.programs || [];
-        const index = entries.findIndex(item => new Date(item.end).getTime() > now);
-        return {...channel, programs:index < 0 ? [] : entries.slice(Math.max(0,index-1),index+24)};
+        const index = entries.findIndex(item => new Date(item.end).getTime() > target);
+        return {...channel, programs:index < 0 ? [] : entries.slice(index,index+7)};
       });
       const data = JSON.stringify({version:1, at:now, guide:{...snapshot, channels}});
       if (data.length <= GUIDE_FIRST_PAINT_MAX_CHARS) sessionStorage.setItem(GUIDE_FIRST_PAINT_KEY, data);
@@ -768,7 +770,7 @@ grid.addEventListener("click", event => {
   if (programme) showDetail(channel, programme);
 });
 
-function render() {
+function render(retryLogos = false) {
   if (!guide) return;
   if (mode === "now") selectedDate = startOfDay(new Date());
   const channels = activeChannels();
@@ -804,6 +806,13 @@ function render() {
       card?.element.replaceWith(element);
       card = {markup, element};
       renderedCards.set(id, card);
+    } else if (retryLogos && Array.from(card.element.querySelectorAll(".channel-logo")).some(image => image.style.display === "none")) {
+      // Failed img elements keep their fallback state even after a package arrives.
+      // Replace only the branding so programme controls and focus remain intact.
+      const brand = document.createElement("div");
+      brand.className = "channel-brand";
+      brand.innerHTML = TVGuideCore.channelHeader(channel, "");
+      card.element.querySelector(".channel-brand").replaceWith(brand);
     }
     if (grid.children[index] !== card.element) grid.insertBefore(card.element, grid.children[index] || null);
     const progress = card.element.querySelector(".progress-fill");
@@ -850,12 +859,18 @@ function initCustomDate() {
 }
 
 let guideRequest = 0;
-async function loadGuide() {
+function scheduleGuideReload() {
+  clearTimeout(startupReloadTimer);
+  startupReloadTimer = guide?.refresh_running && !document.hidden
+    ? setTimeout(() => loadGuide().catch(() => {}), 1500) : null;
+}
+async function loadGuide(preview=false) {
   const request = ++guideRequest;
   const url = new URL("api/guide", window.location.href);
+  if (preview) url.searchParams.set("preview","1");
   if (document.body.dataset.initialized) url.searchParams.set("at",TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString());
   // Only a complete in-memory guide may opt into the minimal unchanged reply.
-  if (guide?.revision && lastGuideLoadedAt) url.searchParams.set("known_revision",guide.revision);
+  if (!preview && guide?.revision && lastGuideLoadedAt) url.searchParams.set("known_revision",guide.revision);
   const res = await fetch(url, {cache:"no-store"});
   if (!res.ok) throw new Error(t("Programmdaten konnten nicht geladen werden."));
   const nextGuide = await res.json();
@@ -864,11 +879,12 @@ async function loadGuide() {
     if (!guide || nextGuide.revision !== guide.revision) throw new Error("TV Guide revision mismatch");
     lastGuideLoadedAt = Date.now();
     if (mode === "now") render();
+    scheduleGuideReload();
     return;
   }
   const countryChanged = guide && guide.country !== nextGuide.country;
   guide = nextGuide;
-  lastGuideLoadedAt = Date.now();
+  lastGuideLoadedAt = nextGuide._preview ? 0 : Date.now();
   saveFirstPaintGuide(nextGuide);
   const languageChanged = globalThis.TVGuideI18n?.configure({...guide.ui, country:guide.country});
   if (languageChanged) {
@@ -891,12 +907,15 @@ async function loadGuide() {
   render();
   if (countryChanged) window.scrollTo({top:0, behavior:"instant"});
 
-  clearTimeout(startupReloadTimer);
-  if (guide.refresh_running && !document.hidden) {
-    startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), 1500);
-  } else {
-    startupReloadTimer = null;
-  }
+  if (nextGuide._preview) {
+    clearTimeout(startupReloadTimer);
+    // Allow the seven visible rows to paint before transferring full timelines.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (request === guideRequest) loadGuide().catch(() => {
+        if (guide?._preview && !document.hidden) startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), 1500);
+      });
+    }));
+  } else scheduleGuideReload();
 }
 
 document.querySelectorAll(".tab").forEach(btn =>
@@ -993,7 +1012,7 @@ channelSettingsDialog.addEventListener("click", e => { if (e.target === channelS
 
 watchHomeAssistantTheme();
 showCachedGuide();
-Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide()]).catch(() => {
+Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(true).catch(() => loadGuide())]).catch(() => {
   if (!guide) grid.innerHTML = ("<div class=\"empty-channel-list\">" + escapeHtml(t("Das TV-Programm konnte nicht geladen werden. Bitte versuche es erneut.")) + "</div>");
 });
 document.addEventListener("visibilitychange", () => {
