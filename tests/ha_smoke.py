@@ -70,7 +70,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=14' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=15' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -114,6 +114,11 @@ async def main():
                         {'endpoint':endpoint,'method':method,**({'body':body} if body is not None else {})},
                         blocking=True,return_response=True)
                 guide = await request('guide')
+                preview = await request('guide', body={'preview': True, 'at': now.isoformat(), 'time_zone': 'UTC'})
+                assert preview['_preview'] is True
+                assert preview['revision'] == guide['revision']
+                assert preview['channels'][0]['programs'] == guide['channels'][0]['programs']
+                assert '_preview' not in (await request('guide'))
                 unchanged=await request('guide',body={'known_revision':guide['revision']})
                 assert unchanged=={'unchanged':True,'revision':guide['revision']}
                 with patch.object(coordinator.backend,'start_logo_download') as retry_logos, \

@@ -17,6 +17,7 @@ import zipfile
 from .logo_assets import bundled_logo_library
 from .logo_download import LogoDownload
 from .worker_io import worker_urlopen
+from .ui_payload import guide_preview
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
 POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
@@ -251,10 +252,11 @@ class GuideRuntime:
         with self._lock:
             if self.closed:
                 raise RuntimeError("TV Guide is unloading")
-            if method == "GET" and endpoint == "guide" and isinstance(body, dict) and body.get("known_revision") == f"{self._guide_revision}:{self._guide_generation}":
+            preview = method == "GET" and endpoint == "guide" and isinstance(body, dict) and body.get("preview") is True
+            if method == "GET" and endpoint == "guide" and not preview and isinstance(body, dict) and body.get("known_revision") == f"{self._guide_revision}:{self._guide_generation}":
                 return {"unchanged": True, "revision": f"{self._guide_revision}:{self._guide_generation}"}
             if method == "GET" and endpoint == "guide" and self._guide_cache is not None and monotonic() - self._guide_cached_at < 10:
-                return self._guide_cache
+                return guide_preview(self._guide_cache, body) if preview else self._guide_cache
             if method == "POST":
                 self._guide_cache = None
                 self._guide_generation += 1
@@ -285,7 +287,7 @@ class GuideRuntime:
                 self._guide_cache = result
                 self._guide_cached_at = monotonic()
                 _LOGGER.debug("TV Guide prepared guide in %.1f ms", (perf_counter() - started) * 1000)
-            return result
+            return guide_preview(result, body) if preview else result
 
     def snapshot(self):
         store = self.runtime.STORE

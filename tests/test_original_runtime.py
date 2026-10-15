@@ -80,6 +80,28 @@ class GuideRuntimeTests(unittest.TestCase):
         self.backend.request('settings', 'POST', {**settings, 'language': 'en'})
         self.assertIsNot(self.backend.request('guide', 'GET'), updated)
 
+    def test_first_view_is_small_without_truncating_cached_timelines(self):
+        now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
+        for channel in self.runtime.STORE.channels:
+            channel['programs'] = [
+                {'title': str(i), 'start': (now+timedelta(minutes=30*i)).isoformat(),
+                 'end': (now+timedelta(minutes=30*(i+1))).isoformat(), 'desc': 'Description. '*60}
+                for i in range(336)]
+        full = self.backend.request('guide', 'GET')
+        preview = self.backend.request('guide', 'GET', {
+            'preview': True, 'at': now.isoformat(), 'time_zone': 'Europe/Berlin',
+            'known_revision': full['revision']})
+        self.assertTrue(preview['_preview'])
+        self.assertNotIn('unchanged', preview)
+        self.assertEqual(preview['main_channel_ids'], full['main_channel_ids'])
+        self.assertEqual(preview['custom_channel_ids'], full['custom_channel_ids'])
+        self.assertLess(len(json.dumps(preview)), len(json.dumps(full)) / 20)
+        self.assertTrue(all(len(ch['programs']) <= 7 for ch in preview['channels']))
+        self.assertIs(self.backend.request('guide', 'GET'), full)
+        self.assertEqual(len(full['channels'][0]['programs']), 336)
+        self.assertNotIn('_preview', full)
+        self.assertEqual(preview['channels'][0]['programs'][0], full['channels'][0]['programs'][0])
+
     def test_original_guide_all_countries_picker_and_logos(self):
         guide = self.backend.request('guide','GET')
         self.assertEqual(guide['country'],'de')

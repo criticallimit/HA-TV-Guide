@@ -330,6 +330,55 @@ const server = http.createServer((req,res) => {
   assert.deepEqual(errors,[]);
   console.log('PASS automatic sidebar panel loads the guide and adapts to mobile');
 
+  // Deliberately hold back full timelines: initial rows must already be visible.
+  const fast=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+  fast.on('pageerror',error=>errors.push(error.message));
+  await fast.clock.setFixedTime(new Date(fixed));
+  await fast.goto(base);
+  await fast.addScriptTag({path:path.join(root,'tv-guide-card.js')});
+  await fast.evaluate(data=>{
+    sessionStorage.clear();
+    window.fullReleased=false;window.speedCalls=[];
+    window.fullGate=new Promise(resolve=>{window.releaseFull=resolve;});
+    const all=structuredClone(data);all.revision='speed-full';
+    for(const ch of all.channels)ch.programs=Array.from({length:80},(_,i)=>({
+      ...ch.programs[0],id:`${ch.id}_${i}`,title:`Programme ${i}`,
+      start:new Date(Date.now()+(i-1)*3600000).toISOString(),
+      end:new Date(Date.now()+i*3600000+1800000).toISOString()}));
+    window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
+      speedCalls.push(message);
+      if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+      if(message.service==='get_preparation_status')return {response:{first_install:false,complete:true}};
+      if(message.service!=='guide_request')throw new Error('Unexpected speed test service');
+      if(message.service_data.body?.preview)return {response:{...structuredClone(all),_preview:true,
+        channels:all.channels.map(ch=>({...ch,programs:ch.programs.slice(0,7)}))}};
+      await fullGate;fullReleased=true;return {response:structuredClone(all)};
+    }};
+    const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
+  },fixture);
+  const fastFrame=fast.locator('tv-guide-card').locator('iframe').contentFrame();
+  await fastFrame.locator('.channel-card').first().waitFor();
+  await fast.waitForFunction(()=>speedCalls.filter(c=>c.service==='guide_request').length===2);
+  assert.equal(await fast.evaluate(()=>fullReleased),false,'First view must not wait for full timelines');
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guide._preview),true);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>lastGuideLoadedAt),0);
+  assert.equal(await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request'&&c.service_data.body?.preview).length),1,'Prefetch must be consumed without another preview request');
+  assert.equal(await fast.evaluate(()=>speedCalls.some(c=>c.service_data?.body?.known_revision)),false,'A partial view must never claim to have the full revision');
+  await fastFrame.locator('[data-mode="2200"]').click();
+  await fast.evaluate(()=>releaseFull());
+  await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>{
+    const timer=setInterval(()=>{if(!guide._preview){clearInterval(timer);resolve();}},10);
+  }));
+  assert.equal(await fastFrame.locator('body').evaluate(()=>guide.channels[0].programs.length),80);
+  assert.equal(await fastFrame.locator('body').evaluate(()=>mode),'2200','A background reply must preserve the selected time');
+  const guideCalls=await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request').length);
+  await fastFrame.locator('[data-mode="2015"]').click();
+  assert.equal(await fast.evaluate(()=>speedCalls.filter(c=>c.service==='guide_request').length),guideCalls);
+  await fastFrame.locator('body').evaluate(()=>new Promise(resolve=>requestIdleCallback(resolve)));
+  assert.ok(await fastFrame.locator('body').evaluate(()=>sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY)?.length>0));
+  await fast.close();
+  console.log('PASS first paint before delayed full guide, single prefetch, complete timelines and time selection retained');
+
   const countryInfo=JSON.parse(fs.readFileSync(path.join(reference,'..','data','countries.json'),'utf8'));
   const languageFor={at:'de',be:'fr',dk:'da',fr:'fr',de:'de',nl:'nl',no:'nb',se:'sv',ch:'it',gb:'en'};
   for(const [country,language] of Object.entries(languageFor)){
