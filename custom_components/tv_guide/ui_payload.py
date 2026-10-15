@@ -49,7 +49,8 @@ def normalize_ui_settings(values):
 
 def presentation_channels(catalogue,feed_channels,country):
     main=[dict(item) for item in catalogue]
-    mapped={item.get('xmltv_id') for item in main}
+    # Canonical IDs reserve their namespace, even when a feed also uses that ID.
+    mapped={item.get('xmltv_id') for item in main}|{item['id'] for item in main}
     extra=[{'id':item['id'],'name':item['name'],'xmltv_id':item['id'],'available':True} for item in feed_channels if item['id'] not in mapped]
     logos=logo_catalog().get(country,{})
     return [{**item,**logos.get(item['id'],{}),'source_country':country,'source_channel_id':item['id']} for item in main+extra]
