@@ -22,7 +22,6 @@ for name in files:
     # Existing ES module factories and the scoped template are maintained locally.
     provenance[name]=hashlib.sha256(source.read_bytes()).hexdigest()
 shutil.copytree(reference/'tv-guide'/'www'/'fonts',target/'fonts',dirs_exist_ok=True)
-shutil.copyfile(reference/'tv-guide'/'icon.png',target/'icon.png')
 shutil.copyfile(reference/'THIRD_PARTY_NOTICES.md',Path('THIRD_PARTY_NOTICES.md'))
 
 # Reuse the reference's pure logo selection/normalization helpers without

@@ -70,3 +70,10 @@ Es wird ausschließlich dieses Integrationsrepository eingereicht. Das alte Add-
 - [Aktueller Validator für lokale Brand-Icons](https://github.com/hacs/integration/blob/main/custom_components/hacs/validate/brands.py)
 
 Einzelne Dokumentationsseiten erwähnen weiterhin ausschließlich das zentrale Brands-Repository. Maßgeblich für die hier geprüfte lokale Icon-Unterstützung ist der verlinkte aktuelle HACS-Prüfcode. Die externe HACS-Prüfung wird deshalb vollständig ausgeführt.
+
+## Development branches in the download dialog
+
+The current HACS download dialog builds its version choices from GitHub releases.
+Setting `hide_default_branch: false` does not add `main` to that list. Publish a
+new version after validation to distribute changes reliably through HACS; do not
+modify an existing release tag to distribute newer code.

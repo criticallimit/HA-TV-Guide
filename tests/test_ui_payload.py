@@ -80,8 +80,6 @@ class UIPayloadTests(unittest.TestCase):
             original = (ROOT.parents[1]/'tests'/'reference-frontend'/name).read_bytes()
             self.assertEqual(hashlib.sha256(bundled).hexdigest(),provenance['bundled_sha256'][name],name)
             self.assertEqual(hashlib.sha256(original).hexdigest(),provenance['source_sha256'][name],name)
-            if name == 'styles.css':
-                self.assertEqual(bundled.replace(b'\r\n', b'\n'), original.replace(b'\r\n', b'\n'), name)
         logos=json.loads((app/'logo_catalog.json').read_text(encoding='utf-8'))
         self.assertEqual(len(logos),10)
         for country in logos.values():

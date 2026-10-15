@@ -4,21 +4,13 @@ import {TVGuideChannelPicker} from './channel-picker.js';
 import {createPreparation} from './preparation.js';
 import {createScope} from './lifecycle.js';
 
-export function createGuideApp({root, request, getHass, getTheme}) {
+export function createGuideApp({root, request:requestAction, getHass, getTheme}) {
 const scope = createScope();
 const setTimeout = scope.setTimeout;
 const clearTimeout = scope.clearTimeout;
 const setInterval = scope.setInterval;
 const i18n = createI18n(root, getHass);
 const TVGuideCore = createGuideCore(i18n);
-const fetch = async (input, options={}) => {
-  const url = new URL(input, new URL('/tv_guide/frontend/app/', window.location.origin));
-  const body = options.body ? JSON.parse(options.body) : url.searchParams.has('preview')
-    ? {preview:true,at:new Date().toISOString(),time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone}
-    : (url.searchParams.has('known_revision') ? {known_revision:url.searchParams.get('known_revision')} : {});
-  const data = await request({endpoint:url.pathname.split('/').pop(),method:options.method || 'GET',at:url.searchParams.get('at'),body});
-  return {ok:true,json:async()=>data};
-};
 const t = (message, values) => i18n?.t(message, values) || message;
 const grid = root.querySelector("#grid");
 const guideHeader = root.querySelector(".guide-header");
@@ -222,17 +214,11 @@ function updateBookmarkCount() {
 async function syncBookmark(action, item) {
   ++bookmarksRevision;
   if (action === "remove") ++remindersRevision;
-  const url = new URL("api/bookmarks", new URL('/tv_guide/frontend/app/', window.location.origin));
   const body = action === "remove"
     ? {action:"remove", id:item.id}
     : {action:"upsert", ...item};
-  const res = await fetch(url, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(body)
-  });
-  const payload = await res.json();
-  if (!res.ok || !payload.ok) throw new Error(t(payload.error) || t("Merkliste konnte nicht gespeichert werden."));
+  const payload = await requestAction({endpoint:"bookmarks",method:"POST",body});
+  if (!payload.ok) throw new Error(t(payload.error) || t("Merkliste konnte nicht gespeichert werden."));
   ++bookmarksRevision;
   if (action === "remove") ++remindersRevision;
   bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : [];
@@ -244,10 +230,7 @@ async function loadBookmarksRemote() {
   let revision = bookmarksRevision;
   const isCurrent = () => request === bookmarksRequest && revision === bookmarksRevision;
   try {
-    const url = new URL("api/bookmarks", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {cache:"no-store"});
-    if (!res.ok) throw new Error(t("Merkliste konnte nicht geladen werden."));
-    const payload = await res.json();
+    const payload = await requestAction({endpoint:"bookmarks",method:"GET"});
     if (!isCurrent()) return;
     bookmarks = Array.isArray(payload.bookmarks) ? payload.bookmarks : [];
 
@@ -314,10 +297,7 @@ function updateDetailControls() {
 async function loadReminders() {
   const request = ++remindersRequest, revision = remindersRevision;
   try {
-    const url = new URL("api/reminders", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {cache:"no-store"});
-    if (!res.ok) throw new Error(t("Erinnerungen konnten nicht geladen werden."));
-    const payload = await res.json();
+    const payload = await requestAction({endpoint:"reminders",method:"GET"});
     if (request !== remindersRequest || revision !== remindersRevision) return;
     reminders = Array.isArray(payload.reminders) ? payload.reminders : [];
   } catch {
@@ -331,7 +311,6 @@ async function saveReminderForActiveDetail(enabled, minutes) {
   const {channel, program} = activeDetail;
   const id = bookmarkId(channel, program);
 
-  const url = new URL("api/reminders", new URL('/tv_guide/frontend/app/', window.location.origin));
   const body = enabled
     ? {
         action:"upsert",
@@ -346,13 +325,8 @@ async function saveReminderForActiveDetail(enabled, minutes) {
       }
     : {action:"remove", id};
 
-  const res = await fetch(url, {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(body)
-  });
-  const payload = await res.json();
-  if (!res.ok || !payload.ok) {
+  const payload = await requestAction({endpoint:"reminders",method:"POST",body});
+  if (!payload.ok) {
     throw new Error(t(payload.error) || t("Erinnerung konnte nicht gespeichert werden."));
   }
   ++remindersRevision;
@@ -448,14 +422,8 @@ async function testConfiguredNotification() {
   testNotification.disabled = true;
   testNotificationStatus.textContent = t("Wird gesendet …");
   try {
-    const url = new URL("api/test-notification", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({test:true, language:i18n?.language || "de"})
-    });
-    const payload = await res.json();
-    if (!res.ok || !payload.ok) throw new Error(t(payload.error) || t("Testbenachrichtigung konnte nicht gesendet werden."));
+    const payload = await requestAction({endpoint:"test-notification",method:"POST",body:{test:true, language:i18n?.language || "de"}});
+    if (!payload.ok) throw new Error(t(payload.error) || t("Testbenachrichtigung konnte nicht gesendet werden."));
     testNotificationStatus.textContent = t("Gesendet über {service}", {service:payload.service});
   } catch (err) {
     testNotificationStatus.textContent = t(err.message);
@@ -466,13 +434,11 @@ async function testConfiguredNotification() {
 
 async function loadNotificationServiceChoices(currentService, isCurrent = () => true) {
   const fallback = currentService || "persistent_notification.create";
-  const url = new URL("api/notification-services", new URL('/tv_guide/frontend/app/', window.location.origin));
+
   let services = [];
 
   try {
-    const res = await fetch(url, {cache:"no-store"});
-    if (!res.ok) throw new Error(t("Empfänger konnten nicht geladen werden."));
-    const payload = await res.json();
+    const payload = await requestAction({endpoint:"notification-services",method:"GET"});
     services = Array.isArray(payload.services) ? payload.services : [];
   } catch {
     services = [{
@@ -510,10 +476,7 @@ async function openAppSettings() {
   appSettingsDialog.showModal();
   appSettingsDialog.scrollTop = 0;
   try {
-    const url = new URL("api/settings", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {cache:"no-store"});
-    if (!res.ok) throw new Error(t("Einstellungen konnten nicht geladen werden."));
-    const settings = await res.json();
+    const settings = await requestAction({endpoint:"settings",method:"GET"});
     if (!isCurrent()) return;
     i18n?.configure(settings);
     settingLanguage.value = settings.language || "auto";
@@ -540,11 +503,9 @@ async function persistAppSettings() {
   appSettingsStatus.textContent = t("Wird gespeichert …");
   saveAppSettings.disabled = true;
   try {
-    const url = new URL("api/settings", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {
+    const payload = await requestAction({endpoint:"settings",
       method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
+      body:{
         country:settingCountry.value,
         language:settingLanguage.value,
         default_view:settingDefaultView.value,
@@ -553,10 +514,9 @@ async function persistAppSettings() {
         theme_mode:settingTheme.value,
         refresh_minutes:Number(settingRefresh.value),
         notification_service:settingNotificationService.value.trim(),
-      })
+      }
     });
-    const payload = await res.json();
-    if (!res.ok || !payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
+    if (!payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
     await loadGuide();
     if (!isCurrent()) return;
     appSettingsStatus.textContent = payload.refresh_started
@@ -578,10 +538,7 @@ async function openChannelSettings() {
   resetChannelSettings.disabled = true;
   channelSettingsDialog.showModal();
   try {
-    const url = new URL("api/personal-channels", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {cache:"no-store"});
-    if (!res.ok) throw new Error(t("Senderliste konnte nicht geladen werden."));
-    const settings = await res.json();
+    const settings = await requestAction({endpoint:"personal-channels",method:"GET"});
     if (request !== channelSettingsRequest || !channelSettingsDialog.open) return;
     channelPicker.setData(settings);
     saveChannelSettings.disabled = false;
@@ -600,20 +557,12 @@ async function persistChannelSettings(reset = false) {
   resetChannelSettings.disabled = true;
 
   try {
-    const url = new URL("api/personal-channels", new URL('/tv_guide/frontend/app/', window.location.origin));
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(reset ? {reset:true} : channelPicker.value())
-    });
-    const payload = await res.json();
-    if (!res.ok || !payload.ok) throw new Error(t(payload.error) || t("Senderreihenfolge konnte nicht gespeichert werden."));
+    const payload = await requestAction({endpoint:"personal-channels",method:"POST",body:reset ? {reset:true} : channelPicker.value()});
+    if (!payload.ok) throw new Error(t(payload.error) || t("Senderreihenfolge konnte nicht gespeichert werden."));
 
     if (reset) {
       if (isCurrent()) {
-        const reload = await fetch(url, {cache:"no-store"});
-        if (!reload.ok) throw new Error(t("Senderliste konnte nicht geladen werden."));
-        const settings = await reload.json();
+        const settings = await requestAction({endpoint:"personal-channels",method:"GET"});
         if (isCurrent()) {
           channelPicker.setData(settings);
           channelSettingsStatus.textContent = t("Standardsortierung wiederhergestellt.");
@@ -767,14 +716,13 @@ async function loadGuide(preview=false) {
   }
 }
 async function requestGuide(preview, request) {
-  const url = new URL("api/guide", new URL('/tv_guide/frontend/app/', window.location.origin));
-  if (preview) url.searchParams.set("preview","1");
-  if (root.dataset.initialized) url.searchParams.set("at",TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString());
+  const body = preview
+    ? {preview:true,at:new Date().toISOString(),time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone}
+    : {};
   // Only a complete in-memory guide may opt into the minimal unchanged reply.
-  if (!preview && guide?.revision && lastGuideLoadedAt) url.searchParams.set("known_revision",guide.revision);
-  const res = await fetch(url, {cache:"no-store"});
-  if (!res.ok) throw new Error(t("Programmdaten konnten nicht geladen werden."));
-  const nextGuide = await res.json();
+  if (!preview && guide?.revision && lastGuideLoadedAt) body.known_revision = guide.revision;
+  const at = root.dataset.initialized ? TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString() : undefined;
+  const nextGuide = await requestAction({endpoint:"guide",method:"GET",at,body});
   if (request !== guideRequest) return;
   guideRetryDelay = 1500;
   if (nextGuide.unchanged) {
@@ -964,7 +912,7 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 setInterval(() => { if (!document.hidden && !guidePageSuspended && mode === "now") render(); }, 60 * 1000);
 
-const preparation = createPreparation({root, fetch, scope, render:()=>{if (guide) render(true);}});
+const preparation = createPreparation({root, request:requestAction, scope, render:()=>{if (guide) render(true);}});
 function suspend() {
   guidePageSuspended = true;
   ++lifecycleRevision;

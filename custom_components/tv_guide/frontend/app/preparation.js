@@ -1,5 +1,5 @@
 /* Initial preparation stays in HA when this view closes. */
-export function createPreparation({root, fetch, scope, render}) {
+export function createPreparation({root, request:requestAction, scope, render}) {
   const setTimeout=scope.setTimeout, clearTimeout=scope.clearTimeout;
   const messages = {
     de: ['TV Guide wird vorbereitet', 'Senderlisten verfügbar', 'Programmdaten', 'Logo-Bibliothek', 'Wird geladen …', 'Verfügbar', 'Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.', 'Schließen', 'Erneut versuchen', 'Download fehlgeschlagen. Die Übersicht bleibt nutzbar.', 'Vorbereitung abgeschlossen', 'Quellen geprüft'],
@@ -30,7 +30,7 @@ export function createPreparation({root, fetch, scope, render}) {
   badge.onclick = () => { if (!dialog.open) dialog.showModal(); };
   node('Retry').onclick = async () => {
     node('Retry').disabled = true;
-    try { await fetch('api/preparation', {method:'POST', body:'{}'}); }
+    try { await requestAction({endpoint:'preparation',method:'POST'}); }
     catch { node('Error').textContent = text()[9]; }
     finally { node('Retry').disabled = false; if (!stopped) {clearTimeout(timer); void poll();} }
   };
@@ -38,8 +38,7 @@ export function createPreparation({root, fetch, scope, render}) {
     if (stopped || document.hidden) return;
     const request = ++sequence;
     try {
-      const response = await fetch('api/preparation');
-      const result = await response.json();
+      const result = await requestAction({endpoint:'preparation',method:'GET'});
       if (stopped || request !== sequence || !result.logos) return;
       current = result;
       key = 'tv-guide-preparation-' + current.installation_id;

@@ -10,7 +10,7 @@ TV Guide hosts the original programme backend in `original_backend/`, including 
 
 ## Frontend and saved actions
 
-The original HTML/CSS, renderer, fonts, translations and main logos are served by the native integration. Same-origin postMessage routes calls through the embedding card's existing authenticated HA connection. Original-mode guide and sender/settings routes use the reference engine; saved records and notifications use the existing native HA actions and timer scheduler. Full timelines retain artwork URLs and enable original date selection. A stable native programme ID is derived from canonical channel and UTC start.
+The native Lovelace component renders scoped HTML/CSS, renderer, fonts, translations and main logos directly in its Shadow DOM. Per-card module factories call the card's existing authenticated HA connection directly; there is no embedded document, message bridge or simulated HTTP transport. Original-mode guide and sender/settings routes use the reference engine; saved records and notifications use the existing native HA actions and timer scheduler. Full timelines retain artwork URLs and enable original date selection. A stable native programme ID is derived from canonical channel and UTC start.
 
 Native bookmarks/reminders use HA Store and the event-driven scheduler. All previous commit/rollback, stale-timer, expiry and sent-persistence protections remain. Provider caches, preferences and settings live under an entry-owned `.storage/tv_guide_store` directory. Original add-on data is never read or changed. Native sensors are created automatically; their entity management remains in Home Assistant. Manual dashboard setup and sensor switches are omitted from the TV Guide settings.
 
@@ -68,7 +68,7 @@ Backend construction runs in an owned shielded startup task. Cancelling setup le
 
 ## First display
 
-The parent card starts an authenticated seven-row guide preview while the iframe loads. The frontend paints this first response before requesting complete timelines in the background. Preview windows use the configured default time in the browser's time zone, preserve programme details, and never claim to hold a complete revision. Time/date navigation keeps the existing renderer and uses the full timelines once loaded. See `PERFORMANCE.md` for bounds and verification.
+The card immediately renders its toolbar and scoped view, then requests an authenticated seven-row guide preview. It paints this response before requesting complete timelines in the background. Preview windows use the configured default time in the browser's time zone, preserve programme details, and never claim to hold a complete revision. Time/date navigation keeps the existing renderer and uses the full timelines once loaded. See `PERFORMANCE.md` for bounds and verification.
 
 ## Native cleanup and HA acceptance
 
@@ -83,3 +83,16 @@ The actual HA runtime test also exercises authenticated WebSocket services,
 rejected inputs, all ten countries and four default times in two time zones,
 next-day windows, scheduled persistent-notification delivery with on-disk sent
 state, duplicate suppression, three reload cycles and complete removal.
+
+## Native view ownership
+
+The sidebar hosts the same Lovelace component. Theme and language updates only
+change the view when their values change. Resize observers batch layout work
+through animation frames. Disconnecting a card cancels its pending requests,
+timers, listeners and observers; the retained guide is reduced to seven upcoming
+programmes per channel at the selected time. Reconnecting preserves the DOM and
+selection and reloads complete timelines without claiming a complete revision.
+
+The original standalone frontend under `tests/reference-frontend` is an immutable
+pixel-comparison fixture, not shipped runtime code. Its original embedding and
+message handling are intentionally preserved so the comparison stays independent.
