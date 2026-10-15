@@ -25,6 +25,19 @@ All ten countries have prepared main-channel lists, individual channel selection
 
 TV Guide is a **Home Assistant custom integration** and runs directly in Home Assistant. After adding the integration, its programme view is prepared automatically.
 
+### Install with HACS
+
+Requires Home Assistant **2026.10.1 or newer**, the minimum version verified by this project.
+
+1. [Open TV Guide in HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=criticallimit&repository=HA-TV-Guide&category=integration). Until the repository is included in the default HACS catalogue, add `https://github.com/criticallimit/HA-TV-Guide` under **HACS → Custom repositories**, category **Integration**.
+2. Download **TV Guide** and restart Home Assistant.
+3. Open **Settings → Devices & services → Add integration → TV Guide**.
+4. Open **TV Guide** in the sidebar. Country, language, programme data, logos and Home Assistant entities are prepared automatically. No feed URL, YAML, dashboard card or resource setup is required.
+
+If TV Guide is already installed manually, let HACS manage the same integration directory and keep your existing TV Guide entry. Do not remove and recreate the integration.
+
+### Manual installation
+
 1. [Download the current integration](https://github.com/criticallimit/HA-TV-Guide/archive/refs/heads/main.zip).
 2. Extract the archive and copy `custom_components/tv_guide` to `/config/custom_components/tv_guide` on your Home Assistant installation.
 3. Restart Home Assistant, then open **Settings → Devices & services → Add integration → TV Guide**.
@@ -78,7 +91,7 @@ The integration creates Home Assistant registry entities (managed by Home Assist
 
 ## Updates and help
 
-For this development version, update by copying the latest `custom_components/tv_guide` directory over the installed integration and restarting Home Assistant. **Updates are currently installed manually.**
+For a HACS installation, install updates through **HACS** and restart Home Assistant when prompted. For a manual installation, copy the latest `custom_components/tv_guide` directory over the installed integration and restart Home Assistant. Keep the existing integration entry; settings and saved programmes remain in Home Assistant storage.
 
 [Report an issue](https://github.com/criticallimit/HA-TV-Guide/issues) with the country, channel, date and time.
 
