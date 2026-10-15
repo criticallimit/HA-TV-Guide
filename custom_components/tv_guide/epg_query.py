@@ -66,7 +66,8 @@ def query_programmes(programmes, catalogue, feed_channels, *, channel_id, start,
 def channel_payload(coordinator, selected: list[str]) -> dict:
     """Expose main catalog and additional feed channels for future UI clients."""
     main = coordinator.canonical_channels
-    listed = {item["id"] for item in main}
+    canonical_ids = {item["id"] for item in main}
+    listed = set(canonical_ids)
     listed.update(item["xmltv_id"] for item in main if item.get("xmltv_id"))
     extras = [
         {"id": item["id"], "name": item["name"], "xmltv_id": item["id"], "available": True}
@@ -75,7 +76,8 @@ def channel_payload(coordinator, selected: list[str]) -> dict:
     ordered = [dict(item) for item in main] + extras
     priority = {value: index for index, value in enumerate(selected)}
     for channel in ordered:
-        key = channel["id"] if channel["id"] in priority else channel.get("xmltv_id")
+        alias = channel.get("xmltv_id")
+        key = channel["id"] if channel["id"] in priority or alias in canonical_ids else alias
         channel["selected"] = not selected or key in priority
         channel["_sort"] = priority.get(key, len(priority))
     if selected:

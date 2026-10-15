@@ -61,6 +61,19 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(result['order'],['extra.tv','ard','zdf'])
         self.assertEqual(result['supported_countries'],[{'code':'de','name':'Deutschland'}])
 
+    def test_canonical_selection_wins_over_another_stations_feed_alias(self):
+        catalogue = [
+            {'id': 'first', 'name': 'First', 'xmltv_id': 'second'},
+            {'id': 'second', 'name': 'Second', 'xmltv_id': 'second.feed'},
+        ]
+        for selection, expected in [(['second'], ['second']),
+                                    (['second.feed'], ['second']),
+                                    (['second', 'first'], ['second', 'first'])]:
+            with self.subTest(selection=selection):
+                options = {'channels': selection}
+                self.assertEqual(ui.personal_payload(catalogue, [], options)['order'], expected)
+                self.assertEqual(ui.build_guide([], catalogue, [], options, self.at)['custom_channel_ids'], expected)
+
     def test_all_channel_default_and_display_bound(self):
         feed=[{'id':str(i),'name':str(i)} for i in range(400)]
         result=ui.build_guide([],[],feed,{},self.at)

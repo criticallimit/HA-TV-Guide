@@ -61,7 +61,10 @@ def personal_payload(catalogue,feed_channels,options):
     aliases={item.get('xmltv_id'):item['id'] for item in channels if item.get('xmltv_id')}
     known={item['id'] for item in channels}
     selected=options.get('channels',[])
-    order=list(dict.fromkeys(aliases.get(key,key) for key in selected if aliases.get(key,key) in known)) if selected else [item['id'] for item in channels[:MAX_DISPLAY_CHANNELS]]
+    # A canonical ID can also be another station's feed alias. Preserve the
+    # canonical selection before translating legacy raw XMLTV identifiers.
+    resolved = (key if key in known else aliases.get(key, key) for key in selected)
+    order=list(dict.fromkeys(key for key in resolved if key in known)) if selected else [item['id'] for item in channels[:MAX_DISPLAY_CHANNELS]]
     return {'channels':channels,'order':order,'countries':[country],'supported_countries':[{'code':country,'name':COUNTRY_NAMES.get(country,'XMLTV')} ]}
 
 def guide_at(payload, at):
