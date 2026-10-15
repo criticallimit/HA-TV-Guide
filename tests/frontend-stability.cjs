@@ -42,10 +42,11 @@ const server=http.createServer((req,res)=>{
     window.model={revision:'complete-guide',country:'de',refresh_running:false,channels,main_channel_ids:channels.map(c=>c.id),custom_channel_ids:channels.map(c=>c.id),ui:{language:'de',theme_mode:'auto',default_view:'now',columns_desktop:5,max_channels:0}};
     window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
       if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
-      if(message.service==='get_preparation_status')return {response:{complete:true}};
+      if(message.service==='get_preparation_status')return {response:structuredClone(window.preparation||{complete:true})};
       if(message.service!=='guide_request')throw Error('Unexpected test service');
       const request=message.service_data;requests.push(request);
       if(request.endpoint==='settings')return {response:{...model.ui,country:model.country}};
+      if(request.endpoint==='personal-channels')return {response:{channels:Array.from({length:400},(_,i)=>({id:'ch'+i,name:'Station '+i,source_country:'de',country_name:'Deutschland',logo_normalized_light:channels[0].logo_normalized_light,logo_normalized_dark:channels[0].logo_normalized_dark})),order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]}};
       const response=structuredClone(model);
       if(request.body?.preview){response._preview=true;for(const c of response.channels)c.programs=c.programs.slice(0,7);}
       return {response};
@@ -98,6 +99,34 @@ const server=http.createServer((req,res)=>{
     assert.equal(retained.programmes,retained.views*20*7,'Hidden views must retain only their short visible window');
     assert.equal(retained.observed,0);assert.equal(retained.pending,0);assert.deepEqual(retained.errors,[]);
   }
+  // Closing a large sender catalogue must release its DOM and still reopen correctly.
+  await page.evaluate(()=>{window.card=mount();});
+  await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+  await page.locator('#showChannelSettings').click();
+  await page.waitForFunction(()=>card.shadowRoot.querySelectorAll('.available-channel-row').length===400);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(()=>!card.shadowRoot.querySelector('#channelSettingsDialog').open);
+  await page.waitForTimeout(100);
+  assert.equal(await page.locator('.available-channel-row').count(),0,'Closed sender catalogues must release their rows and images');
+  await page.locator('#showChannelSettings').click();
+  await page.waitForFunction(()=>card.shadowRoot.querySelectorAll('.available-channel-row').length===400);
+  assert.equal(await page.locator('#personalChannelCount').textContent(),'20');
+  await page.keyboard.press('Escape');
+  // An empty response must clear the date limit left by a previous populated guide.
+  assert.ok(await page.locator('#customDate').getAttribute('max'));
+  await page.evaluate(async()=>{model.channels=[];await card._app.loadGuide();});
+  assert.equal(await page.locator('#customDate').getAttribute('max'),'','Empty guides must clear the previous country date limit');
+  await page.evaluate(()=>card.remove());
+  // Preparation is a native card dialog; the browser viewport may be much wider.
+  await page.evaluate(()=>{
+    window.preparation={installation_id:'narrow-card',first_install:true,complete:false,logos:{completed:0,total:37,running:true,ready:false,error:false},programmes:{running:true,ready:false,sources_completed:0,error:false}};
+    window.card=mount();card.style.width='300px';
+  });
+  await page.locator('#preparationDialog').waitFor({state:'visible'});
+  const sizes=await page.evaluate(()=>({card:card.getBoundingClientRect().width,dialog:card.shadowRoot.querySelector('#preparationDialog').getBoundingClientRect().width}));
+  assert.ok(sizes.dialog<=sizes.card-32,`Preparation dialog must fit its card: ${JSON.stringify(sizes)}`);
+  await page.evaluate(()=>card.remove());
   assert.deepEqual(errors,[]);
+  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits and narrow preparation dialog');
   await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');
 })().catch(error=>{console.error(error);server.close();process.exit(1);});
