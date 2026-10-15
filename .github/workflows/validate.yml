@@ -99,3 +99,23 @@ jobs:
         env:
           TVG_REFERENCE: reference-addon
         run: node tests/frontend-card.cjs
+
+      - name: Verify native card stability in Chromium
+        run: node tests/frontend-stability.cjs
+
+  webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: npm install --no-save --package-lock=false playwright@1.62.1
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Verify repeated opening, resource cleanup and stable theme updates
+        env:
+          TVG_ENGINE: webkit
+        run: node tests/frontend-stability.cjs

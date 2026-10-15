@@ -1,6 +1,8 @@
 /* Own every external listener, observer and timer for one connected card. */
 export function createScope() {
   let active = true;
+  let resizeFrame = null;
+  const resizeCallbacks = new Set();
   const listeners = [], observers = [], intervals = [];
   const timeouts = new Set(), idle = new Set();
   const clearTimeout = id => { window.clearTimeout(id); timeouts.delete(id); };
@@ -12,6 +14,9 @@ export function createScope() {
   function pause() {
     if (!active) return;
     active = false;
+    if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
+    resizeFrame = null;
+    resizeCallbacks.clear();
     for (const [target,type,handler,options] of listeners) target.removeEventListener(type,handler,options);
     for (const {observer} of observers) observer.disconnect();
     for (const entry of intervals) window.clearInterval(entry.id);
@@ -34,7 +39,19 @@ export function createScope() {
       if(active)target.addEventListener(type,handler,options);
     },
     observe(target,callback) {
-      const observer = new ResizeObserver(()=>{if(active)callback();});
+      const observer = new ResizeObserver(()=>{
+        if (!active) return;
+        resizeCallbacks.add(callback);
+        if (resizeFrame !== null) return;
+        // Keep layout writes out of ResizeObserver delivery, and coalesce the
+        // root/header observations into a single update per frame.
+        resizeFrame = window.requestAnimationFrame(()=>{
+          resizeFrame = null;
+          const callbacks = [...resizeCallbacks];
+          resizeCallbacks.clear();
+          if (active) for (const update of callbacks) update();
+        });
+      });
       observers.push({observer,target}); if(active)observer.observe(target);
     },
     setInterval(callback,delay) {
