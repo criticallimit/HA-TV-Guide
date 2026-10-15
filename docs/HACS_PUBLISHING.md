@@ -9,7 +9,7 @@ Stand: 15. Oktober 2026. Repository: `criticallimit/HA-TV-Guide`, Kategorie **In
 - `.github/workflows/hacs.yml`: offizielle HACS-Prüfung bei Änderungen, veröffentlichten Releases, wöchentlich und manuell. Keine Prüfungen werden ignoriert. Die Action schreibt keine PR-Kommentare.
 - Vorhandene Hassfest-, Python-, Browser- und echte Home-Assistant-Prüfungen bleiben aktiv.
 - Eigenes Icon unter `custom_components/tv_guide/brand/icon.png`. Der aktuelle HACS-Validator akzeptiert dieses lokale Branding; ein zusätzlicher Antrag bei `home-assistant/brands` ist dafür nicht erforderlich.
-- Versionskennung 1.0.0 im Integrationsmanifest; das GitHub-Release verwendet den Tag 1.0.0.
+- Versionskennung `1.0.0` im Integrationsmanifest; das GitHub-Release verwendet den Tag `v1.0.0`.
 
 HACS lädt den vollständigen Ordner `custom_components/tv_guide` aus dem gewählten Git-Stand. `zip_release` wird bewusst nicht verwendet: Es ist kein besonderes Release-ZIP nötig. Die automatisch von GitHub angebotenen Quellarchive reichen aus. Programm- und Logo-Daten bleiben in der eigenen HA-Speicherung außerhalb des von HACS ersetzten Integrationsordners.
 
