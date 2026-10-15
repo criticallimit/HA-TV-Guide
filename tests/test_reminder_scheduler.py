@@ -20,6 +20,8 @@ def mark_callback(func):
     func._hass_callback = True
     return func
 core.callback = mark_callback
+const = sys.modules.setdefault("homeassistant.const", types.ModuleType("homeassistant.const"))
+const.EVENT_HOMEASSISTANT_STOP = "homeassistant_stop"
 
 homeassistant = types.ModuleType("homeassistant")
 homeassistant.__path__ = []
@@ -47,6 +49,17 @@ for name in ("reminder_times", "reminder_scheduler"):
     spec.loader.exec_module(module)
 
 Scheduler = sys.modules[f"{PKG}.reminder_scheduler"].TVGuideReminderScheduler
+
+class Bus:
+    def __init__(self):
+        self.listeners = {}
+    def async_listen_once(self, event_type, listener):
+        self.listeners[event_type] = listener
+        return lambda: self.listeners.pop(event_type, None)
+    async def shutdown(self):
+        listener = self.listeners.get("homeassistant_stop")
+        if listener is not None:
+            await listener(None)
 
 class Services:
     def __init__(self, fail=False):
@@ -76,10 +89,51 @@ class SchedulerTests(unittest.TestCase):
         hass = types.SimpleNamespace(
             config=types.SimpleNamespace(time_zone="Europe/Berlin"),
             services=Services(fail),
+            bus=Bus(),
             async_create_task=asyncio.create_task,
             async_add_executor_job=executor,
         )
         return Scheduler(hass, saved, asyncio.Lock()), saved, hass
+
+    def test_ha_shutdown_cancels_due_timers_before_new_delivery(self):
+        async def run():
+            scheduler, saved, hass = self._make()
+            scheduler.reschedule()
+            due = timers[0]["callback"]
+            await hass.bus.shutdown()
+            self.assertTrue(all(timer["cancelled"] for timer in timers))
+            due(datetime.now(timezone.utc))
+            await asyncio.sleep(0)
+            self.assertEqual(hass.services.calls, [])
+            self.assertEqual(hass.bus.listeners, {})
+        asyncio.run(run())
+
+    def test_ha_shutdown_waits_for_delivery_commit(self):
+        async def run():
+            scheduler, saved, hass = self._make()
+            entered, release = asyncio.Event(), asyncio.Event()
+            async def save():
+                entered.set()
+                await release.wait()
+                saved.saves += 1
+            saved.async_save = save
+            scheduler.reschedule()
+            timers[0]["callback"](datetime.now(timezone.utc))
+            await entered.wait()
+            shutdown = asyncio.create_task(hass.bus.shutdown())
+            await asyncio.sleep(0)
+            self.assertFalse(shutdown.done())
+            release.set()
+            await shutdown
+            self.assertEqual(saved.saves, 1)
+            self.assertTrue(saved.reminders[0]["sent"])
+        asyncio.run(run())
+
+    def test_unload_removes_ha_shutdown_listener(self):
+        scheduler, saved, hass = self._make()
+        self.assertEqual(len(hass.bus.listeners), 1)
+        asyncio.run(scheduler.async_stop())
+        self.assertEqual(hass.bus.listeners, {})
 
     def test_timer_is_ha_callback_and_stale_generation_is_ignored(self):
         scheduler, saved, hass = self._make()

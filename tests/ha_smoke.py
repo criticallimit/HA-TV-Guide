@@ -27,6 +27,7 @@ async def main():
         hass = HomeAssistant(folder)
         loader.async_setup(hass)
         hass.config.skip_pip = True
+        shutdown_scheduler = None
         try:
             configured = await async_from_config_dict({
                 'homeassistant': {'name': 'TV Guide smoke', 'time_zone': 'Europe/Berlin', 'country': 'AT'},
@@ -226,8 +227,21 @@ async def main():
                 assert not saved_storage.exists()
                 assert hass.states.get(foreign_id).state == '9999'
                 print(f'PASS real Home Assistant {__version__}: setup, reload, unload and complete removal of owned entities and storage',flush=True)
+                # Exercise the actual HA stop event independently of entry unload.
+                from custom_components.tv_guide.reminder_scheduler import TVGuideReminderScheduler
+                from custom_components.tv_guide.saved_programmes import TVGuideSavedProgrammes
+                shutdown_saved = TVGuideSavedProgrammes(hass, 'shutdown-regression')
+                shutdown_saved.reminders = [{'id':'shutdown-regression', 'minutes':5,
+                    'start':(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat()}]
+                shutdown_scheduler = TVGuideReminderScheduler(hass, shutdown_saved, asyncio.Lock())
+                shutdown_scheduler.reschedule()
+                assert shutdown_scheduler._cancellations
         finally:
             await hass.async_stop(force=True)
+        assert shutdown_scheduler is not None and shutdown_scheduler._stopped
+        assert not shutdown_scheduler._cancellations
+        assert shutdown_scheduler._stop_task.done()
+        print('PASS actual HA shutdown cancels reminder timers and completes scheduler cleanup', flush=True)
 
 
 if __name__=='__main__':
