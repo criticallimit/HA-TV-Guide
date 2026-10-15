@@ -17,9 +17,9 @@ files=['index.html','styles.css','guide-core.js','channel-picker.js','translatio
 provenance={}
 for name in files:
     source=reference/'tv-guide'/'www'/name
-    if name not in ("index.html","app.js") or not (target/name).exists():
+    if name != "index.html" and not (target/name).exists():
         shutil.copyfile(source,target/name)
-    # Preserve native RPC/configuration adaptations on subsequent imports.
+    # Existing ES module factories and the scoped template are maintained locally.
     provenance[name]=hashlib.sha256(source.read_bytes()).hexdigest()
 shutil.copytree(reference/'tv-guide'/'www'/'fonts',target/'fonts',dirs_exist_ok=True)
 shutil.copyfile(reference/'tv-guide'/'icon.png',target/'icon.png')
@@ -73,5 +73,8 @@ for catalog_path in Path('custom_components/tv_guide/catalogs').glob('*.json'):
         logo_map.setdefault(country,{})[channel['id']]=logos
 (target/'logo_catalog.json').write_text(json.dumps(logo_map,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 sha=subprocess.check_output(['git','-C',str(reference),'rev-parse','HEAD'],text=True).strip()
-(target/'REFERENCE.json').write_text(json.dumps({'repository':'criticallimit/TV-Guide','commit':sha,'source_sha256':provenance},indent=2)+'\n',encoding='utf-8')
+record=json.loads((target/'REFERENCE.json').read_text(encoding='utf-8')) if (target/'REFERENCE.json').exists() else {}
+record.update(repository='criticallimit/TV-Guide',commit=sha,source_sha256=provenance)
+record['bundled_sha256']={name:hashlib.sha256((target/name).read_bytes()).hexdigest() for name in files if (target/name).exists()}
+(target/'REFERENCE.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
 print('Imported reference UI and',sum(len(v) for v in logo_map.values()),'main-channel logo pairs; reference checkout unchanged')

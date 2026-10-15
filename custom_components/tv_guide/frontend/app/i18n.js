@@ -1,4 +1,5 @@
-(function (root) {
+import {translations} from './translations.js';
+export function createI18n(root, getHass) {
   const supported = ['da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'];
   let language = 'de';
   function baseLanguage(value) {
@@ -10,18 +11,8 @@
     return supported.includes(code) ? code : 'en';
   }
   function homeAssistantLanguage() {
-    try {
-      let frame = root;
-      for (let depth = 0; depth < 5; depth++) {
-        const hass = frame.document?.querySelector('home-assistant')?.hass || frame.hass;
-        const value = hass?.locale?.language || hass?.language ||
-          hass?.internationalizationContext?.locale?.language;
-        if (value) return value;
-        if (frame.parent === frame) break;
-        frame = frame.parent;
-      }
-    } catch {}
-    return '';
+    const hass = getHass();
+    return hass?.locale?.language || hass?.language || '';
   }
   function resolve(options = {}) {
     if (options.language && options.language !== 'auto') return supportedLanguage(options.language);
@@ -38,11 +29,11 @@
     if (country === 'se') return 'sv';
     if (country === 'gb') return 'en';
     // A country cannot identify the user's language in multilingual regions.
-    return supportedLanguage(root.navigator?.language || 'en');
+    return supportedLanguage(navigator.language || 'en');
   }
   function t(message, values = {}) {
-    const translated = root.TVGuideTranslations?.[language]?.[message] ||
-      root.TVGuideTranslations?.en?.[message] || String(message || '');
+    const translated = translations?.[language]?.[message] ||
+      translations?.en?.[message] || String(message || '');
     return translated.replace(/\{(\w+)\}/g, (token, key) => Object.hasOwn(values, key) ? String(values[key]) : token);
   }
   function sortTranslatedOptions(select) {
@@ -55,15 +46,15 @@
     select.value = selected;
   }
   function translateDocument() {
-    if (!root.document?.querySelectorAll) return;
-    root.document.documentElement.lang = language;
-    for (const node of root.document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
+    if (!root.querySelectorAll) return;
+    root.lang = language;
+    for (const node of root.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
     for (const attribute of ['title', 'aria-label', 'placeholder']) {
-      for (const node of root.document.querySelectorAll(`[data-i18n-${attribute}]`)) {
+      for (const node of root.querySelectorAll(`[data-i18n-${attribute}]`)) {
         node.setAttribute(attribute, t(node.getAttribute(`data-i18n-${attribute}`)));
       }
     }
-    sortTranslatedOptions(root.document.getElementById?.('settingCountry'));
+    sortTranslatedOptions(root.querySelector('#settingCountry'));
   }
   function configure(options = {}) {
     const next = resolve(options);
@@ -84,6 +75,7 @@
   }
   function formatTime(value) { return formatter('time').format(value); }
   function formatDate(value) { return formatter('date').format(value); }
-  root.TVGuideI18n = {t,configure,resolve,translateDocument,formatTime,formatDate,get language() {return language;}};
+  const i18n = {t,configure,resolve,translateDocument,formatTime,formatDate,get language() {return language;}};
   configure();
-})(globalThis);
+  return i18n;
+}

@@ -1,4 +1,4 @@
-globalThis.TVGuideTranslations = {
+export const translations = {
   "da": {
     "{channel} anzeigen": "Vis {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: “{title}” begynder kl. {time}.",

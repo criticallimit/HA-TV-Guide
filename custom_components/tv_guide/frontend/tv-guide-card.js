@@ -1,6 +1,18 @@
-const TV_GUIDE_PICKER_LOGO = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 250 100\" width=\"250\" height=\"100\"><title>TV Guide</title><g transform=\"translate(0,2) scale(.75)\"><rect x=\"12\" y=\"21\" width=\"104\" height=\"77\" rx=\"19\" fill=\"#25b9bf\"/><rect x=\"23\" y=\"32\" width=\"82\" height=\"54\" rx=\"10\" fill=\"#102d3e\"/><rect x=\"33\" y=\"42\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#fff\"/><rect x=\"52\" y=\"42\" width=\"42\" height=\"7\" rx=\"3\" fill=\"#fff\"/><rect x=\"33\" y=\"56\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#76e3d8\"/><rect x=\"52\" y=\"56\" width=\"32\" height=\"7\" rx=\"3\" fill=\"#76e3d8\"/><rect x=\"33\" y=\"70\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#fff\" opacity=\".7\"/><rect x=\"52\" y=\"70\" width=\"37\" height=\"7\" rx=\"3\" fill=\"#fff\" opacity=\".7\"/><path d=\"M48 106h32\" stroke=\"#25b9bf\" stroke-width=\"9\" stroke-linecap=\"round\"/></g><text x=\"105\" y=\"60\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"29\" font-weight=\"700\" fill=\"#31949b\">TV Guide</text></svg>";
+import {createGuideApp} from './app/app.js?v=native-1';
+import {viewMarkup, viewStyles} from './app/view-template.js?v=native-1';
 
-const TV_GUIDE_CARD_TRANSLATIONS = {"da":{"TV Guide wird geladen …":"TV Guide indlæses …","TV Guide konnte nicht geladen werden.":"TV Guide kunne ikke indlæses.","TV Guide ist nicht installiert.":"TV Guide er ikke installeret.","TV Guide ist nicht gestartet.":"TV Guide er ikke startet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen ingress-adresse er tilgængelig for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV Guide-kortet kunne ikke oprettes.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide blev ikke fundet i Home Assistant."},"de":{"TV Guide wird geladen …":"TV Guide wird geladen …","TV Guide konnte nicht geladen werden.":"TV Guide konnte nicht geladen werden.","TV Guide ist nicht installiert.":"TV Guide ist nicht installiert.","TV Guide ist nicht gestartet.":"TV Guide ist nicht gestartet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Für TV Guide ist keine Ingress-Adresse verfügbar.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV-Guide-Karte konnte nicht aufgebaut werden.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV-Guide-App wurde in Home Assistant nicht gefunden."},"en":{"TV Guide wird geladen …":"Loading TV Guide …","TV Guide konnte nicht geladen werden.":"Could not load TV Guide.","TV Guide ist nicht installiert.":"TV Guide is not installed.","TV Guide ist nicht gestartet.":"TV Guide is not running.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"No ingress address is available for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Could not create the TV Guide card.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide was not found in Home Assistant."},"nl":{"TV Guide wird geladen …":"TV Guide laden …","TV Guide konnte nicht geladen werden.":"TV Guide kon niet worden geladen.","TV Guide ist nicht installiert.":"TV Guide is niet geïnstalleerd.","TV Guide ist nicht gestartet.":"TV Guide is niet gestart.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Geen ingress-adres beschikbaar voor TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"De TV Guide-kaart kon niet worden gemaakt.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide is niet gevonden in Home Assistant."},"fr":{"TV Guide wird geladen …":"Chargement de TV Guide…","TV Guide konnte nicht geladen werden.":"Impossible de charger TV Guide.","TV Guide ist nicht installiert.":"TV Guide n’est pas installé.","TV Guide ist nicht gestartet.":"TV Guide n’est pas démarré.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Aucune adresse ingress disponible pour TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Impossible de créer la carte TV Guide.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide est introuvable dans Home Assistant."},"it":{"TV Guide wird geladen …":"Caricamento di TV Guide…","TV Guide konnte nicht geladen werden.":"Impossibile caricare TV Guide.","TV Guide ist nicht installiert.":"TV Guide non è installato.","TV Guide ist nicht gestartet.":"TV Guide non è avviato.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Nessun indirizzo ingress disponibile per TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Impossibile creare la scheda TV Guide.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide non è stato trovato in Home Assistant."},"nb":{"TV Guide wird geladen …":"Laster TV Guide …","TV Guide konnte nicht geladen werden.":"Kunne ikke laste TV Guide.","TV Guide ist nicht installiert.":"TV Guide er ikke installert.","TV Guide ist nicht gestartet.":"TV Guide er ikke startet.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen ingress-adresse er tilgjengelig for TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"Kunne ikke opprette TV Guide-kortet.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide ble ikke funnet i Home Assistant."},"sv":{"TV Guide wird geladen …":"Läser in TV Guide …","TV Guide konnte nicht geladen werden.":"TV Guide kunde inte läsas in.","TV Guide ist nicht installiert.":"TV Guide är inte installerad.","TV Guide ist nicht gestartet.":"TV Guide är inte startad.","Für TV Guide ist keine Ingress-Adresse verfügbar.":"Ingen Ingress-adress är tillgänglig för TV Guide.","TV-Guide-Karte konnte nicht aufgebaut werden.":"TV Guide-kortet kunde inte skapas.","TV-Guide-App wurde in Home Assistant nicht gefunden.":"TV Guide hittades inte i Home Assistant."}};
+let fontsRegistered = false;
+function registerGuideFonts() {
+  if (fontsRegistered) return;
+  fontsRegistered = true;
+  for (const [weight,file] of [['400','Regular'],['500','SemiBold']]) {
+    const face=new FontFace('Source Sans Pro', `url(/tv_guide/frontend/app/fonts/SourceSansPro-${file}.ttf)`, {weight});
+    document.fonts.add(face);
+    face.load().catch(()=>{});
+  }
+}
+
+const TV_GUIDE_PICKER_LOGO = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 250 100\" width=\"250\" height=\"100\"><title>TV Guide</title><g transform=\"translate(0,2) scale(.75)\"><rect x=\"12\" y=\"21\" width=\"104\" height=\"77\" rx=\"19\" fill=\"#25b9bf\"/><rect x=\"23\" y=\"32\" width=\"82\" height=\"54\" rx=\"10\" fill=\"#102d3e\"/><rect x=\"33\" y=\"42\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#fff\"/><rect x=\"52\" y=\"42\" width=\"42\" height=\"7\" rx=\"3\" fill=\"#fff\"/><rect x=\"33\" y=\"56\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#76e3d8\"/><rect x=\"52\" y=\"56\" width=\"32\" height=\"7\" rx=\"3\" fill=\"#76e3d8\"/><rect x=\"33\" y=\"70\" width=\"12\" height=\"7\" rx=\"3\" fill=\"#fff\" opacity=\".7\"/><rect x=\"52\" y=\"70\" width=\"37\" height=\"7\" rx=\"3\" fill=\"#fff\" opacity=\".7\"/><path d=\"M48 106h32\" stroke=\"#25b9bf\" stroke-width=\"9\" stroke-linecap=\"round\"/></g><text x=\"105\" y=\"60\" font-family=\"Segoe UI,Arial,sans-serif\" font-size=\"29\" font-weight=\"700\" fill=\"#31949b\">TV Guide</text></svg>";
 
 class TVGuideCardEditor extends HTMLElement {
   constructor() {
@@ -86,43 +98,21 @@ class TVGuideCard extends HTMLElement {
     this._config = {height: 1000};
     this._hass = null;
     this._started = false;
-    this._iframe = null;
-    this._guidePreview = null;
+    this._app = null;
+    this._pending = new Set();
+    this._generation = 0;
     this._themeProperties = new Set();
     this._themeFingerprint = "";
-    this._lastThemeMessageSignature = "";
-    this._themeReadyListening = false;
     this._themeObserver = null;
     this._themeSyncFrame = null;
-    this._themeReadyHandler = (event) => {
-      if (
-        event.origin === window.location.origin &&
-        event.source === this._iframe?.contentWindow
-      ) {
-        if (event.data?.type === "tv-guide-request") void this._handleGuideRequest(event);
-        else if (event.data?.type === "tv-guide-theme-request") this._sendThemeToIframe(true);
-        else if (event.data?.type === "tv-guide-view-ready") this._iframe.style.opacity = "1";
-      }
-    };
-  }
-
-  _attachThemeReadyListener() {
-    if (this._themeReadyListening) return;
-    window.addEventListener("message", this._themeReadyHandler);
-    this._themeReadyListening = true;
-  }
-
-  _detachThemeReadyListener() {
-    if (!this._themeReadyListening) return;
-    window.removeEventListener("message", this._themeReadyHandler);
-    this._themeReadyListening = false;
+    this._renderShell();
   }
 
   _scheduleThemeSync() {
-    if (!this.isConnected || !this._iframe || this._themeSyncFrame !== null) return;
+    if (!this.isConnected || !this._app || this._themeSyncFrame !== null) return;
     this._themeSyncFrame = window.requestAnimationFrame(() => {
       this._themeSyncFrame = null;
-      if (this.isConnected) this._sendThemeToIframe();
+      if (this.isConnected) this._app.updateTheme();
     });
   }
 
@@ -137,7 +127,7 @@ class TVGuideCard extends HTMLElement {
     }
   }
 
-  _themeMessage() {
+  _themeState() {
     const style = getComputedStyle(this);
     const names = [
       "--primary-background-color",
@@ -177,29 +167,13 @@ class TVGuideCard extends HTMLElement {
       darkMode = brightness < 128;
     }
     return {
-      type:"tv-guide-theme",
       vars,
       darkMode
     };
   }
 
-  _sendThemeToIframe(force = false) {
-    const target = this._iframe?.contentWindow;
-    if (!target) return;
-    const message = this._themeMessage();
-    const signature = JSON.stringify(message);
-    if (!force && signature === this._lastThemeMessageSignature) return;
-    this._lastThemeMessageSignature = signature;
-    target.postMessage(message, window.location.origin);
-  }
-
   static getConfigElement() {
     return document.createElement("tv-guide-card-editor");
-  }
-
-  _t(message) {
-    const language = String(this._hass?.locale?.language || this._hass?.language || "en").toLowerCase().replace("_", "-").split("-")[0];
-    return (TV_GUIDE_CARD_TRANSLATIONS[language === "no" ? "nb" : language] || TV_GUIDE_CARD_TRANSLATIONS.en)[message] || message;
   }
 
   static getStubConfig() {
@@ -266,8 +240,6 @@ class TVGuideCard extends HTMLElement {
     this._hass = hass;
     this._applyConfiguredTheme();
     this._scheduleThemeSync();
-    const loading = this.shadowRoot?.querySelector(".loading");
-    if (loading && !this._started) loading.textContent = this._t("TV Guide wird geladen …");
     if (this.isConnected && !this._started) this._start();
   }
 
@@ -281,29 +253,31 @@ class TVGuideCard extends HTMLElement {
   }
 
   connectedCallback() {
-    this._attachThemeReadyListener();
     this._watchInheritedTheme();
     this._renderShell();
-    if (this._hass && !this._started) this._start();
+    if (this._app) this._app.resume();
+    else if (this._hass && !this._started) this._start();
   }
 
   disconnectedCallback() {
-    this._detachThemeReadyListener();
     this._themeObserver?.disconnect();
     this._themeObserver = null;
     if (this._themeSyncFrame !== null) window.cancelAnimationFrame(this._themeSyncFrame);
     this._themeSyncFrame = null;
-    this._started = false;
-    this._iframe?.remove();
-    this._iframe = null;
-    this._guidePreview = null;
+    this._app?.suspend();
+    ++this._generation;
+    for (const pending of this._pending) {
+      window.clearTimeout(pending.timer);
+      pending.reject(new Error("Card closed"));
+    }
+    this._pending.clear();
   }
 
   getCardSize() {
     return Math.max(10, Math.ceil(this._config.height / 50));
   }
 
-  _renderShell(message = this._t("TV Guide wird geladen …")) {
+  _renderShell() {
     if (!this.shadowRoot) return;
     if (this._isCardPicker()) {
       this.shadowRoot.innerHTML = `
@@ -317,49 +291,28 @@ class TVGuideCard extends HTMLElement {
       `;
       return;
     }
-    const iframe = this._iframe;
-    if (iframe && iframe.isConnected) {
-      iframe.style.height = this._config.height + "px";
-      return;
-    }
+    const existing = this.shadowRoot.querySelector('.guide-root');
+    if (existing) { existing.style.height=this._config.height+'px'; return; }
+    registerGuideFonts();
+    this.shadowRoot.innerHTML = `<style>${viewStyles}</style><ha-card><div class="guide-root">${viewMarkup}</div></ha-card>`;
+    this.shadowRoot.querySelector('.guide-root').style.height=this._config.height+'px';
+  }
 
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display:block;
-          width:100%;
-        }
-        ha-card {
-          display:block;
-          width:100%;
-          padding:0;
-          margin:0;
-          overflow:hidden;
-          background:var(--primary-background-color);
-          box-shadow:none;
-          border:0;
-        }
-        .loading {
-          box-sizing:border-box;
-          min-height:180px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          padding:24px;
-          color:var(--secondary-text-color);
-          font:var(--paper-font-body1_-_font,inherit);
-        }
-        iframe {
-          display:block;
-          width:100%;
-          border:0;
-          background:var(--primary-background-color);
-        }
-      </style>
-      <ha-card>
-        <div class="loading">${message}</div>
-      </ha-card>
-    `;
+  async _request(request) {
+    if (!this.isConnected || !this._hass) throw new Error("Card closed");
+    const generation=this._generation;
+    return new Promise((resolve,reject)=>{
+      const pending={reject,timer:window.setTimeout(()=>{
+        this._pending.delete(pending); reject(new Error("Home Assistant request timed out"));
+      },15000)};
+      this._pending.add(pending);
+      this._dispatchGuideRequest(request).then(response=>{
+        if (!this.isConnected || generation!==this._generation) throw new Error("Card closed");
+        resolve(response);
+      }).catch(reject).finally(()=>{
+        window.clearTimeout(pending.timer); this._pending.delete(pending);
+      });
+    });
   }
 
   async _response(service, service_data={}) {
@@ -367,11 +320,7 @@ class TVGuideCard extends HTMLElement {
     if (!result?.response) throw new Error("TV Guide response unavailable");
     return result.response;
   }
-  async _handleGuideRequest(event) {
-    const request = event.data;
-    if (!this.isConnected || !this._hass || typeof request.id !== "string" || request.id.length > 80) return;
-    const frame = this._iframe;
-    try {
+  async _dispatchGuideRequest(request) {
       const endpoint = request.endpoint;
       const method = request.method;
       const body = request.body || {};
@@ -379,11 +328,7 @@ class TVGuideCard extends HTMLElement {
       if (endpoint === "preparation" && ["GET","POST"].includes(method)) {
         response = await this._response(method === "POST" ? "retry_preparation" : "get_preparation_status");
       } else if (this._hass.services?.tv_guide?.guide_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
-        if (endpoint === "guide" && method === "GET" && body.preview === true && this._guidePreview) {
-          const pending = this._guidePreview;
-          this._guidePreview = null;
-          response = await pending;
-        } else response = await this._response("guide_request",{endpoint,method,...(method === "POST" || (endpoint === "guide" && (body.preview === true || typeof body.known_revision === "string")) ? {body} : {})});
+        response = await this._response("guide_request",{endpoint,method,...(method === "POST" || (endpoint === "guide" && (body.preview === true || typeof body.known_revision === "string")) ? {body} : {})});
       } else if (method === "GET" && endpoint === "guide") response = await this._response("get_guide", request.at ? {at:request.at} : {});
       else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_personal_channels");
       else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");
@@ -417,52 +362,23 @@ class TVGuideCard extends HTMLElement {
         const settings = await this._response("get_ui_settings");
         const [domain, service] = settings.notification_service.split(".");
         if (!(domain === "notify" || (domain === "persistent_notification" && service === "create"))) throw new Error("Invalid notification destination");
-        const t = frame.contentWindow.TVGuideI18n?.t || (message => message);
+        const t = this._app?.i18n.t || (message => message);
         const time = new Intl.DateTimeFormat(body.language || "en",{hour:"2-digit",minute:"2-digit",hour12:false,...(this._hass.config?.time_zone ? {timeZone:this._hass.config.time_zone} : {})}).format(new Date(Date.now()+60000));
         await this._hass.callService(domain,service,{title:t("TV Guide – Erinnerung"),message:t("{channel}: „{title}“ beginnt um {time} Uhr.",{channel:"TV Guide",title:t("Testbenachrichtigung"),time})});
         response = {ok:true,service:settings.notification_service};
       } else throw new Error("Unsupported TV Guide operation");
-      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-response",id:request.id,response},window.location.origin);
-    } catch (error) {
-      if (this.isConnected && this._iframe === frame) event.source.postMessage({type:"tv-guide-response",id:request.id,error:error.message || String(error)},window.location.origin);
-    }
+      return response;
   }
   _start() {
     if (!this.isConnected || this._started || !this._hass || this._isCardPicker()) return;
     this._started = true;
-    // Overlap the small authenticated first view with iframe resource loading.
-    if (this._hass.services?.tv_guide?.guide_request) {
-      this._guidePreview = this._response("guide_request",{endpoint:"guide",method:"GET",body:{preview:true,at:new Date().toISOString(),time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone}});
-      this._guidePreview.catch(() => {});
-    }
     this._renderShell();
-    const card = this.shadowRoot.querySelector("ha-card");
-    if (!card) return;
-    card.replaceChildren();
-    const iframe = document.createElement("iframe");
-    const url = new URL("/tv_guide/frontend/app/index.html",window.location.origin);
-    url.searchParams.set("tv_guide_card","1");
-    url.searchParams.set("tv_guide_theme",this._config.theme || "__dashboard__");
-    this._lastThemeMessageSignature = "";
-    // Seed the same-origin document before its first paint, even after a theme change.
-    try {
-      sessionStorage.setItem("tv-guide-dashboard-theme:" + (this._config.theme || "__dashboard__"),
-        JSON.stringify(this._themeMessage()));
-    } catch {}
-    iframe.title = "TV Guide";
-    iframe.src = url.toString();
-    iframe.style.height = this._config.height+"px";
-    iframe.style.opacity = "0";
-    iframe.setAttribute("allow","clipboard-read; clipboard-write");
-    this._iframe = iframe;
-    iframe.addEventListener("load",() => {
-      if (this._iframe !== iframe || !this.isConnected) return;
-      this._sendThemeToIframe(true);
-      // A failed script must not leave an invisible document. Normal startup
-      // announces readiness after its first useful render, independently of load.
-      if (typeof iframe.contentWindow.notifyGuideViewReady !== "function") iframe.style.opacity = "1";
+    this._app = createGuideApp({
+      root:this.shadowRoot.querySelector('.guide-root'),
+      request:request=>this._request(request),
+      getHass:()=>this._hass,
+      getTheme:()=>this._themeState()
     });
-    card.appendChild(iframe);
   }
 }
 if (!customElements.get("tv-guide-card")) customElements.define("tv-guide-card",TVGuideCard);

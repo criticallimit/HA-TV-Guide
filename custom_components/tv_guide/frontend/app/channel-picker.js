@@ -1,6 +1,7 @@
 /* Country filters affect the catalogue only, never the personal selection. */
-globalThis.TVGuideChannelPicker = class {
-  constructor(dialog) {
+export class TVGuideChannelPicker {
+  constructor(dialog, i18n) {
+    this.i18n = i18n;
     this.dialog = dialog;
     this.filters = dialog.querySelector("#channelCountryFilters");
     this.search = dialog.querySelector("#channelSearch");
@@ -13,7 +14,7 @@ globalThis.TVGuideChannelPicker = class {
     });
   }
 
-  t(message, values) { return globalThis.TVGuideI18n.t(message, values); }
+  t(message, values) { return this.i18n.t(message, values); }
 
   beginLoading() {
     this.channels = null;
@@ -28,7 +29,7 @@ globalThis.TVGuideChannelPicker = class {
     this.channels = new Map(data.channels.map(channel => [channel.id, channel]));
     this.order = [...data.order];
     this.countries = [...data.countries];
-    const collator = new Intl.Collator(globalThis.TVGuideI18n?.language || "en", {usage:"sort", sensitivity:"base"});
+    const collator = new Intl.Collator(this.i18n?.language || "en", {usage:"sort", sensitivity:"base"});
     this.supported = [...data.supported_countries].sort((left, right) =>
       collator.compare(this.t(left.name), this.t(right.name))
     );

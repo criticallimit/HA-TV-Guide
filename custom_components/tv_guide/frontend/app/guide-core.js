@@ -1,7 +1,7 @@
-(function () {
-  const t = (message, values) => globalThis.TVGuideI18n?.t(message, values) || message;
-  const fmt = {format:value => globalThis.TVGuideI18n?.formatTime(value) || new Intl.DateTimeFormat("de-DE", {hour:"2-digit", minute:"2-digit"}).format(value)};
-  const dateFmt = {format:value => globalThis.TVGuideI18n?.formatDate(value) || new Intl.DateTimeFormat("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"}).format(value)};
+export function createGuideCore(i18n) {
+  const t = (message, values) => i18n?.t(message, values) || message;
+  const fmt = {format:value => i18n?.formatTime(value) || new Intl.DateTimeFormat("de-DE", {hour:"2-digit", minute:"2-digit"}).format(value)};
+  const dateFmt = {format:value => i18n?.formatDate(value) || new Intl.DateTimeFormat("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"}).format(value)};
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, c => ({
@@ -50,10 +50,11 @@
   }
 
   function channelHeader(channel, logoPrefix="") {
-    const fallback = logoPrefix + "logos/" + encodeURIComponent(channel.id) + ".png";
+    const asset = path => !logoPrefix || /^(?:[a-z][a-z\d+.-]*:|\/)/i.test(path) ? path : logoPrefix + path;
+    const fallback = asset("logos/" + encodeURIComponent(channel.id) + ".png");
 
-    const localLight = channel.logo_file_light ? logoPrefix + channel.logo_file_light : "";
-    const localDark = channel.logo_file ? logoPrefix + channel.logo_file : "";
+    const localLight = channel.logo_file_light ? asset(channel.logo_file_light) : "";
+    const localDark = channel.logo_file ? asset(channel.logo_file) : "";
     const feedLight = channel.logo_light || channel.logo || "";
     const feedDark = channel.logo_dark || channel.logo || "";
 
@@ -144,9 +145,9 @@
       '</section>';
   }
 
-  window.TVGuideCore = {
+  return {
     fmt, dateFmt, startOfDay, dateKey, sameDay, targetForMode, modeIndex,
     pct, escapeHtml,
     channelHeader, renderPrograms, renderChannelCard
   };
-})();
+}

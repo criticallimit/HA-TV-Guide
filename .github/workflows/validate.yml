@@ -52,6 +52,8 @@ jobs:
         run: npm install --no-save --package-lock=false playwright@1.62.1
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Verify scoped view bundle
+        run: python tools/build_frontend_view.py --check
       - name: Check TV Guide card syntax
         run: node --check custom_components/tv_guide/frontend/tv-guide-card.js
       - name: Verify and stage pinned read-only reference frontend
