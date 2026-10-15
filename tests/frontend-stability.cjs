@@ -291,6 +291,38 @@ const server=http.createServer((req,res)=>{
   assert.deepEqual(closedWrites,{statuses:['rejected','rejected'],writes:1},'Closing and reopening must invalidate queued writes');
   await page.evaluate(()=>card.remove());
   console.log('PASS',engineName,'ordered saved writes, delayed responses, failure recovery and closing queued actions');
+  // A committed settings save must not wait for the subsequent EPG transfer.
+  await page.evaluate(()=>{
+    const settings={...model.ui,country:'de',refresh_minutes:180,notification_service:'persistent_notification.create'};
+    const settingsHass={...hass,async callWS(message){
+      if(message.service==='guide_request'){
+        const {endpoint,method,body}=message.service_data;
+        if(endpoint==='settings'){
+          if(method==='POST'){Object.assign(settings,body);window.settingsCommitted=true;}
+          return {response:method==='POST'?{ok:true}:structuredClone(settings)};
+        }
+        if(endpoint==='guide'&&window.delaySettingsGuide){
+          await new Promise(resolve=>window.releaseSettingsGuide=resolve);
+        }
+      }
+      return hass.callWS(message);
+    }};
+    window.card=document.createElement('tv-guide-card');card.hass=settingsHass;document.body.append(card);
+  });
+  await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+  await page.locator('#showAppSettings').click();
+  await page.locator('#saveAppSettings:not([disabled])').waitFor();
+  await page.evaluate(()=>{
+    card.shadowRoot.querySelector('#settingLanguage').value='en';
+    window.delaySettingsGuide=true;
+  });
+  await page.locator('#saveAppSettings').click();
+  await page.waitForFunction(()=>window.settingsCommitted&&typeof releaseSettingsGuide==='function');
+  await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+  await page.evaluate(()=>{delaySettingsGuide=false;releaseSettingsGuide();});
+  await page.waitForFunction(()=>card._pending.size===0);
+  await page.evaluate(()=>card.remove());
+  console.log('PASS',engineName,'settings confirmation independent of delayed guide loading');
   assert.deepEqual(errors,[]);
   console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog, XMLTV date navigation, retry recovery and fast logo repair');
   await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');

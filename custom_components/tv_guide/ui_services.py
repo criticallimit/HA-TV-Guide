@@ -30,8 +30,9 @@ def async_register_ui_services(hass):
         catalogue=await hass.async_add_executor_job(resolve_catalogue_channels,options.get('country',''),[])
         return [],catalogue,[],False
 
-    async def persist_guide_settings(entry, coordinator):
-        settings=await coordinator.async_guide_request('settings')
+    async def persist_guide_settings(entry, coordinator, settings=None):
+        if settings is None:
+            settings=await coordinator.async_guide_request('settings')
         changes={key:settings[key] for key in PRESENTATION_OPTIONS}
         options={key:value for key,value in entry.options.items() if key!='backend_mode'}
         hass.config_entries.async_update_entry(entry,options={**options,**changes})
@@ -49,7 +50,7 @@ def async_register_ui_services(hass):
                 values={**settings,**changes}
             normalize_ui_settings({'notification_service':values.get('notification_service','persistent_notification.create')})
             result=await coordinator.async_guide_request('settings','POST',values)
-            await persist_guide_settings(entry, coordinator)
+            await persist_guide_settings(entry, coordinator, result.get("settings"))
             return result
 
         # Executor writes can outlive a cancelled caller. Keep the transaction

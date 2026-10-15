@@ -128,6 +128,23 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.entry.options['language'],'en')
         self.assertEqual(self.entry.options['columns_desktop'],4)
 
+    async def test_committed_settings_do_not_require_another_backend_read(self):
+        settings={'country':'de','language':'en','default_view':'now','columns_desktop':5,
+                  'max_channels':0,'theme_mode':'auto','refresh_minutes':360,
+                  'notification_service':'persistent_notification.create'}
+        calls=[]
+        async def request(endpoint, method='GET', body=None):
+            calls.append((endpoint,method))
+            if method=='GET':
+                raise AssertionError('Committed settings must not wait for another backend read')
+            return {'ok':True, 'settings':dict(settings)}
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_multi_source=True, async_guide_request=request)}
+        adapter.async_register_ui_services(self.hass)
+        await self.call('guide_request', {'endpoint':'settings','method':'POST','body':settings})
+        self.assertEqual(calls,[('settings','POST')])
+        self.assertEqual(self.entry.options['refresh_minutes'],360)
+        self.assertEqual(self.entry.options['language'],'en')
+
     async def test_cancelled_settings_write_finishes_ha_persistence_before_releasing_lock(self):
         settings={'country':'de','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
         entered, release=asyncio.Event(), asyncio.Event()

@@ -517,7 +517,9 @@ async function persistAppSettings() {
       }
     });
     if (!payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
-    await loadGuide();
+    // The settings action has committed. Refresh programmes independently so
+    // a slow guide response cannot turn a successful save into a timeout.
+    loadGuide().catch(() => {});
     if (!isCurrent()) return;
     appSettingsStatus.textContent = payload.refresh_started
       ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.")

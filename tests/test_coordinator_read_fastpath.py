@@ -2,6 +2,7 @@
 import ast
 import asyncio
 import unittest
+from datetime import timedelta
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -10,7 +11,7 @@ TREE = ast.parse(SOURCE.read_text(encoding="utf-8"))
 CLASS = next(node for node in TREE.body if isinstance(node, ast.ClassDef) and node.name == "TVGuideCoordinator")
 METHOD = next(node for node in CLASS.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "async_guide_request")
 # Exercise the real method without importing Home Assistant in offline unit tests.
-NAMESPACE = {"RuntimeError": RuntimeError}
+NAMESPACE = {"RuntimeError": RuntimeError, "timedelta": timedelta}
 exec(compile(ast.Module(body=[METHOD], type_ignores=[]), str(SOURCE), "exec"), NAMESPACE)
 
 
@@ -25,8 +26,9 @@ class FastReadTests(unittest.IsolatedAsyncioTestCase):
         self.coordinator = SimpleNamespace(
             _closed=False,
             hass=SimpleNamespace(async_add_executor_job=executor),
-            backend=SimpleNamespace(request=lambda *args: {"channels": [], "ok": True}),
+            backend=SimpleNamespace(request=lambda *args: {"channels": [], "ok": True, "country":"de"}),
             _async_sync=sync,
+            _schedule_sync=lambda: self.calls.append(("scheduled",)),
         )
 
     async def test_cached_guide_read_skips_snapshot(self):
@@ -41,8 +43,8 @@ class FastReadTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual([item[0] for item in self.calls], ["request"])
 
     async def test_mutation_updates_entities(self):
-        await NAMESPACE["async_guide_request"](self.coordinator, "settings", "POST", {"language": "de"})
-        self.assertEqual([item[0] for item in self.calls], ["request", "sync"])
+        await NAMESPACE["async_guide_request"](self.coordinator, "settings", "POST", {"language": "de", "refresh_minutes":180})
+        self.assertEqual([item[0] for item in self.calls], ["request", "scheduled"])
 
     async def test_refresh_updates_entities(self):
         await NAMESPACE["async_guide_request"](self.coordinator, "refresh")

@@ -151,6 +151,8 @@ class GuideRuntimeTests(unittest.TestCase):
         settings=self.backend.request('settings','GET')
         result=self.backend.request('settings','POST',{**settings,'country':'at','max_channels':500})
         self.assertTrue(result['country_changed'])
+        self.assertEqual(result['settings']['country'], 'at')
+        self.assertEqual(result['settings']['max_channels'], 500)
         self.assertEqual(self.backend.request('settings','GET')['country'],'at')
         self.assertEqual(self.backend.request('settings','GET')['max_channels'],500)
         self.assertEqual(self.runtime.load_options_ui()['max_channels'],500)
