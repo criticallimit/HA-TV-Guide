@@ -57,7 +57,7 @@ class Bus:
         self.listeners[event_type] = listener
         return lambda: self.listeners.pop(event_type, None)
     async def shutdown(self):
-        listener = self.listeners.get("homeassistant_stop")
+        listener = self.listeners.pop("homeassistant_stop", None)
         if listener is not None:
             await listener(None)
 

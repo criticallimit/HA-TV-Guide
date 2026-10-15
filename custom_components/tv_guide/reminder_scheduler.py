@@ -36,6 +36,8 @@ class TVGuideReminderScheduler:
         )
 
     async def _async_stop_on_shutdown(self, _event):
+        # The one-shot bus listener has already removed itself.
+        self._cancel_shutdown = None
         await self.async_stop()
 
     def stop(self):
