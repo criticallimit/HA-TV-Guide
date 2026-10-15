@@ -79,6 +79,50 @@ const server=http.createServer((req,res)=>{
   console.log(engineName,'DOM mutations for 24 unrelated updates:',unchanged);
   if(!diagnostic)assert.equal(unchanged,0,'Unchanged language and theme must not rewrite the view');
   await page.evaluate(()=>mutations.disconnect());
+  // Time navigation must retain decoded logos, including Other times -> Now.
+  await page.evaluate(async()=>{
+    window.navigationModel=model;
+    const channels=Array.from({length:200},(_,i)=>({...model.channels[i%20],id:'stress'+i,name:'Stress '+i}));
+    model={...model,channels,main_channel_ids:channels.map(c=>c.id),custom_channel_ids:channels.map(c=>c.id)};
+    await card._app.loadGuide();
+    window.navigationCards=[...card.shadowRoot.querySelectorAll('.channel-card')];
+    window.navigationBrands=navigationCards.map(c=>c.querySelector('.channel-brand'));
+    window.navigationLogos=navigationBrands.map(c=>[...c.querySelectorAll('img')]);
+    window.navigationRequests=requests.length;
+    window.navigationURL=location.href;
+  });
+  console.log(engineName,'200-channel guide loaded');
+  await page.locator('.channel-card').first().evaluate(section=>{
+    section.querySelectorAll('img').forEach(image=>image.loading='eager');
+  });
+  await page.waitForFunction(()=>[...card.shadowRoot.querySelector('.channel-card').querySelectorAll('img')].some(image=>image.complete&&image.naturalWidth>0));
+  console.log(engineName,'Logo loaded');
+  await page.evaluate(async()=>{
+    const root=card.shadowRoot;
+    for(let i=0;i<12;i++){
+      root.querySelector('[data-mode="other"]').click();
+      root.querySelector('#customDate').value='2026-10-15';
+      root.querySelector('#customTime').value='12:00';
+      root.querySelector('#applyCustomTime').click();
+      await new Promise(resolve=>setTimeout(resolve,25));
+      root.querySelector('[data-mode="now"]').click();
+      await new Promise(resolve=>setTimeout(resolve,25));
+    }
+  });
+  const navigation=await page.evaluate(()=>({
+    cards:navigationCards.every((c,i)=>card.shadowRoot.querySelectorAll('.channel-card')[i]===c),
+    brands:navigationBrands.every((c,i)=>navigationCards[i].querySelector('.channel-brand')===c),
+    logos:navigationLogos.every((images,i)=>images.every((image,j)=>navigationBrands[i].querySelectorAll('img')[j]===image)),
+    requests:requests.length-navigationRequests,url:location.href===navigationURL,
+    rows:card.shadowRoot.querySelectorAll('.program.current').length,
+  }));
+  console.log(engineName,'200-channel time navigation:',navigation);
+  assert.equal(navigation.cards,true,'Time navigation must preserve station containers');
+  assert.equal(navigation.brands,true,'Time navigation must preserve logo containers');
+  assert.equal(navigation.logos,true,'Time navigation must retain decoded logo images');
+  assert.equal(navigation.requests,0,'Complete guides switch times locally');
+  assert.equal(navigation.url,true);assert.equal(navigation.rows,200);
+  await page.evaluate(async()=>{model=navigationModel;await card._app.loadGuide();});
   await page.locator('[data-mode="2015"]').click();
   await page.locator('.program-link').first().click();
   await page.keyboard.press('Escape');
@@ -189,12 +233,13 @@ const server=http.createServer((req,res)=>{
   await page.locator('#preparationBadge').waitFor({state:'visible'});
   await page.evaluate(()=>{
     window.previousBrand=card.shadowRoot.querySelector('.channel-brand');
+    window.previousLogo=previousBrand.querySelector('img');
     window.previousProgrammes=card.shadowRoot.querySelector('.programs');
     previousBrand.querySelectorAll('img').forEach(image=>image.style.display='none');
   });
   await page.locator('#preparationBadge').click();
   await page.locator('#preparationRetry').click();
-  await page.waitForFunction(()=>card.shadowRoot.querySelector('.channel-brand')!==previousBrand,{},{timeout:3000});
+  await page.waitForFunction(()=>card.shadowRoot.querySelector('.channel-brand img')!==previousLogo,{},{timeout:3000});
   assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.programs')===previousProgrammes),true,'Repairing logos must preserve programme controls');
   await page.evaluate(()=>card.remove());
   assert.deepEqual(errors,[]);
