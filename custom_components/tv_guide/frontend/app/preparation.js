@@ -58,6 +58,11 @@
       if (!shown && current.first_install && !current.complete && !dismissed() && !document.querySelector('dialog[open]')) {
         shown = true; dialog.showModal();
       }
+      // Preparation is useful content even while the first EPG request is pending.
+      if ((!badge.hidden || dialog.open) && typeof notifyGuideViewReady === 'function') {
+        guideViewHasContent = true;
+        notifyGuideViewReady();
+      }
       if (logos.completed !== lastLogos) {
         lastLogos = logos.completed;
         if (typeof guide !== 'undefined' && guide && typeof render === 'function') render(true);

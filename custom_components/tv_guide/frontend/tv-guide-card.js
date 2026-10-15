@@ -101,7 +101,7 @@ class TVGuideCard extends HTMLElement {
       ) {
         if (event.data?.type === "tv-guide-request") void this._handleGuideRequest(event);
         else if (event.data?.type === "tv-guide-theme-request") this._sendThemeToIframe(true);
-        else if (event.data?.type === "tv-guide-theme-ready") this._iframe.style.opacity = "1";
+        else if (event.data?.type === "tv-guide-view-ready") this._iframe.style.opacity = "1";
       }
     };
   }
@@ -444,6 +444,11 @@ class TVGuideCard extends HTMLElement {
     url.searchParams.set("tv_guide_card","1");
     url.searchParams.set("tv_guide_theme",this._config.theme || "__dashboard__");
     this._lastThemeMessageSignature = "";
+    // Seed the same-origin document before its first paint, even after a theme change.
+    try {
+      sessionStorage.setItem("tv-guide-dashboard-theme:" + (this._config.theme || "__dashboard__"),
+        JSON.stringify(this._themeMessage()));
+    } catch {}
     iframe.title = "TV Guide";
     iframe.src = url.toString();
     iframe.style.height = this._config.height+"px";
@@ -453,8 +458,9 @@ class TVGuideCard extends HTMLElement {
     iframe.addEventListener("load",() => {
       if (this._iframe !== iframe || !this.isConnected) return;
       this._sendThemeToIframe(true);
-      // Show a readable TV Guide error even if the inner data request fails.
-      iframe.style.opacity = "1";
+      // A failed script must not leave an invisible document. Normal startup
+      // announces readiness after its first useful render, independently of load.
+      if (typeof iframe.contentWindow.notifyGuideViewReady !== "function") iframe.style.opacity = "1";
     });
     card.appendChild(iframe);
   }

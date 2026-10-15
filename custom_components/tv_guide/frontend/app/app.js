@@ -110,6 +110,13 @@ const inDashboardCard = dashboardParams.get("tv_guide_card") === "1";
 const dashboardThemeKey = "tv-guide-dashboard-theme:" + (dashboardParams.get("tv_guide_theme") || "__dashboard__");
 const dashboardDisplayModeKey = "tv-guide-dashboard-display-mode";
 let dashboardThemeState = null;
+let guideViewHasContent = false;
+let guideViewAnnounced = false;
+function notifyGuideViewReady() {
+  if (!inDashboardCard || guideViewAnnounced || !guideViewHasContent || !dashboardThemeState) return;
+  guideViewAnnounced = true;
+  window.parent.postMessage({type:"tv-guide-view-ready"}, window.location.origin);
+}
 
 function dashboardDisplayMode() {
   const configured = guide?.ui?.theme_mode;
@@ -157,7 +164,7 @@ window.addEventListener("message", (event) => {
   try {
     sessionStorage.setItem(dashboardThemeKey, JSON.stringify(state));
   } catch {}
-  window.parent.postMessage({type:"tv-guide-theme-ready"}, window.location.origin);
+  notifyGuideViewReady();
 });
 if (inDashboardCard) {
   // Synchronize as soon as scripts are ready, without waiting for logo downloads.
@@ -261,10 +268,11 @@ const fmt = TVGuideCore.fmt;
 const dateFmt = TVGuideCore.dateFmt;
 
 let guide = null;
-// A tiny, short-lived first-paint snapshot, scoped to this browser tab.
+// A bounded first-paint snapshot, scoped to this browser tab. Time coverage
+// decides whether an older snapshot can still produce a useful initial view.
 // Only store it when serialization fits the strict size budget; never add polling.
 const GUIDE_FIRST_PAINT_KEY = "tv-guide-first-paint-v1";
-const GUIDE_FIRST_PAINT_TTL_MS = 60 * 1000;
+const GUIDE_FIRST_PAINT_TTL_MS = 6 * 60 * 60 * 1000;
 const GUIDE_FIRST_PAINT_MAX_CHARS = 1024 * 1024;
 function showCachedGuide() {
   try {
@@ -274,6 +282,15 @@ function showCachedGuide() {
     if (!cached || cached.version !== 1 || Date.now() - cached.at > GUIDE_FIRST_PAINT_TTL_MS ||
         cached.at > Date.now() || !cached.guide || !Array.isArray(cached.guide.channels) ||
         !cached.guide.ui || cached.guide.refresh_running) return;
+    const initialMode = ["now","1800","2015","2200"].includes(cached.guide.ui.default_view)
+      ? cached.guide.ui.default_view : "now";
+    const target = TVGuideCore.targetForMode(initialMode,startOfDay(new Date()),null).getTime();
+    // Do not paint expired schedules or mistake a trimmed window for missing EPG.
+    if (cached.guide.channels.some(channel => {
+      const entries = channel.programs || [];
+      return entries.length && !entries.some(item =>
+        new Date(item.start).getTime() <= target && target < new Date(item.end).getTime());
+    })) return;
     guide = cached.guide;
     globalThis.TVGuideI18n?.configure({...guide.ui, country:guide.country});
     const columns = Number(guide.ui.columns_desktop || 5);
@@ -281,6 +298,7 @@ function showCachedGuide() {
     mode = ["now","1800","2015","2200"].includes(guide.ui.default_view) ? guide.ui.default_view : "now";
     document.body.dataset.initialized = "1";
     document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    syncHomeAssistantTheme();
     render();
   } catch {
     // Storage can be disabled or full; normal network-backed loading continues.
@@ -772,6 +790,7 @@ grid.addEventListener("click", event => {
 
 function render(retryLogos = false) {
   if (!guide) return;
+  guideViewHasContent = true;
   if (mode === "now") selectedDate = startOfDay(new Date());
   const channels = activeChannels();
   renderedChannels = new Map(channels.map(channel => [String(channel.id), channel]));
@@ -784,6 +803,7 @@ function render(retryLogos = false) {
       grid.replaceChildren(empty);
     }
     if (grid.firstElementChild.textContent !== message) grid.firstElementChild.textContent = message;
+    notifyGuideViewReady();
     return;
   }
 
@@ -822,6 +842,7 @@ function render(retryLogos = false) {
       progress.style.width = TVGuideCore.pct(programme.start, programme.end, now) + "%";
     }
   });
+  notifyGuideViewReady();
 }
 
 function setMode(nextMode) {
@@ -1031,6 +1052,8 @@ watchHomeAssistantTheme();
 showCachedGuide();
 Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(true).catch(() => loadGuide())]).catch(() => {
   if (!guide) grid.innerHTML = ("<div class=\"empty-channel-list\">" + escapeHtml(t("Das TV-Programm konnte nicht geladen werden. Bitte versuche es erneut.")) + "</div>");
+  guideViewHasContent = true;
+  notifyGuideViewReady();
 });
 document.addEventListener("visibilitychange", () => {
   if (document.hidden || guidePageSuspended) {

@@ -492,6 +492,71 @@ const server = http.createServer((req,res) => {
     assert.ok((await countryCard.locator('iframe').screenshot()).equals(await ref.screenshot({fullPage:false})),`Country ${country} and language ${language} must retain original pixels`);
     await host.close();await ref.close();
   }
+  // Startup after a long absence: hold authenticated data beyond document load.
+  for (const scenario of ['cached', 'expired', 'cold', 'storage-blocked', 'error', 'empty']) {
+    const page=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+    page.on('pageerror',error=>errors.push(error.message));
+    await page.clock.setFixedTime(new Date(fixed));
+    if(scenario==='storage-blocked')await page.addInitScript(()=>{
+      Storage.prototype.getItem=Storage.prototype.setItem=()=>{throw new Error('Storage disabled');};
+    });
+    await page.goto(base);
+    await page.addScriptTag({path:path.join(root,'tv-guide-card.js')});
+    await page.evaluate(({data,scenario})=>{
+      const snapshot=structuredClone(data);
+      snapshot.ui={...snapshot.ui,language:'de',theme_mode:'auto'};
+      // The previous programme has ended since the snapshot was saved.
+      for(const ch of snapshot.channels){
+        ch.programs[0].end=new Date(Date.now()-60000).toISOString();
+        ch.programs[1].start=new Date(Date.now()-60000).toISOString();
+      }
+      if(scenario==='cached'||scenario==='expired'){
+        const cached=structuredClone(snapshot);
+        if(scenario==='expired')for(const ch of cached.channels)for(const p of ch.programs){
+          p.start=new Date(Date.parse(p.start)-86400000).toISOString();
+          p.end=new Date(Date.parse(p.end)-86400000).toISOString();
+        }
+        sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:Date.now()-5*60000,guide:cached}));
+        // An old light theme must not flash before the current dark theme.
+        sessionStorage.setItem('tv-guide-dashboard-theme:__dashboard__',JSON.stringify({vars:{'--primary-background-color':'#ffffff'},darkMode:false}));
+      }
+      window.startupGate=new Promise(resolve=>{window.releaseStartup=resolve;});
+      window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
+        if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+        if(message.service==='get_preparation_status')return {response:{first_install:false,complete:true}};
+        await startupGate;
+        if(scenario==='error')throw new Error('Guide unavailable');
+        return {response:{...structuredClone(snapshot),channels:scenario==='empty'?[]:structuredClone(snapshot.channels)}};
+      }};
+      document.body.style.setProperty('--primary-background-color','#101820');
+      const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);
+    },{data:fixture,scenario});
+    const element=page.locator('tv-guide-card').locator('iframe');
+    const inner=await (await element.elementHandle()).contentFrame();
+    await inner.waitForLoadState('load');
+    await inner.waitForFunction(()=>Boolean(dashboardThemeState));
+    if(scenario==='cached'){
+      await page.waitForFunction(()=>document.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.opacity==='1');
+      assert.equal(await inner.locator('.channel-card').count(),5,'A five-minute-old snapshot should appear before the data reply');
+      assert.equal(await inner.locator('.program.current strong').first().textContent(),'Film am Abend','Recompute the current programme at reopening');
+      assert.equal(await inner.locator('html').getAttribute('data-ha-theme'),'dark');
+      assert.equal(await inner.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--primary-background-color').trim()),'#101820');
+      await inner.evaluate(()=>{window.firstCard=document.querySelector('.channel-card');});
+    }else{
+      assert.equal(await element.evaluate(el=>el.style.opacity),'0','Theme and document load alone must not reveal an empty guide');
+      assert.equal(await inner.locator('.channel-card').count(),0,'Expired snapshots must not be painted');
+    }
+    await page.evaluate(()=>releaseStartup());
+    await page.waitForFunction(()=>document.querySelector('tv-guide-card').shadowRoot.querySelector('iframe').style.opacity==='1');
+    if(scenario==='error'||scenario==='empty')await inner.locator('.empty-channel-list').waitFor();
+    else await inner.locator('.channel-card').first().waitFor();
+    if(scenario==='cached'){
+      await inner.waitForFunction(()=>lastGuideLoadedAt>0);
+      assert.equal(await inner.evaluate(()=>firstCard===document.querySelector('.channel-card')),true,'Background refresh must preserve unchanged cards');
+    }
+    await page.close();
+  }
+  console.log('PASS startup after cache expiry, current programme rollover, theme change, blocked storage, empty guide and failed requests');
   assert.deepEqual(errors,[]);
   console.log('PASS pixel parity for all ten countries and all eight interface languages');
   await browser.close();server.close();
