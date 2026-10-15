@@ -379,7 +379,7 @@ const server = http.createServer((req,res) => {
   console.log('PASS pixel parity for all ten countries');
 
   // Delayed initial data must leave a usable native toolbar, never a hidden iframe.
-  for(const scenario of ['cached','expired','cold','storage-blocked','error','empty']){
+  for(const scenario of ['cached','expired','invalid-cache-time','cold','storage-blocked','error','empty']){
     const page=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
     page.on('pageerror',error=>errors.push(error.message));await page.clock.setFixedTime(new Date(fixed));
     if(scenario==='storage-blocked')await page.addInitScript(()=>{Storage.prototype.getItem=Storage.prototype.setItem=()=>{throw Error('Storage disabled');};});
@@ -387,10 +387,10 @@ const server = http.createServer((req,res) => {
     await page.evaluate(({data,scenario})=>{
       const snapshot=structuredClone(data);
       for(const ch of snapshot.channels){ch.programs[0].end=new Date(Date.now()-60000).toISOString();ch.programs[1].start=new Date(Date.now()-60000).toISOString();}
-      if(['cached','expired'].includes(scenario)){
+      if(['cached','expired','invalid-cache-time'].includes(scenario)){
         const cached=structuredClone(snapshot);
         if(scenario==='expired')for(const ch of cached.channels)for(const p of ch.programs){p.start=new Date(Date.parse(p.start)-86400000).toISOString();p.end=new Date(Date.parse(p.end)-86400000).toISOString();}
-        sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:Date.now()-5*60000,guide:cached}));
+        sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:scenario==='invalid-cache-time'?'invalid':Date.now()-5*60000,guide:cached}));
       }
       window.gate=new Promise(resolve=>window.release=resolve);
       window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){

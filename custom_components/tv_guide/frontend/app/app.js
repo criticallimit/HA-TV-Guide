@@ -123,7 +123,7 @@ function showCachedGuide() {
     const raw = sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY);
     if (!raw || raw.length > GUIDE_FIRST_PAINT_MAX_CHARS) return;
     const cached = JSON.parse(raw);
-    if (!cached || cached.version !== 1 || Date.now() - cached.at > GUIDE_FIRST_PAINT_TTL_MS ||
+    if (!cached || cached.version !== 1 || !Number.isFinite(cached.at) || Date.now() - cached.at > GUIDE_FIRST_PAINT_TTL_MS ||
         cached.at > Date.now() || !cached.guide || !Array.isArray(cached.guide.channels) ||
         !cached.guide.ui || cached.guide.refresh_running) return;
     const initialMode = ["now","1800","2015","2200"].includes(cached.guide.ui.default_view)
@@ -676,6 +676,7 @@ function setMode(nextMode) {
 function initCustomDate() {
   customDate.value = dateKey(selectedDate);
   customDate.min = dateKey(new Date());
+  customDate.max = "";
   if (guide?.channels?.length) {
     let latest = guide.feed_latest_end ? new Date(guide.feed_latest_end).getTime() : -Infinity;
     for (const channel of guide.channels) {
@@ -849,6 +850,12 @@ showChannelSettings.addEventListener("click", openChannelSettings);
 saveChannelSettings.addEventListener("click", () => persistChannelSettings(false));
 resetChannelSettings.addEventListener("click", () => persistChannelSettings(true));
 cancelChannelSettings.addEventListener("click", () => channelSettingsDialog.close());
+channelSettingsDialog.addEventListener("close", () => {
+  // Close events are queued; do not clear a catalogue that was already reopened.
+  if (channelSettingsDialog.open) return;
+  ++channelSettingsRequest;
+  channelPicker.beginLoading();
+});
 detail.querySelector(".close").addEventListener("click", () => detail.close());
 bookmarksDialog.querySelector(".bookmarks-close").addEventListener("click", () => bookmarksDialog.close());
 appSettingsDialog.querySelector(".app-settings-close").addEventListener("click", () => appSettingsDialog.close());
