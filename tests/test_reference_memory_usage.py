@@ -80,20 +80,6 @@ class MemoryTests(unittest.TestCase):
         app.PERSONAL_CHANNELS.save([], [], self.active)
         self.assertEqual(set(self.registry), {"de"})
 
-    def test_background_refresh_releases_unused_stores_after_each_country(self):
-        created = []
-        def create(country):
-            store = SimpleNamespace(country=country, refresh_running=False, _cache_fresh=lambda: False)
-            def refresh(force=False):
-                store.refresh_running = False
-            store.refresh = refresh
-            created.append(store)
-            return store
-        with patch.object(app, "COUNTRIES", {key: app.COUNTRIES[key] for key in ("de", "at", "ch")}), \
-                patch.object(app, "EPGStore", side_effect=create):
-            app.preload_country_caches_once(delay_seconds=0)
-        self.assertEqual([store.country for store in created], ["at", "ch"])
-        self.assertEqual(set(self.registry), {"de"})
 
     def test_request_with_evicted_store_cannot_start_a_duplicate_refresh(self):
         retired = app.EPGStore("at")

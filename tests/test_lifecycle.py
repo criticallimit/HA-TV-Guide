@@ -32,6 +32,9 @@ class Entries:
         self.reloaded = []
         self.fail = None
         self.unload_ok = True
+    def async_update_entry(self, entry, **values):
+        for key,value in values.items():
+            setattr(entry,key,value)
     async def async_forward_entry_setups(self, entry, platforms):
         self.forwarded.append(entry.entry_id)
         if self.fail:
@@ -177,6 +180,13 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         lock.release()
         self.assertTrue(await unload)
         self.assertEqual(self.hass.data['tv_guide_saved'],{})
+
+    async def test_obsolete_mode_flag_is_removed_without_losing_user_settings(self):
+        self.entry.data={'country':'at','backend_mode':'original'}
+        self.entry.options={'language':'en','backend_mode':'old','columns_desktop':4}
+        await self.module.async_setup_entry(self.hass,self.entry)
+        self.assertEqual(self.entry.data,{'country':'at'})
+        self.assertEqual(self.entry.options,{'language':'en','columns_desktop':4})
 
     async def test_sender_options_notify_calendar_without_feed_reload(self):
         self.entry.data = {'feed_url':'https://example.org/feed.xml','country':'de'}

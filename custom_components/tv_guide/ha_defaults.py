@@ -17,5 +17,5 @@ def installation_defaults(config):
         country = "gb"
     if country not in COUNTRY_FEEDS:
         country = LANGUAGE_COUNTRIES.get(language, "de")
-    return {"country": country, "language": language, "backend_mode": "original",
+    return {"country": country, "language": language,
             "channels": [], "notification_service": "persistent_notification.create"}

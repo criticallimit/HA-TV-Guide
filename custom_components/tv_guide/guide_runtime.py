@@ -51,7 +51,6 @@ class GuideRuntime:
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
-        self._preload_index = 0
         self._wake = wake
         self._guide_cache = None
         self._guide_cached_at = 0.0
@@ -74,8 +73,10 @@ class GuideRuntime:
             previous = {}
         if not isinstance(previous, dict):
             previous = {}
+        persisted_options = {**previous, **options, "country": options.get("country") or "de"}
+        persisted_options.pop("backend_mode", None)
         options_tmp = options_path.with_suffix(".tmp")
-        options_tmp.write_text(json.dumps({**previous, **options, "country": options.get("country") or "de"}), encoding="utf-8")
+        options_tmp.write_text(json.dumps(persisted_options), encoding="utf-8")
         options_tmp.replace(options_path)
         sys.modules[name] = runtime
         try:
@@ -212,29 +213,6 @@ class GuideRuntime:
         if future is not None:
             future.result()
 
-    def preload_next(self):
-        """Warm one inactive country per HA timer tick, keeping active work first."""
-        with self._lock:
-            if self.closed:
-                return
-            with self.runtime.SETTINGS_LOCK:
-                if any(store.refresh_running for store in self.runtime.COUNTRY_STORES.values()):
-                    return
-                countries = list(self.runtime.COUNTRIES)
-                for _ in countries:
-                    country = countries[self._preload_index % len(countries)]
-                    self._preload_index += 1
-                    if country != self.runtime.STORE.country:
-                        break
-                store = self.runtime.COUNTRY_STORES.get(country)
-                if store is None:
-                    store = self.runtime.EPGStore(country)
-                    self.runtime.COUNTRY_STORES[country] = store
-                if store._cache_fresh():
-                    self.runtime.prune_country_stores()
-                    return
-                store.refresh_running = True
-            return self.start_background(store.refresh)
 
     def request(self, endpoint: str, method: str, body=None):
         """Dispatch the original route code in-process, without opening HTTP ports."""

@@ -31,7 +31,8 @@ def async_register_ui_services(hass):
     async def persist_guide_settings(entry, coordinator):
         settings=await coordinator.async_guide_request('settings')
         changes={key:settings[key] for key in PRESENTATION_OPTIONS}
-        hass.config_entries.async_update_entry(entry,options={**entry.options,**changes,'backend_mode':'original'})
+        options={key:value for key,value in entry.options.items() if key!='backend_mode'}
+        hass.config_entries.async_update_entry(entry,options={**options,**changes})
         scheduler=hass.data.get(DOMAIN+'_reminder_schedulers',{}).get(entry.entry_id)
         if scheduler is not None:
             scheduler.notification_service=settings['notification_service']

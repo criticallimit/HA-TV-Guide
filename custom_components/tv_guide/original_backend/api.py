@@ -6,37 +6,17 @@ The application context is supplied by services.py; all mutable state is shared.
 
 import json
 import re
-from http.server import SimpleHTTPRequestHandler
 from urllib.parse import urlparse
 
 from .json_files import read_json_file
 
 
-class GuideRequestHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        # Revalidate the entry page so updates cannot keep an obsolete settings UI.
-        path = urlparse(self.path).path
-        if path.endswith("/") or path.endswith(".html"):
-            self.send_header("Cache-Control", "no-cache")
-        super().end_headers()
-
-    def translate_path(self, path):
-        raw = urlparse(path).path
-        rel = raw.lstrip("/") or "index.html"
-        candidate = (self.runtime.WWW / rel).resolve()
-        root = self.runtime.WWW.resolve()
-        if candidate == root or root in candidate.parents:
-            return str(candidate)
-        return str(root / "__invalid_path__")
+class GuideRequestHandler:
+    """Dispatch programme operations; the native caller supplies JSON capture."""
 
     def _json(self, payload, status=200):
-        body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        raise NotImplementedError("The native request adapter must capture this response")
+
 
     def do_GET(self):
         store = self.runtime.STORE
@@ -124,7 +104,7 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
         if path.endswith("/api/refresh") or path == "/api/refresh":
             store.refresh(force=True)
             return self._json({"ok": store.last_error is None, "error": store.last_error})
-        return super().do_GET()
+        raise ValueError("Unsupported in-process guide route")
 
     def do_POST(self):
         store = self.runtime.STORE
@@ -238,15 +218,3 @@ class GuideRequestHandler(SimpleHTTPRequestHandler):
             return self._json({"ok": False, "error": "Nicht gefunden."}, status=404)
         except Exception as exc:
             return self._json({"ok": False, "error": str(exc)}, status=400)
-
-    def log_request(self, code="-", size="-"):
-        try:
-            if 200 <= int(code) < 400:
-                return
-        except (TypeError, ValueError):
-            pass
-        super().log_request(code, size)
-
-    def log_message(self, fmt, *args):
-        print("[TV Guide]", fmt % args, flush=True)
-

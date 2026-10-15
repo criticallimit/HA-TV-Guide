@@ -32,7 +32,7 @@ class DefaultsTests(unittest.IsolatedAsyncioTestCase):
     async def test_country_and_language_use_independent_ha_settings(self):
         result=self.defaults(types.SimpleNamespace(country='CH',language='fr-CH'))
         self.assertEqual((result['country'],result['language']),('ch','fr'))
-        self.assertEqual(result['backend_mode'],'original')
+        self.assertNotIn('backend_mode',result)
         self.assertNotIn('feed_url',result)
 
     async def test_missing_and_unsupported_locale_never_require_a_question(self):

@@ -2,7 +2,6 @@
 from hashlib import sha256
 import json
 import logging
-from pathlib import Path
 import re
 import threading
 from urllib.request import Request, build_opener, HTTPRedirectHandler

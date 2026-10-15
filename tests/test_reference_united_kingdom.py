@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
-from reference_support import app
+from reference_support import app, backend
 
 class UnitedKingdomTests(unittest.TestCase):
     def setUp(self):
@@ -115,7 +115,7 @@ class UnitedKingdomTests(unittest.TestCase):
                 source = app._logo_source_for_channel(channel, theme)
                 self.assertTrue(source, f"{original['name']} / {theme}")
                 self.assertFalse(source.startswith(("http://", "https://")))
-                self.assertTrue(app.normalized_logo_path(channel, theme).is_file())
+                self.assertTrue(backend._logos.contains(source), source)
 
 
 if __name__ == "__main__":

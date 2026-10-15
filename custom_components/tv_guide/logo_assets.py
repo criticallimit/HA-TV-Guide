@@ -1,4 +1,4 @@
-"""Read the integration's complete offline logo library from deduplicated bundles."""
+"""Read the integration's indexed local logo archives from its own storage."""
 import base64
 from functools import lru_cache
 from hashlib import sha256
@@ -10,7 +10,7 @@ import zipfile
 
 
 class LogoLibrary:
-    """Only packaged, indexed images are readable; no external files or downloads."""
+    """Read only indexed artwork; downloading is owned by the separate logo worker."""
 
     def __init__(self, root=None):
         self.root=Path(root) if root is not None else Path(__file__).parent/'logo_library'

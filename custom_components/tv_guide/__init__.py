@@ -24,6 +24,13 @@ PLATFORMS = (Platform.SENSOR, Platform.BINARY_SENSOR, Platform.CALENDAR)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the integration and roll back local resources on setup failures."""
+    obsolete = {}
+    for key in ("data", "options"):
+        values = getattr(entry, key)
+        if "backend_mode" in values:
+            obsolete[key] = {name:value for name,value in values.items() if name != "backend_mode"}
+    if obsolete:
+        hass.config_entries.async_update_entry(entry, **obsolete)
     options = {**entry.data, **entry.options}
     coordinator = None
     saved = None

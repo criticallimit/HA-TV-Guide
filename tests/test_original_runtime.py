@@ -45,6 +45,24 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertFalse(hasattr(self.runtime,'load_bookmarks'))
         with self.assertRaises(ValueError):self.backend.request('bookmarks','POST',{})
 
+    def test_native_engine_has_no_obsolete_http_or_logo_workers(self):
+        for name in ('normalized_logo_path','normalized_logo_data','preload_country_caches_once'):
+            self.assertFalse(hasattr(self.runtime,name),name)
+        self.assertFalse(hasattr(self.runtime.Handler,'translate_path'))
+        self.assertFalse(hasattr(self.runtime.Handler,'send_response'))
+        self.assertFalse(hasattr(self.backend,'preload_next'))
+
+    def test_obsolete_mode_is_removed_from_runtime_options_on_restart(self):
+        self.runtime.OPTIONS_FILE.write_text(json.dumps({'backend_mode':'old','theme_mode':'light'}),encoding='utf-8')
+        self.backend.close()
+        replacement=type(self.backend)(self.runtime.OPTIONS_FILE.parent,{'country':'de','backend_mode':'original'},{'language':'de'},lambda:None)
+        try:
+            options=json.loads(replacement.runtime.OPTIONS_FILE.read_text(encoding='utf-8'))
+            self.assertNotIn('backend_mode',options)
+            self.assertEqual(options['theme_mode'],'light')
+        finally:
+            replacement.close()
+
     def test_coordinator_snapshot_is_reused_until_backend_changes(self):
         first = self.backend.state_snapshot()
         second = self.backend.state_snapshot()
@@ -179,7 +197,7 @@ class GuideRuntimeTests(unittest.TestCase):
         inactive=self.runtime.EPGStore('at')
         self.runtime.COUNTRY_STORES['at']=inactive
         calls=[]
-        with patch.object(self.runtime.STORE,'ensure_fresh_async',side_effect=lambda:calls.append('de')),patch.object(inactive,'ensure_fresh_async',side_effect=lambda:calls.append('at')),patch.object(self.backend,'preload_next',side_effect=lambda:calls.append('preload')):
+        with patch.object(self.runtime.STORE,'ensure_fresh_async',side_effect=lambda:calls.append('de')),patch.object(inactive,'ensure_fresh_async',side_effect=lambda:calls.append('at')):
             self.backend.maintain_caches()
         # An unselected, idle country must not trigger background maintenance.
         self.assertEqual(calls,['de'])
@@ -305,23 +323,7 @@ class GuideRuntimeTests(unittest.TestCase):
         try:self.assertEqual(path.read_bytes(),original)
         finally:replacement.close()
 
-    def test_preload_warms_one_inactive_country_with_owned_worker(self):
-        calls=[]
-        def refresh(store):
-            calls.append((store.country,threading.current_thread().name))
-            store.refresh_running=False
-        with patch.object(self.runtime.EPGStore,'_cache_fresh',return_value=False),patch.object(self.runtime.EPGStore,'refresh',autospec=True,side_effect=refresh):
-            job=self.backend.preload_next()
-            job.result(timeout=5)
-        self.assertEqual(len(calls),1)
-        self.assertNotEqual(calls[0][0],'de')
-        self.assertTrue(calls[0][1].startswith('tv-guide'))
 
-    def test_preload_defers_while_active_country_is_refreshing(self):
-        self.runtime.STORE.refresh_running=True
-        with patch.object(self.runtime.EPGStore,'refresh') as refresh:
-            self.assertIsNone(self.backend.preload_next())
-            refresh.assert_not_called()
 
     def test_state_snapshot_reports_only_active_country_refresh(self):
         inactive=self.runtime.EPGStore('at')
