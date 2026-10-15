@@ -39,6 +39,8 @@ function updateScrollEndSpace() {
 scope.observe(grid, updateScrollEndSpace);
 scope.observe(root, updateScrollHeaderHeight);
 function updateScrollHeaderHeight() {
+  root.style.setProperty("--guide-width", root.clientWidth + "px");
+  root.style.setProperty("--guide-height", root.clientHeight + "px");
   root.style.setProperty("--guide-header-height", guideHeader.offsetHeight + "px");
   updateScrollEndSpace();
 }

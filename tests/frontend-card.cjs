@@ -396,6 +396,7 @@ const server = http.createServer((req,res) => {
       window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
         if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
         if(message.service==='get_preparation_status')return {response:{complete:true}};
+        window.startupReads=(window.startupReads||0)+1;
         await gate;if(scenario==='error')throw Error('Guide unavailable');
         return {response:{...snapshot,channels:scenario==='empty'?[]:snapshot.channels}};
       }};
@@ -408,6 +409,13 @@ const server = http.createServer((req,res) => {
     assert.equal(await view.getAttribute('data-ha-theme'),'dark');
     if(scenario==='cached')assert.equal(await view.locator('.program.current strong').first().textContent(),'Film am Abend');
     else assert.equal(await view.locator('.channel-card').count(),0);
+    if(scenario==='cold'){
+      await card.evaluate(el=>{el.remove();document.body.append(el);});
+      await page.waitForFunction(()=>startupReads===2);
+      assert.equal(await view.locator('.empty-channel-list').count(),0,'Cancelling startup must not paint a spurious error');
+      await page.evaluate(()=>new Promise(resolve=>setTimeout(resolve,50)));
+      assert.equal(await page.evaluate(()=>startupReads),2,'A cancelled startup must not issue a stale fallback after reconnect');
+    }
     await page.evaluate(()=>release());
     if(['error','empty'].includes(scenario))await view.locator('.empty-channel-list').waitFor();
     else await view.locator('.channel-card').first().waitFor();
@@ -449,6 +457,8 @@ const server = http.createServer((req,res) => {
   await left.locator('.program-link').first().click();
   await left.locator('#detail').waitFor({state:'visible'});
   assert.equal(await right.locator('dialog[open]').count(),0);
+  assert.ok(await left.locator('#detail').evaluate(el=>el.getBoundingClientRect().width<=472),'A native dialog must stay within its 500px card width');
+  assert.ok(await left.locator('.guide-root').evaluate(el=>el.scrollWidth<=500),'Responsive layout must use card width rather than browser width');
   await isolated.keyboard.press('Escape');await left.locator('#detail').waitFor({state:'hidden'});
   assert.equal(await isolated.locator('iframe').count(),0);
   await left.evaluate(el=>{window.savedCard=el;window.savedRoot=el.shadowRoot.querySelector('.guide-root');window.savedProgram=el.shadowRoot.querySelector('.program-link');});

@@ -13,6 +13,17 @@ def build():
     styles = re.sub(r'(?m)^body \{', '.guide-root {', styles)
     styles = styles.replace('url("fonts/', 'url("/tv_guide/frontend/app/fonts/')
     styles = re.sub(r'@media\s*\((max|min)-width:\s*([^)]*)\)', r'@container tv-guide (\1-width: \2)', styles)
+    # Top-layer dialogs still size against their card, as they did in the iframe.
+    for width, gap in [(420,28),(620,28),(940,24),(760,24)]:
+        styles = re.sub(r'width:\s*min\(' + str(width) + r'px,\s*calc\(100% - ' + str(gap) + r'px\)\)',
+            f'width:min({width}px,calc(var(--guide-width) - {gap}px))', styles)
+    styles = styles.replace('calc(100vh - 32px)', 'calc(var(--guide-height) - 32px)')
+    styles = styles.replace('calc(100dvh - 32px)', 'min(calc(var(--guide-height) - 32px),calc(100dvh - 32px))')
+    styles = styles.replace('88vh', 'calc(var(--guide-height) * .88)')
+    styles = styles.replace('88dvh', 'min(calc(var(--guide-height) * .88),88dvh)')
+    styles += '\n.guide-root dialog {max-height:min(calc(var(--guide-height) - 32px),calc(100dvh - 32px));}\n'
+    styles += '\n.guide-root .app-settings-dialog {max-height:min(calc(var(--guide-height) * .88),88dvh); }\n'
+    styles += '\n.guide-root .channel-settings-dialog {max-height:min(820px,calc(var(--guide-height) - 32px),calc(100dvh - 32px));}\n'
     styles += '''
 :host { display:block; width:100%; }
 ha-card { display:block; padding:0; margin:0; border:0; box-shadow:none;
