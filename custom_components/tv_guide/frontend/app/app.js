@@ -627,23 +627,27 @@ function render(retryLogos = false) {
   const now = new Date();
   channels.forEach((channel, index) => {
     const id = String(channel.id);
-    // Progress changes independently of programme content and must not replace focused buttons.
-    const markup = TVGuideCore.renderChannelCard(channel, mode, selectedDate, customTarget, "/tv_guide/frontend/app/", false);
+    // A time switch changes programmes, never the station's decoded logos.
+    // Keep the card and branding mounted to avoid image/layout churn in WebKit.
+    const brandMarkup = TVGuideCore.channelHeader(channel, "/tv_guide/frontend/app/");
+    const programsMarkup = TVGuideCore.renderPrograms(channel, mode, selectedDate, customTarget, false);
     let card = renderedCards.get(id);
-    if (!card || card.markup !== markup) {
-      const template = document.createElement("template");
-      template.innerHTML = markup;
-      const element = template.content.firstElementChild;
-      card?.element.replaceWith(element);
-      card = {markup, element};
+    if (!card) {
+      const element = document.createElement("section");
+      element.className = "channel-card";
+      element.dataset.channelId = id;
+      element.innerHTML = '<div class="channel-brand"></div><div class="programs"></div>';
+      card = {element, brandMarkup:null, programsMarkup:null};
       renderedCards.set(id, card);
-    } else if (retryLogos && Array.from(card.element.querySelectorAll(".channel-logo")).some(image => image.style.display === "none")) {
-      // Failed img elements keep their fallback state even after a package arrives.
-      // Replace only the branding so programme controls and focus remain intact.
-      const brand = document.createElement("div");
-      brand.className = "channel-brand";
-      brand.innerHTML = TVGuideCore.channelHeader(channel, "/tv_guide/frontend/app/");
-      card.element.querySelector(".channel-brand").replaceWith(brand);
+    }
+    const failedLogo = retryLogos && Array.from(card.element.querySelectorAll(".channel-logo")).some(image => image.style.display === "none");
+    if (card.brandMarkup !== brandMarkup || failedLogo) {
+      card.element.querySelector(".channel-brand").innerHTML = brandMarkup;
+      card.brandMarkup = brandMarkup;
+    }
+    if (card.programsMarkup !== programsMarkup) {
+      card.element.querySelector(".programs").innerHTML = programsMarkup;
+      card.programsMarkup = programsMarkup;
     }
     if (grid.children[index] !== card.element) grid.insertBefore(card.element, grid.children[index] || null);
     const progress = card.element.querySelector(".progress-fill");
