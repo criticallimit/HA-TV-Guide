@@ -2,6 +2,7 @@ import {translations} from './translations.js';
 export function createI18n(root, getHass) {
   const supported = ['da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'];
   let language = 'de';
+  let translated = false;
   function baseLanguage(value) {
     const code = String(value || '').toLowerCase().replace('_', '-').split('-')[0];
     return code === 'no' ? 'nb' : code;
@@ -59,8 +60,10 @@ export function createI18n(root, getHass) {
   function configure(options = {}) {
     const next = resolve(options);
     const changed = next !== language;
+    if (!changed && translated) return false;
     language = next;
     translateDocument();
+    translated = true;
     return changed;
   }
   const formatters = new Map();

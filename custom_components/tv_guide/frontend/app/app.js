@@ -34,14 +34,17 @@ function updateScrollEndSpace() {
       space = Math.max(0, root.clientHeight - guideHeader.offsetHeight - lastRowHeight - bottomPadding);
     }
   }
-  grid.style.paddingBottom = space + "px";
+  const padding = space + "px";
+  if (grid.style.paddingBottom !== padding) grid.style.paddingBottom = padding;
 }
 scope.observe(grid, updateScrollEndSpace);
 scope.observe(root, updateScrollHeaderHeight);
 function updateScrollHeaderHeight() {
-  root.style.setProperty("--guide-width", root.clientWidth + "px");
-  root.style.setProperty("--guide-height", root.clientHeight + "px");
-  root.style.setProperty("--guide-header-height", guideHeader.offsetHeight + "px");
+  const dimensions = {"--guide-width":root.clientWidth,"--guide-height":root.clientHeight,"--guide-header-height":guideHeader.offsetHeight};
+  for (const [name, size] of Object.entries(dimensions)) {
+    const value = size + "px";
+    if (root.style.getPropertyValue(name) !== value) root.style.setProperty(name, value);
+  }
   updateScrollEndSpace();
 }
 scope.observe(guideHeader, updateScrollHeaderHeight);
@@ -108,8 +111,9 @@ const appSettingsStatus = root.querySelector("#appSettingsStatus");
 
 function syncHomeAssistantTheme() {
   const mode = guide?.ui?.theme_mode || "auto";
-  root.dataset.haTheme = mode === "dark" || mode === "light" ? mode : (getTheme().darkMode ? "dark" : "light");
-  root.dataset.haThemeSource = "home-assistant";
+  const theme = mode === "dark" || mode === "light" ? mode : (getTheme().darkMode ? "dark" : "light");
+  if (root.dataset.haTheme !== theme) root.dataset.haTheme = theme;
+  if (root.dataset.haThemeSource !== "home-assistant") root.dataset.haThemeSource = "home-assistant";
 }
 
 const fmt = TVGuideCore.fmt;
@@ -152,6 +156,24 @@ function showCachedGuide() {
     // Storage can be disabled or full; normal network-backed loading continues.
   }
 }
+function guideWindow(snapshot, target) {
+  const channels = snapshot.channels.map(channel => {
+    const entries = channel.programs || [];
+    const index = entries.findIndex(item => new Date(item.end).getTime() > target);
+    return {...channel, programs:index < 0 ? [] : entries.slice(index,index+7)};
+  });
+  return {...snapshot, channels, _preview:true};
+}
+function releaseGuideTimelines() {
+  if (!guide) return;
+  // Lovelace may retain detached cards. Keep their visible rows and selection,
+  // but release the much larger full EPG and every channel reference to it.
+  const target = TVGuideCore.targetForMode(mode, selectedDate, customTarget).getTime();
+  guide = guideWindow(guide, target);
+  renderedChannels = new Map(activeChannels().map(channel => [String(channel.id),channel]));
+  activeDetail = null;
+  lastGuideLoadedAt = 0;
+}
 function saveFirstPaintGuide(snapshot) {
   if (snapshot.refresh_running) return;
   // Prepare the snapshot when idle to avoid blocking a user interaction.
@@ -163,12 +185,7 @@ function saveFirstPaintGuide(snapshot) {
       const now = Date.now();
       const initialMode = snapshot.ui?.default_view || "now";
       const target = TVGuideCore.targetForMode(initialMode,startOfDay(new Date()),null).getTime();
-      const channels = snapshot.channels.map(channel => {
-        const entries = channel.programs || [];
-        const index = entries.findIndex(item => new Date(item.end).getTime() > target);
-        return {...channel, programs:index < 0 ? [] : entries.slice(index,index+7)};
-      });
-      const data = JSON.stringify({version:1, at:now, guide:{...snapshot, channels}});
+      const data = JSON.stringify({version:1, at:now, guide:guideWindow(snapshot, target)});
       if (data.length <= GUIDE_FIRST_PAINT_MAX_CHARS) sessionStorage.setItem(GUIDE_FIRST_PAINT_KEY, data);
       else sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY);
     } catch {}
@@ -921,6 +938,7 @@ scope.listen(document, "visibilitychange", () => {
 scope.listen(window, "pagehide", () => {
   guidePageSuspended = true;
   ++lifecycleRevision;
+  releaseGuideTimelines();
   ++guideRequest;
   ++bookmarksRequest;
   ++remindersRequest;
@@ -950,6 +968,7 @@ const preparation = createPreparation({root, fetch, scope, render:()=>{if (guide
 function suspend() {
   guidePageSuspended = true;
   ++lifecycleRevision;
+  releaseGuideTimelines();
   ++guideRequest; ++bookmarksRequest; ++remindersRequest;
   clearTimeout(startupReloadTimer); startupReloadTimer = null;
   root.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());

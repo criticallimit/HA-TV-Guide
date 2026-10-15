@@ -1,5 +1,5 @@
-import {createGuideApp} from './app/app.js?v=native-1';
-import {viewMarkup, viewStyles} from './app/view-template.js?v=native-1';
+import {createGuideApp} from './app/app.js?v=native-2';
+import {viewMarkup, viewStyles} from './app/view-template.js?v=native-2';
 
 let fontsRegistered = false;
 function registerGuideFonts() {
@@ -105,6 +105,7 @@ class TVGuideCard extends HTMLElement {
     this._themeFingerprint = "";
     this._themeObserver = null;
     this._themeSyncFrame = null;
+    this._lastViewTheme = "";
     this._renderShell();
   }
 
@@ -112,8 +113,16 @@ class TVGuideCard extends HTMLElement {
     if (!this.isConnected || !this._app || this._themeSyncFrame !== null) return;
     this._themeSyncFrame = window.requestAnimationFrame(() => {
       this._themeSyncFrame = null;
-      if (this.isConnected) this._app.updateTheme();
+      if (!this.isConnected) return;
+      const signature = this._viewThemeSignature();
+      if (signature === this._lastViewTheme) return;
+      this._lastViewTheme = signature;
+      this._app.updateTheme();
     });
+  }
+
+  _viewThemeSignature() {
+    return JSON.stringify([this._themeState(), this._hass?.locale?.language || this._hass?.language || ""]);
   }
 
   _watchInheritedTheme() {
@@ -373,6 +382,7 @@ class TVGuideCard extends HTMLElement {
     if (!this.isConnected || this._started || !this._hass || this._isCardPicker()) return;
     this._started = true;
     this._renderShell();
+    this._lastViewTheme = this._viewThemeSignature();
     this._app = createGuideApp({
       root:this.shadowRoot.querySelector('.guide-root'),
       request:request=>this._request(request),

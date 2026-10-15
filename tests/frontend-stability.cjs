@@ -1,0 +1,103 @@
+/* Cross-engine lifecycle and work-budget regressions for native Lovelace cards. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const http=require('node:http');
+const {chromium,webkit}=require('playwright');
+const root=path.resolve(process.env.TVG_FRONTEND_ROOT||'custom_components/tv_guide/frontend');
+const fixed='2026-10-14T18:00:00Z';
+const engineName=process.env.TVG_ENGINE||'chromium';
+const diagnostic=process.env.TVG_DIAGNOSTIC==='1';
+const server=http.createServer((req,res)=>{
+  const url=new URL(req.url,'http://localhost');
+  if(url.pathname==='/'){res.setHeader('Content-Type','text/html');res.end('<style>body{margin:0}</style>');return;}
+  const file=path.resolve(root,url.pathname.slice('/tv_guide/frontend/'.length));
+  if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}
+  res.setHeader('Content-Type',({'.js':'application/javascript','.svg':'image/svg+xml','.ttf':'font/ttf'})[path.extname(file)]||'text/plain');
+  res.end(fs.readFileSync(file));
+});
+(async()=>{
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const browser=await({chromium,webkit}[engineName]).launch({headless:true,...(process.env.TVG_BROWSER_PATH?{executablePath:process.env.TVG_BROWSER_PATH}:{})});
+  const page=await browser.newPage({viewport:{width:1436,height:1182},timezoneId:'Europe/Berlin'});
+  const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));page.on('crash',()=>errors.push('Browser page crashed'));
+  await page.addInitScript(()=>{
+    window.work={mutations:0,observed:0,errors:[]};
+    const Original=ResizeObserver;
+    window.ResizeObserver=class extends Original{
+      constructor(fn){super(fn);this.targets=new Set();}
+      observe(target,...args){if(!this.targets.has(target)){this.targets.add(target);work.observed++;}return super.observe(target,...args);}
+      disconnect(){work.observed-=this.targets.size;this.targets.clear();return super.disconnect();}
+    };
+    window.addEventListener('error',e=>work.errors.push(e.message));
+  });
+  await page.goto(base);await page.clock.setFixedTime(new Date(fixed));
+  await page.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-card.js',type:'module'});
+  await page.evaluate(()=>{
+    window.requests=[];window.retained=[];
+    const programs=Array.from({length:336},(_,i)=>({id:'p'+i,title:'Programme '+i,desc:'Programme description. '.repeat(20),start:new Date(Date.now()+(i-1)*3600000).toISOString(),end:new Date(Date.now()+i*3600000+1800000).toISOString()}));
+    const channels=Array.from({length:20},(_,i)=>({id:'ch'+i,name:'Station '+i,logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs}));
+    window.model={revision:'complete-guide',country:'de',refresh_running:false,channels,main_channel_ids:channels.map(c=>c.id),custom_channel_ids:channels.map(c=>c.id),ui:{language:'de',theme_mode:'auto',default_view:'now',columns_desktop:5,max_channels:0}};
+    window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
+      if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+      if(message.service==='get_preparation_status')return {response:{complete:true}};
+      if(message.service!=='guide_request')throw Error('Unexpected test service');
+      const request=message.service_data;requests.push(request);
+      if(request.endpoint==='settings')return {response:{...model.ui,country:model.country}};
+      const response=structuredClone(model);
+      if(request.body?.preview){response._preview=true;for(const c of response.channels)c.programs=c.programs.slice(0,7);}
+      return {response};
+    }};
+    window.mount=()=>{
+      const card=document.createElement('tv-guide-card');card.setConfig({height:1000});card.hass=hass;document.body.append(card);return card;
+    };
+    window.card=mount();
+  });
+  await page.waitForFunction(()=>card._app?.guide&&!card._app.guide._preview&&card._app.lastGuideLoadedAt>0);
+  await page.waitForTimeout(300);
+  await page.evaluate(()=>{
+    window.mutations=new MutationObserver(records=>work.mutations+=records.length);
+    mutations.observe(card.shadowRoot.querySelector('.guide-root'),{subtree:true,attributes:true,childList:true,characterData:true});
+  });
+  await page.evaluate(async()=>{
+    for(let i=0;i<24;i++){
+      card.hass={...hass,states:{unrelated:i}};
+      document.body.style.setProperty('--unrelated',String(i));
+      await new Promise(resolve=>setTimeout(resolve,35));
+    }
+  });
+  await page.waitForTimeout(100);
+  const unchanged=await page.evaluate(()=>work.mutations);
+  console.log(engineName,'DOM mutations for 24 unrelated updates:',unchanged);
+  if(!diagnostic)assert.equal(unchanged,0,'Unchanged language and theme must not rewrite the view');
+  await page.evaluate(()=>mutations.disconnect());
+  await page.locator('[data-mode="2015"]').click();
+  await page.locator('.program-link').first().click();
+  await page.keyboard.press('Escape');
+  await page.evaluate(()=>{window.savedRoot=card.shadowRoot.querySelector('.guide-root');card.remove();retained.push(card);});
+  const detached=await page.evaluate(()=>({programmes:card._app.guide.channels.reduce((n,c)=>n+c.programs.length,0),preview:card._app.guide._preview,mode:card._app.mode,observed:work.observed}));
+  console.log(engineName,'Detached view:',detached);
+  if(!diagnostic){assert.equal(detached.programmes,20*7);assert.equal(detached.preview,true);assert.equal(detached.observed,0);}
+  const before=await page.evaluate(()=>requests.length);
+  await page.evaluate(()=>document.body.append(card));
+  await page.waitForFunction(()=>!card._app.guide._preview&&card._pending.size===0);
+  assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root')===savedRoot&&card._app.mode==='2015'),true);
+  if(!diagnostic)assert.equal(await page.evaluate(index=>requests[index].body?.known_revision,before),undefined,'A compacted view must request complete timelines again');
+  await page.evaluate(()=>card.remove());
+  for(let i=0;i<12;i++){
+    await page.evaluate(()=>{window.card=mount();});
+    await page.waitForFunction(()=>card._app?.guide&&!card._app.guide._preview&&card._app.lastGuideLoadedAt>0);
+    if(i%3===0){await page.locator('#showAppSettings').click();await page.locator('#appSettingsDialog').waitFor({state:'visible'});await page.keyboard.press('Escape');}
+    await page.evaluate(()=>{card.remove();retained.push(card);});
+  }
+  const retained=await page.evaluate(()=>({views:retained.length,programmes:retained.reduce((n,c)=>n+c._app.guide.channels.reduce((m,ch)=>m+ch.programs.length,0),0),observed:work.observed,pending:retained.reduce((n,c)=>n+c._pending.size,0),errors:work.errors}));
+  console.log(engineName,'Retained hidden views:',retained);
+  if(!diagnostic){
+    assert.equal(retained.programmes,retained.views*20*7,'Hidden views must retain only their short visible window');
+    assert.equal(retained.observed,0);assert.equal(retained.pending,0);assert.deepEqual(retained.errors,[]);
+  }
+  assert.deepEqual(errors,[]);
+  await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');
+})().catch(error=>{console.error(error);server.close();process.exit(1);});
