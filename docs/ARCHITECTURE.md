@@ -122,3 +122,13 @@ one feed station, independent of feed ordering.
 Legacy sender order and hidden lists recover from malformed field types and skip
 invalid entries while preserving valid preferences. Reads do not rewrite the
 source preference file.
+
+## Retry recovery and inactive-country metadata
+
+A failed guide read remains pending across a brief tab switch. Becoming visible
+retries it even when the last successful guide is less than a minute old; a
+successful response clears that failure state. Hidden views still do not poll.
+
+Small inactive-country catalogue files validate station IDs, recover missing
+names from their IDs and discard programme timelines. Malformed catalogue rows
+cannot prevent the sender picker from loading or retain full EPG data in memory.

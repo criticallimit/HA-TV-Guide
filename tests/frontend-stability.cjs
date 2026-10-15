@@ -45,6 +45,7 @@ const server=http.createServer((req,res)=>{
       if(message.service==='get_preparation_status')return {response:structuredClone(window.preparation||{complete:true})};
       if(message.service!=='guide_request')throw Error('Unexpected test service');
       const request=message.service_data;requests.push(request);
+      if(request.endpoint==='guide'&&window.failNextGuide){window.failNextGuide=false;throw Error('Temporary disconnect');}
       if(request.endpoint==='settings')return {response:{...model.ui,country:model.country}};
       if(request.endpoint==='personal-channels')return {response:{channels:Array.from({length:400},(_,i)=>({id:'ch'+i,name:'Station '+i,source_country:'de',country_name:'Deutschland',logo_normalized_light:channels[0].logo_normalized_light,logo_normalized_dark:channels[0].logo_normalized_dark})),order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]}};
       const response=structuredClone(model);
@@ -150,7 +151,30 @@ const server=http.createServer((req,res)=>{
   await page.waitForFunction(()=>feedCalls.length===3);
   assert.equal(await page.locator('.program-link strong').first().textContent(),'Feed 0');
   await page.evaluate(()=>card.remove());
+  // A brief tab switch must not discard a pending reconnect retry.
+  await page.evaluate(()=>{window.preparation={complete:true};window.card=mount();});
+  await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+  await page.evaluate(async()=>{
+    window.recoveryStart=requests.length;
+    window.failNextGuide=true;
+    await card._app.loadGuide().catch(()=>{});
+    window.testHidden=true;
+    Object.defineProperty(document,'hidden',{configurable:true,get:()=>testHidden});
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.testHidden=false;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.waitForFunction(()=>requests.length>=recoveryStart+2,{},{timeout:3000});
+  assert.equal(await page.evaluate(()=>card._app.startupReloadTimer),null);
+  const recovered=await page.evaluate(()=>requests.length);
+  await page.evaluate(()=>{
+    testHidden=true;document.dispatchEvent(new Event('visibilitychange'));
+    testHidden=false;document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(()=>requests.length),recovered,'A successful recovery must clear the failure state');
+  await page.evaluate(()=>{delete document.hidden;card.remove();});
   assert.deepEqual(errors,[]);
-  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog and XMLTV date navigation');
+  console.log('PASS',engineName,'closed catalogue cleanup, reopening, empty date limits, narrow preparation dialog, XMLTV date navigation and retry recovery');
   await browser.close();server.close();console.log('PASS',engineName,'repeated opening, bounded inactive EPG and stable theme updates');
 })().catch(error=>{console.error(error);server.close();process.exit(1);});

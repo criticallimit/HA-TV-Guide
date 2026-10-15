@@ -693,6 +693,7 @@ function initCustomDate() {
 
 let guideRequest = 0;
 let guideRetryDelay = 1500;
+let guideReloadFailed = false;
 let guidePageSuspended = false;
 let lifecycleRevision = 0;
 function scheduleGuideReload(failed = false) {
@@ -713,7 +714,10 @@ async function loadGuide(preview=false) {
     return await requestGuide(preview, request);
   } catch (error) {
     // Ignore stale failures; current requests retry until HA is reachable again.
-    if (request === guideRequest) scheduleGuideReload(true);
+    if (request === guideRequest) {
+      guideReloadFailed = true;
+      scheduleGuideReload(true);
+    }
     throw error;
   }
 }
@@ -726,6 +730,7 @@ async function requestGuide(preview, request) {
   const at = root.dataset.initialized ? TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString() : undefined;
   const nextGuide = await requestAction({endpoint:"guide",method:"GET",at,body});
   if (request !== guideRequest) return;
+  guideReloadFailed = false;
   guideRetryDelay = 1500;
   if (nextGuide.unchanged) {
     if (!guide || nextGuide.revision !== guide.revision) throw new Error("TV Guide revision mismatch");
@@ -880,7 +885,7 @@ scope.listen(document, "visibilitychange", () => {
     clearTimeout(startupReloadTimer);
     startupReloadTimer = null;
   } else {
-    if (!guide || guide.refresh_running || Date.now() - lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) {
+    if (guideReloadFailed || !guide || guide.refresh_running || Date.now() - lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) {
       loadGuide().catch(() => {});
     } else if (mode === "now") {
       render();
@@ -936,7 +941,7 @@ function resume() {
   guidePageSuspended = false;
   syncHomeAssistantTheme();
   if (guide && mode === 'now') render();
-  if (!guide || guide.refresh_running || Date.now()-lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) loadGuide().catch(()=>{});
+  if (guideReloadFailed || !guide || guide.refresh_running || Date.now()-lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) loadGuide().catch(()=>{});
   loadReminders().catch(()=>{});
   loadBookmarksRemote().then(()=>{if(bookmarksDialog.open)renderBookmarks();}).catch(()=>{});
   preparation.resume();
