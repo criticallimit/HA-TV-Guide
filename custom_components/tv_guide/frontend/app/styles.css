@@ -1,18 +1,4 @@
-@font-face {
-  font-family: "Source Sans Pro";
-  src: url("fonts/SourceSansPro-SemiBold.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Source Sans Pro";
-  src: url("fonts/SourceSansPro-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-:root {
+.guide-root {
   color-scheme: light dark;
   --accent: var(--primary-color, #2563eb);
   --accent-strong: var(--accent-color, #1d4ed8);
@@ -33,11 +19,11 @@
   --danger: #b42318;
 }
 * { box-sizing: border-box; }
-html {
+.guide-root {
   scroll-snap-type: y mandatory;
   scroll-padding-top: var(--guide-header-height, 72px);
 }
-body {
+.guide-root {
   margin: 0;
   font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
   color: var(--text);
@@ -159,7 +145,7 @@ button,input { font: inherit; color: inherit; }
 }
 
 .custom-time-dialog {
-  width: min(420px, calc(100% - 28px));
+  width:min(420px,calc(var(--guide-width) - 28px));
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--card);
@@ -250,11 +236,11 @@ main { max-width: 1500px; margin: 0 auto; padding: 12px 22px 40px; }
   display: none;
 }
 
-:root[data-ha-theme="light"] .channel-logo-light {
+.guide-root[data-ha-theme="light"] .channel-logo-light {
   display: block;
 }
 
-:root[data-ha-theme="dark"] .channel-logo-dark {
+.guide-root[data-ha-theme="dark"] .channel-logo-dark {
   display: block;
   filter: none;
 }
@@ -367,10 +353,10 @@ main { max-width: 1500px; margin: 0 auto; padding: 12px 22px 40px; }
 }
 .program.first .program-meta { display: inline-block; }
 .program.second .program-meta { display: none; }
-@media (min-width: 1200px) {
+@container tv-guide (min-width: 1200px) {
   .program-time-wrapper { margin-top: 0; }
 }
-@media (max-width: 960px) {
+@container tv-guide (max-width: 960px) {
   .program-time-wrapper { margin: 0; }
 }
 
@@ -400,7 +386,7 @@ main { max-width: 1500px; margin: 0 auto; padding: 12px 22px 40px; }
 }
 
 dialog {
-  width: min(620px,calc(100% - 28px));
+  width:min(620px,calc(var(--guide-width) - 28px));
   border: 0;
   border-radius: 8px;
   background: var(--card);
@@ -500,10 +486,10 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   font-size:12px;
 }
 
-@media (max-width:1100px) {
+@container tv-guide (max-width: 1100px) {
   .channel-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
-@media (max-width:720px) {
+@container tv-guide (max-width: 720px) {
   .guide-topbar {
     min-height: 0;
     padding: 0 8px;
@@ -581,7 +567,7 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
 
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-ha-theme="light"]) {
+  .guide-root:not([data-ha-theme="light"]) {
     --bg: var(--primary-background-color, #111318);
     --surface: var(--secondary-background-color, #1b1d22);
     --card: var(--ha-card-background, var(--card-background-color, #1c1f24));
@@ -591,7 +577,7 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   }
 }
 
-:root[data-ha-theme="dark"] {
+.guide-root[data-ha-theme="dark"] {
   color-scheme: dark;
   --accent: #60a5fa;
   --accent-strong: #93c5fd;
@@ -612,7 +598,7 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   --danger: #f87171;
 }
 
-:root[data-ha-theme="light"] {
+.guide-root[data-ha-theme="light"] {
   color-scheme: light;
   --accent: #2563eb;
   --accent-strong: #1d4ed8;
@@ -635,10 +621,10 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
 
 
 .channel-settings-dialog {
-  width: min(940px, calc(100% - 24px));
-  max-height: min(820px, calc(100vh - 32px));
-  height: min(820px, calc(100vh - 32px));
-  height: min(820px, calc(100dvh - 32px));
+  width:min(940px,calc(var(--guide-width) - 24px));
+  max-height: min(820px, calc(var(--guide-height) - 32px));
+  height: min(820px, calc(var(--guide-height) - 32px));
+  height: min(820px, min(calc(var(--guide-height) - 32px),calc(100dvh - 32px)));
   overflow: hidden;
 }
 .channel-settings-dialog[open] {display:flex;flex-direction:column;}
@@ -690,10 +676,10 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
 .settings-logo-dark {
   display: none;
 }
-:root[data-ha-theme="light"] .settings-logo-light {
+.guide-root[data-ha-theme="light"] .settings-logo-light {
   display: block;
 }
-:root[data-ha-theme="dark"] .settings-logo-dark {
+.guide-root[data-ha-theme="dark"] .settings-logo-dark {
   display: block;
 }
 .settings-channel-name {
@@ -751,7 +737,7 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   font-size: 12px;
 }
 
-@media (max-width:720px) {
+@container tv-guide (max-width: 720px) {
   .channel-settings-dialog { padding:16px; }
   .channel-settings-row {
     grid-template-columns: 18px 40px minmax(0,1fr) auto;
@@ -769,9 +755,9 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
 
 
 .app-settings-dialog {
-  width:min(760px,calc(100% - 24px));
-  max-height:88vh;
-  max-height:88dvh;
+  width:min(760px,calc(var(--guide-width) - 24px));
+  max-height:calc(var(--guide-height) * .88);
+  max-height:min(calc(var(--guide-height) * .88),88dvh);
   padding:0;
   border:1px solid var(--line);
   border-radius:18px;
@@ -792,7 +778,6 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
 .settings-footer {flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:var(--card);border-top:1px solid var(--line);}
 .settings-footer .app-settings-actions {margin:0;flex:none;}
 .settings-footer .channel-settings-status {margin:0;min-height:0;font-size:13px;}
-.settings-section .lovelace-setup {margin:14px 0 0;padding:0;border:0;background:transparent;}
 .app-settings-dialog :is(button,input,select,summary):focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
 .app-settings-grid {
   display:grid;
@@ -823,20 +808,6 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   font:inherit;
 }
 .app-settings-wide { grid-column:1 / -1; }
-.sensor-settings {min-width:0;margin:16px 0 0;padding:12px;border:1px solid var(--line);border-radius:9px;}
-.sensor-settings legend {padding:0 6px;font-weight:600;}
-.sensor-settings p {margin:0 0 8px;color:var(--muted);font-size:13px;line-height:1.5;}
-.sensor-settings label {display:flex;align-items:center;gap:16px;min-height:44px;padding:10px 0;cursor:pointer;}
-.sensor-settings label + label {border-top:1px solid var(--line);}
-.sensor-text {flex:1;min-width:0;line-height:1.4;}
-.sensor-settings .sensor-text small {margin-top:3px;line-height:1.4;}
-.sensor-settings input[type="checkbox"] {appearance:none;position:relative;width:42px;height:24px;min-height:24px;margin:0;flex:none;border:1px solid var(--muted);border-radius:14px;background:var(--card);cursor:pointer;}
-.sensor-settings input[type="checkbox"]::before {content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);}
-.sensor-settings input[type="checkbox"]:checked {background:var(--accent);border-color:var(--accent);}
-.sensor-settings input[type="checkbox"]:checked::before {left:21px;background:var(--card);}
-.sensor-settings input[type="checkbox"]:focus-visible {outline:2px solid var(--accent);outline-offset:3px;}
-@media (forced-colors:active) {.sensor-settings input[type="checkbox"] {appearance:auto;} .sensor-settings input[type="checkbox"]::before {display:none;}}
-.sensor-settings small {display:block;margin-top:8px;color:var(--muted);}
 .app-settings-actions {
   display:flex;
   justify-content:flex-end;
@@ -844,7 +815,7 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   margin-top:16px;
 }
 
-@media (max-width:720px) {
+@container tv-guide (max-width: 720px) {
   .settings-heading {padding:18px;gap:12px;}
   .settings-body {padding:16px;gap:14px;}
   .settings-footer {padding:14px 16px;flex-wrap:wrap;}
@@ -855,82 +826,6 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
   .app-settings-wide { grid-column:auto; }
 }
 
-
-.lovelace-setup {
-  margin-top:18px;
-  padding-top:16px;
-  border-top:1px solid var(--line);
-}
-.lovelace-setup-head {
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-.lovelace-setup h3 {
-  margin:0 0 4px;
-  font-size:15px;
-}
-.lovelace-setup-head p {
-  margin:0;
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.4;
-}
-.lovelace-state {
-  flex:0 0 auto;
-  border:1px solid var(--line);
-  border-radius:999px;
-  padding:5px 8px;
-  color:var(--muted);
-  font-size:11px;
-  font-weight:700;
-}
-.lovelace-state.ready {
-  color:var(--accent-strong);
-  border-color:var(--accent);
-}
-.lovelace-state.pending {
-  color:var(--text);
-}
-.lovelace-state.error {
-  color:var(--danger);
-  border-color:var(--danger);
-}
-.lovelace-resource-row {
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:12px;
-}
-.lovelace-resource-row code {
-  flex:1;
-  min-width:0;
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:6px;
-  padding:9px 10px;
-  background:var(--surface);
-  font-size:12px;
-  white-space:nowrap;
-}
-.lovelace-steps {
-  margin:12px 0 0 20px;
-  padding:0;
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.5;
-}
-.lovelace-setup-actions {
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:12px;
-}
-@media (max-width:720px) {
-  .lovelace-setup-head { flex-direction:column; }
-  .lovelace-resource-row { align-items:stretch; flex-direction:column; }
-}
 
 .guide-topbar .app-settings-button {
   position: static;
@@ -967,5 +862,16 @@ dialog::backdrop { background: rgba(0,0,0,.48); }
 .settings-channel-name small {display:block;color:var(--muted);font-size:12px;font-weight:400;}
 .settings-order-buttons button:disabled {opacity:.3;cursor:default;}
 .channel-picker-empty {padding:12px;color:var(--muted);font-size:13px;margin:0;}
-@media(max-width:740px){.channel-picker-columns{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(230px,1fr));}#channelSearch{font-size:16px;}}
+@container tv-guide (max-width: 740px){.channel-picker-columns{grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(230px,1fr));}#channelSearch{font-size:16px;}}
 @media(pointer:coarse){#channelCountryFilters label{min-height:44px;}.channel-settings-row{grid-template-columns:18px 40px minmax(0,1fr);}.settings-order-buttons{grid-column:3;justify-content:flex-end;}.settings-order-buttons button{width:44px;height:44px;}.available-channel-row{min-height:48px;}}
+
+.guide-root dialog {max-height:min(calc(var(--guide-height) - 32px),calc(100dvh - 32px));}
+
+.guide-root .app-settings-dialog {max-height:min(calc(var(--guide-height) * .88),88dvh); }
+
+.guide-root .channel-settings-dialog {max-height:min(820px,calc(var(--guide-height) - 32px),calc(100dvh - 32px));}
+
+:host { display:block; width:100%; }
+ha-card { display:block; padding:0; margin:0; border:0; box-shadow:none;
+  background:var(--primary-background-color); container-type:inline-size; container-name:tv-guide; }
+.guide-root { height:100%; overflow:auto; position:relative; font-size:16px; line-height:normal; text-align:left; }

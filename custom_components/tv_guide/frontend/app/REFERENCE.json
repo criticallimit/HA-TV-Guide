@@ -11,12 +11,12 @@
     "app.js": "576b3baf75674cea66e713731fe8e1f7f15f2162b7ad8b36c54e4ca0362fa6bb"
   },
   "bundled_sha256": {
-    "styles.css": "4cc5324656bdf297f721ea66be947007fc3d473c0898fc26ac25b08abeec0080",
+    "styles.css": "db26363d711e1ed5cb166196f03d1545561bb90f86b6285983dbc7a52f92d0d1",
     "guide-core.js": "062d77bfd1608b8bd1d4d154ba7602bae020bc6a3adc3f4711d997b4ee0bd61f",
     "channel-picker.js": "484dedf5c81c71a481a34b4f4b9c3c8d4c65651e3cd8846717c4201d7b5d288a",
-    "translations.js": "d010d1435dad6808334aa35a72cf0110f2ed7c783e4b7f706242e0eb473f77e4",
+    "translations.js": "54d70c2dc0143987515e99117a7451d121ee0d1d630c14b89b10c675557e160e",
     "i18n.js": "fdc9c904818305d24c6a2222e073f7881b0cdec4bbf73027972ab538b493fea4"
   },
   "line_endings": "Pinned source fixtures use LF; imported CSS and adapted helper modules retain CRLF bytes.",
-  "adaptation": "Rendering helpers are per-card ES module factories; view.html and styles.css generate view-template.js. Source fixtures remain unchanged."
+  "adaptation": "Rendering helpers are per-card ES module factories with direct authenticated HA requests. Native styles.css and view.html generate view-template.js; unused add-on setup styles/translations are removed. Source fixtures remain unchanged."
 }

@@ -1,9 +1,9 @@
 # First display of an already populated guide
 
-Version 0.5.2 requests a small first view for both the Lovelace card and sidebar.
-The parent starts this authenticated HA request while the iframe loads. The iframe
-consumes that one response, paints the seven programme rows per sender, then
-requests complete timelines after two animation frames. No provider download is
+Both the Lovelace card and sidebar render the native component immediately and
+request a small first view through the authenticated HA connection. The component
+paints the seven programme rows per sender, then requests complete timelines after
+two animation frames. No provider download is
 needed to open an already populated guide.
 
 The first response keeps channel ordering, logos, descriptions, stable programme
@@ -15,7 +15,8 @@ reply. Failure of the preview falls back to the ordinary full request.
 
 The tab-local first-paint cache keeps seven rows at the configured default time
 instead of 24 rows around the current time. It is limited to 1 MiB of characters,
-expires after 60 seconds, and is refreshed from HA on each opening. No additional
+expires after six hours, requires coverage of the selected default time, and is
+refreshed from HA on each opening. No additional
 provider polling or persistent browser database is introduced.
 
 ## Reproducible verification
@@ -42,7 +43,7 @@ be compared after updating and restarting Home Assistant.
 
 ## Recovery after connection failures
 
-Version 0.5.4 retries failed guide requests after 1.5 seconds, doubling the delay
+The component retries failed guide requests after 1.5 seconds, doubling the delay
 up to 30 seconds. A successful response resets the delay. This also applies to
 the full timelines loaded after the first preview and to provider-completion
 polling. New requests cancel outstanding retry timers; obsolete failures cannot
