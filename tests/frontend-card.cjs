@@ -444,6 +444,27 @@ const server = http.createServer((req,res) => {
   assert.equal(await fastFrame.locator('body').evaluate(()=>startupReloadTimer),null,'A stale failure must not schedule another request');
   assert.equal(await fastFrame.locator('body').evaluate(()=>mode),'2015');
   console.log('PASS history restoration reloads the guide and ignores cancelled or stale requests');
+  await fast.evaluate(()=>{
+    const previous=hass.callWS.bind(hass);
+    window.exitRequests=0;
+    window.exitPreviewGate=new Promise(resolve=>{window.releaseExitPreview=resolve;});
+    hass.callWS=async message=>{
+      if(message.service!=='guide_request')return previous(message);
+      ++exitRequests;
+      if(message.service_data.body?.preview)await exitPreviewGate;
+      const result=await previous(message);result.response.revision='guide-after-pending-startup';return result;
+    };
+  });
+  await fastFrame.locator('body').evaluate(()=>{window.pendingStartup=loadGuide(true).catch(()=>loadGuide());});
+  await fast.waitForFunction(()=>exitRequests===1);
+  await fastFrame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
+  await fastFrame.locator('body').evaluate(()=>pendingStartup);
+  assert.equal(await fast.evaluate(()=>exitRequests),1,'Cancelling startup must not issue a full fallback request after page exit');
+  await fastFrame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
+  await fastInner.waitForFunction(()=>guide.revision==='guide-after-pending-startup');
+  await fast.evaluate(()=>releaseExitPreview());
+  assert.equal(await fast.evaluate(()=>exitRequests),2);
+  console.log('PASS leaving during preview loading suppresses startup fallback until the page is restored');
   await fast.close();
   console.log('PASS first paint before delayed full guide, single prefetch, complete timelines and time selection retained');
 

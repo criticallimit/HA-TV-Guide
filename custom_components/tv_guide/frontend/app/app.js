@@ -871,6 +871,7 @@ function scheduleGuideReload(failed = false) {
   if (delay) startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), delay);
 }
 async function loadGuide(preview=false) {
+  if (guidePageSuspended) return;
   clearTimeout(startupReloadTimer);
   startupReloadTimer = null;
   const request = ++guideRequest;
