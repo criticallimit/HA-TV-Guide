@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 from .frontend import async_register_frontend, async_remove_frontend
-from .ha_defaults import installation_defaults
 from .ui_services import async_register_ui_services, async_remove_ui_services
 from .coordinator import TVGuideEPGCoordinator
 from .epg_query import async_register_epg_query, async_remove_epg_query

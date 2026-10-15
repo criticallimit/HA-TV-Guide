@@ -297,6 +297,29 @@ const server = http.createServer((req,res) => {
   await frame.locator('#preparationClose').click();
   await frame.locator('#preparationDialog').waitFor({state:'hidden'});
   assert.equal(await frame.locator('#preparationBadge').isVisible(),true);
+  let downloadedLogoAvailable=false;
+  await guidePage.route('**/download-logo-test.svg',route=>route.fulfill({
+    status:downloadedLogoAvailable?200:404,contentType:'image/svg+xml',
+    headers:{'Cache-Control':'no-store'},
+    body:downloadedLogoAvailable?'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="20" height="20" fill="red"/></svg>':''}));
+  await frame.locator('body').evaluate(()=>{
+    const channel=activeChannels()[0];
+    channel.logo_normalized_light=channel.logo_normalized_dark='/download-logo-test.svg';
+    // Both normalized and raw fallback URLs deliberately fail until download.
+    channel.logo_file_light=channel.logo_file='/download-logo-test.svg';
+    render();
+    window.retainedProgrammes=document.querySelector('.channel-card .programs');
+    window.retainedFocus=retainedProgrammes.querySelector('[data-program-start]');
+    retainedFocus.focus();
+  });
+  const logoFrame=await (await card.locator('iframe').elementHandle()).contentFrame();
+  await logoFrame.waitForFunction(()=>Array.from(document.querySelectorAll('.channel-card:first-child .channel-logo')).some(img=>img.style.display==='none'));
+  downloadedLogoAvailable=true;
+  await guidePage.evaluate(()=>{preparation.logos.completed=3;});
+  await logoFrame.waitForFunction(()=>Array.from(document.querySelectorAll('.channel-card:first-child .channel-logo')).some(img=>img.complete&&img.naturalWidth>0&&img.style.display!=='none'));
+  assert.equal(await frame.locator('body').evaluate(()=>document.querySelector('.channel-card .programs')===retainedProgrammes),true);
+  assert.equal(await frame.locator('body').evaluate(()=>document.activeElement===retainedFocus),true);
+  console.log('PASS downloaded logos replace failed image fallbacks without replacing programme controls or focus');
   await frame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
   await guidePage.evaluate(()=>{preparation.logos.completed=5;});
   await frame.locator('body').evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));

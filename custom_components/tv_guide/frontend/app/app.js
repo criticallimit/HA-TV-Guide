@@ -770,7 +770,7 @@ grid.addEventListener("click", event => {
   if (programme) showDetail(channel, programme);
 });
 
-function render() {
+function render(retryLogos = false) {
   if (!guide) return;
   if (mode === "now") selectedDate = startOfDay(new Date());
   const channels = activeChannels();
@@ -806,6 +806,13 @@ function render() {
       card?.element.replaceWith(element);
       card = {markup, element};
       renderedCards.set(id, card);
+    } else if (retryLogos && Array.from(card.element.querySelectorAll(".channel-logo")).some(image => image.style.display === "none")) {
+      // Failed img elements keep their fallback state even after a package arrives.
+      // Replace only the branding so programme controls and focus remain intact.
+      const brand = document.createElement("div");
+      brand.className = "channel-brand";
+      brand.innerHTML = TVGuideCore.channelHeader(channel, "");
+      card.element.querySelector(".channel-brand").replaceWith(brand);
     }
     if (grid.children[index] !== card.element) grid.insertBefore(card.element, grid.children[index] || null);
     const progress = card.element.querySelector(".progress-fill");

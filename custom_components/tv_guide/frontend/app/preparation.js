@@ -60,7 +60,7 @@
       }
       if (logos.completed !== lastLogos) {
         lastLogos = logos.completed;
-        if (typeof guide !== 'undefined' && guide && typeof render === 'function') render();
+        if (typeof guide !== 'undefined' && guide && typeof render === 'function') render(true);
       }
       if (!current.complete || error) timer = setTimeout(poll, error ? 10000 : 2000);
     } catch {
