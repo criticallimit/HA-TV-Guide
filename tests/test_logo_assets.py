@@ -6,6 +6,7 @@ import types
 import unittest
 from hashlib import sha256
 import zipfile
+import json
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]/'custom_components/tv_guide'
@@ -14,17 +15,23 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 class LogoAssetTests(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):cls.library=module.LogoLibrary()
+    def setUpClass(cls):
+        cls.library=module.LogoLibrary()
+        cls.library.archive_root=ROOT.parents[1]/'tests/fixtures/logo-samples'
 
     def test_complete_library_and_all_unique_objects_have_verified_bytes(self):
         self.assertEqual(len(self.library.entries),20292)
         expected={item['member']:item['sha256'] for item in self.library.entries.values()}
+        manifest=json.loads((self.library.root/'downloads.json').read_text())
+        self.assertEqual(set(manifest['archives']), {item['archive'] for item in self.library.entries.values()})
+        self.assertEqual(len(manifest['archives']),37)
         found={}
-        for path in sorted(self.library.root.glob('logos-*.zip')):
+        for path in sorted(self.library.archive_root.glob('logos-*.zip')):
             with zipfile.ZipFile(path) as archive:
                 for name in archive.namelist():found[name]=sha256(archive.read(name)).hexdigest()
-        self.assertEqual(found,expected)
-        self.assertLess(len(found),len(self.library.entries))
+        self.assertTrue(found)
+        self.assertTrue(all(expected[key]==value for key,value in found.items()))
+        self.assertLess(len(expected),len(self.library.entries))
 
     def test_europe_svg_embeds_local_png_and_requires_no_other_requests(self):
         source=next(key for key in self.library.entries if key.startswith('logos/europe/light/'))

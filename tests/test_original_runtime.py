@@ -31,6 +31,9 @@ class GuideRuntimeTests(unittest.TestCase):
         self.backend = module.GuideRuntime(Path(self.temp.name)/'entry', {'country':'de'}, {'language':'de','country':'DE'}, lambda:None)
         self.addCleanup(self.backend.close)
         self.runtime = self.backend.runtime
+        downloading = patch.object(self.backend.logo_download, 'run')
+        downloading.start()
+        self.addCleanup(downloading.stop)
         self.submit = self.runtime.start_background
         self.runtime.start_background = lambda *args, **kwargs: None
 

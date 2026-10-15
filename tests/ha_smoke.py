@@ -70,7 +70,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=11' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=13' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_preload is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -78,6 +78,13 @@ async def main():
                     maintenance.assert_called_once()
                 import aiohttp
                 source=next(key for key in coordinator.backend._logos.entries if key.startswith('logos/europe/light/'))
+                logo_cache=coordinator.backend._logos.archive_root
+                logo_cache.mkdir(parents=True,exist_ok=True)
+                for sample in (root/'tests/fixtures/logo-samples').glob('*.zip'):
+                    shutil.copy2(sample,logo_cache/sample.name)
+                progress=await hass.services.async_call('tv_guide','get_preparation_status',{},blocking=True,return_response=True)
+                assert progress['logos']['total']==37
+                assert progress['first_install'] is True
                 async with aiohttp.ClientSession() as client:
                     async with client.get('http://127.0.0.1:8123/tv_guide/logo/'+source) as response:
                         assert response.status==200

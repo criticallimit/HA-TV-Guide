@@ -270,6 +270,31 @@ const server = http.createServer((req,res) => {
   console.log('PASS automatic setup settings omit manual controls; refresh and guidePage test notification work');
   assert.deepEqual(errors,[]);
   console.log('PASS full reference engine route for country picker and persisted settings');
+  await guidePage.evaluate(()=>{
+    const previous=hass.callWS.bind(hass);
+    window.preparation={installation_id:'browser-test',first_install:true,complete:false,
+      logos:{running:true,ready:false,completed:2,total:37,error:null},
+      programmes:{running:true,ready:false,sources_completed:1,error:false}};
+    hass.callWS=async message=>{
+      if(message.service==='get_preparation_status')return {response:structuredClone(preparation)};
+      if(message.service==='retry_preparation'){calls.push(message);preparation.logos.error=null;return {response:preparation};}
+      return previous(message);
+    };
+  });
+  await frame.locator('#preparationDialog').waitFor({state:'visible',timeout:15000});
+  assert.match(await frame.locator('#preparationLogos').textContent(),/2 \/ 37/);
+  await frame.locator('#preparationClose').click();
+  await frame.locator('#preparationDialog').waitFor({state:'hidden'});
+  assert.equal(await frame.locator('#preparationBadge').isVisible(),true);
+  await frame.locator('#preparationBadge').click();
+  await guidePage.evaluate(()=>{preparation.logos.error='download_failed';preparation.logos.running=false;});
+  await frame.locator('#preparationRetry').waitFor({state:'visible'});
+  await frame.locator('#preparationRetry').click();
+  await guidePage.waitForFunction(()=>calls.some(c=>c.service==='retry_preparation'));
+  await guidePage.evaluate(()=>{preparation.complete=true;preparation.logos.completed=37;preparation.logos.ready=true;preparation.programmes={running:false,ready:true,sources_completed:3,error:false};});
+  await frame.locator('#preparationBadge').waitFor({state:'hidden',timeout:15000});
+  await frame.locator('#preparationClose').click();
+  console.log('PASS initial preparation progress, dismissal, reopening, failure retry and completion');
   await guidePage.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});
   await guidePage.waitForFunction(()=>customElements.get('tv-guide-panel'));
   await guidePage.evaluate(()=>{

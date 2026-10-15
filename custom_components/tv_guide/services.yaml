@@ -127,6 +127,12 @@ get_saved_programmes:
   name: Get saved TV programmes
   description: Return active TV Guide bookmarks and reminders, including sent status.
 
+get_preparation_status:
+  name: Get TV Guide preparation progress
+  description: Return initial programme and verified logo download progress.
+retry_preparation:
+  name: Retry TV Guide preparation
+  description: Resume missing logo packages and retry programme downloads.
 get_guide:
   name: Get TV Guide view
   description: Return the TV Guide presentation model. An optional timestamp limits each sender to seven overlapping or upcoming programmes.

@@ -15,6 +15,7 @@ from uuid import uuid4
 from urllib.parse import quote
 import zipfile
 from .logo_assets import bundled_logo_library
+from .logo_download import LogoDownload
 from .worker_io import worker_urlopen
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
@@ -27,6 +28,9 @@ class GuideRuntime:
 
     def __init__(self, storage: Path, options: dict, locale: dict, wake):
         storage.mkdir(parents=True, exist_ok=True)
+        self._preparation_marker = storage / 'preparation-complete.json'
+        self._first_install = not self._preparation_marker.exists()
+        self._installation_id = storage.name
         assets = storage / "reference"
         with zipfile.ZipFile(Path(__file__).parent / "original_backend" / "reference-data.zip") as archive:
             for name in archive.namelist():
@@ -41,6 +45,8 @@ class GuideRuntime:
                     temporary.replace(target)
         self.closed = False
         self._logos = bundled_logo_library()
+        self._logos.configure_cache(storage / 'logos')
+        self.logo_download = LogoDownload(self._logos)
         self._lock = threading.RLock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
@@ -167,6 +173,35 @@ class GuideRuntime:
                 stores = [active, *(store for store in self.runtime.COUNTRY_STORES.values() if store is not active)]
             for store in stores:
                 store.ensure_fresh_async()
+        self.start_logo_download()
+
+    def start_logo_download(self):
+        if not self.closed and not self.logo_download.status()['ready']:
+            return self.start_background(self._download_logos)
+
+    def _download_logos(self):
+        self.logo_download.run(lambda: self.closed)
+
+    def preparation_status(self):
+        with self._lock:
+            store = self.runtime.STORE
+            programmes = {'running': store.refresh_running,
+                          'ready': any(ch.get('programs') for ch in store.channels),
+                          'sources_completed': len(store.source_metrics),
+                          'error': bool(store.last_error) and not store.refresh_running}
+            logos = self.logo_download.status()
+            complete = logos['ready'] and programmes['ready'] and not programmes['running']
+            first_install = self._first_install
+            if complete and self._first_install:
+                temporary = self._preparation_marker.with_suffix('.tmp')
+                try:
+                    temporary.write_text('{}', encoding='utf-8')
+                    temporary.replace(self._preparation_marker)
+                    self._first_install = False
+                except OSError:
+                    _LOGGER.warning('TV Guide could not persist preparation completion', exc_info=True)
+            return {'installation_id': self._installation_id, 'first_install': first_install,
+                    'complete': complete, 'logos': logos, 'programmes': programmes}
 
     def refresh_active(self):
         """Use the same owned pool for periodic coordinator refreshes."""

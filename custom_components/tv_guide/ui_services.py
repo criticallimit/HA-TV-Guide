@@ -8,7 +8,7 @@ from .const import DOMAIN
 from .catalogs import resolve_catalogue_channels
 from .ui_payload import build_guide, guide_at, personal_payload, ui_settings, normalize_ui_settings
 
-SERVICES=('get_guide','get_personal_channels','get_ui_settings','set_ui_settings')
+SERVICES=('get_guide','get_personal_channels','get_ui_settings','set_ui_settings','get_preparation_status','retry_preparation')
 PRESENTATION_OPTIONS=('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')
 
 def async_register_ui_services(hass):
@@ -39,6 +39,14 @@ def async_register_ui_services(hass):
     async def handle(call):
         entry,options=entry_and_options()
         coordinator=hass.data.get(DOMAIN,{}).get(entry.entry_id)
+        if call.service in ('get_preparation_status','retry_preparation'):
+            if not getattr(coordinator,'is_multi_source',False):
+                return {'complete': True, 'first_install': False}
+            if call.service == 'retry_preparation':
+                await hass.async_add_executor_job(coordinator.backend.start_logo_download)
+                if not coordinator.refresh_running:
+                    await coordinator.async_guide_request('refresh')
+            return await hass.async_add_executor_job(coordinator.backend.preparation_status)
         requested_at = None
         if call.service == 'get_guide' and call.data.get('at'):
             try:

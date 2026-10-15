@@ -14,6 +14,7 @@ class LogoLibrary:
 
     def __init__(self, root=None):
         self.root=Path(root) if root is not None else Path(__file__).parent/'logo_library'
+        self.archive_root = self.root
         index=json.loads((self.root/'index.json').read_text(encoding='utf-8'))
         self.entries=index['entries']
         self.revision=index['revision']
@@ -26,11 +27,17 @@ class LogoLibrary:
     def contains(self, source):
         return source in self.entries
 
+    def configure_cache(self, path):
+        path = Path(path) / self.revision
+        if self.archive_root != path:
+            self._render_cached.cache_clear()
+            self.archive_root = path
+
     def read(self, source):
         item=self.entries.get(source)
         if item is None:
             raise KeyError(source)
-        with zipfile.ZipFile(self.root/item['archive']) as archive:
+        with zipfile.ZipFile(self.archive_root/item['archive']) as archive:
             data=archive.read(item['member'])
         if sha256(data).hexdigest()!=item['sha256']:
             raise ValueError('Damaged bundled logo')

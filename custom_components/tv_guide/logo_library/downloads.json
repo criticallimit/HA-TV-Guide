@@ -1,0 +1,153 @@
+{
+  "base_url": "https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/235e80db0bdecb332c5e8127485cfbc074859614/custom_components/tv_guide/logo_library/",
+  "archives": {
+    "logos-000.zip": {
+      "size": 4233432,
+      "sha256": "19683586b28fa560f8a8e943a0c5e71059321cddc148f4edf928705fe59c4211"
+    },
+    "logos-001.zip": {
+      "size": 4364271,
+      "sha256": "966fe9876e5617dd0e70cbe3e5cf7fcae443532c2e4c040c82b5a72a6aa11eb1"
+    },
+    "logos-002.zip": {
+      "size": 4227106,
+      "sha256": "26745903b2367adf78a08192b994b05d79d6855e473dc211a2f4517d5cc8e106"
+    },
+    "logos-003.zip": {
+      "size": 4232876,
+      "sha256": "9b934d9a635c3f9999c6e3355b22f0e325aae10c0a5080231dcdf833c1267dfd"
+    },
+    "logos-004.zip": {
+      "size": 4330616,
+      "sha256": "b1678daea731b92db632056606f33d6e418e5f6727fac391cc150a6d2a2b5ff6"
+    },
+    "logos-005.zip": {
+      "size": 4236877,
+      "sha256": "a4ece21d69094028e7db001d30070c4d9e20b90a6e7f5749c38198e48eba220a"
+    },
+    "logos-006.zip": {
+      "size": 4252357,
+      "sha256": "8589e756153fe162b636a6e02cdabd0cead92721a82ea55de53d3532c732680d"
+    },
+    "logos-007.zip": {
+      "size": 4541271,
+      "sha256": "3fbaeacff2af63e9db200e54913e7fd0f1b3b328e17f57f2556759f41c9e12e1"
+    },
+    "logos-008.zip": {
+      "size": 4263001,
+      "sha256": "3da4adab892ae4f842fea0f79ef994f790804ad64684bcf3f0dfad687172b9e1"
+    },
+    "logos-009.zip": {
+      "size": 4261369,
+      "sha256": "982ba7d5ff734000609cdde48b95bf8abd78eb070cf581c4698a4d53be9a7920"
+    },
+    "logos-010.zip": {
+      "size": 4241686,
+      "sha256": "57898f397238ffe0b1fe389bcee4b07adb7524ca69e71af5d08718f5965d7e50"
+    },
+    "logos-011.zip": {
+      "size": 4236302,
+      "sha256": "fdba4c1288f0f2ee6fccce0416c9b128a42da8ff37ef716a987f95eb7d70d68a"
+    },
+    "logos-012.zip": {
+      "size": 4228315,
+      "sha256": "a4ab4547ccd367d55d91c3fb59100eca4141eaae804634a4622a611b4b8fed62"
+    },
+    "logos-013.zip": {
+      "size": 4226432,
+      "sha256": "ca5f3416c86d4544930a6134a8980788055dfa483abe5eaa0d1b8503c63697c9"
+    },
+    "logos-014.zip": {
+      "size": 4229066,
+      "sha256": "1eeb330f6b808cba3527dc263fedaf3dd06eb0f2e7dac314c4da7fa9b4597029"
+    },
+    "logos-015.zip": {
+      "size": 4230644,
+      "sha256": "01dd37f93bffa0fce8a588eedf8301c409563700101cdc75216fc558ef9fe774"
+    },
+    "logos-016.zip": {
+      "size": 4220787,
+      "sha256": "ec4169b14bcc1731e39a5391c0714a16217a93ea96aced965442cfde4946467d"
+    },
+    "logos-017.zip": {
+      "size": 5058752,
+      "sha256": "657aebe16a4454562ed0689a5ded5bc0c70c8328cb213370a592b676bd510c61"
+    },
+    "logos-018.zip": {
+      "size": 4367443,
+      "sha256": "95068eadf3c2264cdc2f890d0a41a7321f28fdd6a98d1637ba68cd3ad7874f7c"
+    },
+    "logos-019.zip": {
+      "size": 4237596,
+      "sha256": "5b9315f96f0c98d6eb6dde5e48c6f025006d11de68f31dfa45859f4de3d731f6"
+    },
+    "logos-020.zip": {
+      "size": 4240359,
+      "sha256": "c4f0a5d38c324fc3ee6d941b78b7730fcf58b1cbca1d91d72794d4060cc6c40c"
+    },
+    "logos-021.zip": {
+      "size": 4226622,
+      "sha256": "79a69ddf3fb9de53d9581dc0ca007f07ce18a4aa474be48d29477e350b686dc4"
+    },
+    "logos-022.zip": {
+      "size": 4226317,
+      "sha256": "31d40577b3b9675557d4bc967c689031845d01e37d156ba72a9e04852ca1e292"
+    },
+    "logos-023.zip": {
+      "size": 4252636,
+      "sha256": "f283a0598b13f1d145ded1a89e958715f9631639970292cb45dc2886a48cfb64"
+    },
+    "logos-024.zip": {
+      "size": 4229350,
+      "sha256": "120901fed89077c0483b59262cb320b32cabf64fa432f7a5191047af0c7cd64c"
+    },
+    "logos-025.zip": {
+      "size": 4235201,
+      "sha256": "a7e71c4e4e9dd074042b45852d8520eaa143a5ce14c084b86b94e141022b73cd"
+    },
+    "logos-026.zip": {
+      "size": 4237149,
+      "sha256": "c0b279b4ba2ba1902040299374835eb629df3b28f0ef59e6902419a77fecc271"
+    },
+    "logos-027.zip": {
+      "size": 4228783,
+      "sha256": "d5e136ca2c9a329462803704caedec6682fede6c871a66afb49615310c55c2ad"
+    },
+    "logos-028.zip": {
+      "size": 4224388,
+      "sha256": "502ad5894bf5b7f3e128c57e3920b364121c75e71826d9d9d30d3b0452099e7e"
+    },
+    "logos-029.zip": {
+      "size": 4234378,
+      "sha256": "539e7db2f4436aa1237db3be5ca010b8bda9db9b34aa02904f4cb6c6021caa35"
+    },
+    "logos-030.zip": {
+      "size": 4230994,
+      "sha256": "a053424856b034cec9ea85febabb69806a69223be1ef7b6fb6a9b28c66ed0df1"
+    },
+    "logos-031.zip": {
+      "size": 4243051,
+      "sha256": "c42f9d7c9a1843ee9606decb5bb66da623ffdeeec7a8be5e8c5bcd3d7cc92412"
+    },
+    "logos-032.zip": {
+      "size": 4230447,
+      "sha256": "01f86d8108af3ba892844f19c680a9335e5dca0bcd6108366f9557a91ca58e4b"
+    },
+    "logos-033.zip": {
+      "size": 4239879,
+      "sha256": "40228320f1f3a9969ca6d03da3962a2b338706c2c08c924efdf2524e82c47068"
+    },
+    "logos-034.zip": {
+      "size": 4227657,
+      "sha256": "39ad37653e733b2d9869486dea12a66f3d775eab97ed0e82ee37c25149ebec4d"
+    },
+    "logos-035.zip": {
+      "size": 4231698,
+      "sha256": "7fc5a7d49408cba38959e0e8bcfbda39dcd636e03fe9b9ec22116d85f69c6646"
+    },
+    "logos-036.zip": {
+      "size": 953985,
+      "sha256": "ce1a8c5c79c42786e3e1f74120b9f026baf74bcfc8114601f039627c31b7e221"
+    }
+  }
+}
