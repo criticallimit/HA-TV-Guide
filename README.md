@@ -23,12 +23,12 @@ All ten countries have prepared main-channel lists, individual channel selection
 
 ## Install
 
-TV Guide is a **Home Assistant custom integration** and runs directly in Home Assistant. No manual Lovelace resource registration is required.
+TV Guide is a **Home Assistant custom integration** and runs directly in Home Assistant. After adding the integration, its programme view is prepared automatically.
 
 1. [Download the current integration](https://github.com/criticallimit/HA-TV-Guide/archive/refs/heads/main.zip).
 2. Extract the archive and copy `custom_components/tv_guide` to `/config/custom_components/tv_guide` on your Home Assistant installation.
 3. Restart Home Assistant, then open **Settings → Devices & services → Add integration → TV Guide**.
-4. The integration automatically uses your configured Home Assistant country and language at first setup. Open **TV Guide** in the sidebar or add `type: custom:tv-guide-card` to a dashboard.
+4. The integration automatically uses your configured Home Assistant country and language at first setup. The **TV Guide** sidebar entry appears automatically. Open it to use the guide.
 
 The initial EPG download may take a few minutes. Subsequent views use bounded caches, and unmodified guide data is not transferred again.
 
@@ -55,17 +55,13 @@ In settings, open **Reminders** and choose Home Assistant or a connected mobile 
 
 Your saved programmes and channel lists are available on devices using the same Home Assistant installation and survive restarts and updates.
 
-## Add the dashboard card
+## Ready to use
 
-The integration automatically registers its Lovelace module. Add a manual dashboard card with:
+After adding the integration, open **TV Guide** in the Home Assistant sidebar. The complete programme view is available there automatically. Home Assistant supplies the initial country and language; TV Guide loads programme data and the logo library in the background. The first opening shows preparation progress while downloads are running.
 
-```yaml
-type: custom:tv-guide-card
-height: 1000
-```
+The guide needs no dashboard card, YAML configuration or resource setup. You can start using it directly from the sidebar.
 
-No additional resource configuration is needed.
-
+For an optional view in your own dashboard, **TV Guide** is also available in Home Assistant's visual card picker. This is an additional display option; the sidebar already provides the complete guide.
 
 ## When something is missing
 
