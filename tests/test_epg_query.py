@@ -117,6 +117,18 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(response['count'],1)
         self.assertEqual(response['channels'][0]['name'],'Das Erste')
 
+    def test_canonical_selection_does_not_mark_another_feed_alias_selected(self):
+        from types import SimpleNamespace
+        coordinator = SimpleNamespace(country='de', channels=[], canonical_channels=[
+            {'id': 'first', 'name': 'First', 'xmltv_id': 'second'},
+            {'id': 'second', 'name': 'Second', 'xmltv_id': 'second.feed'},
+        ])
+        for selection in (['second'], ['second.feed']):
+            with self.subTest(selection=selection):
+                channels = channel_payload(coordinator, selection)['channels']
+                self.assertEqual([item['id'] for item in channels if item['selected']], ['second'])
+                self.assertEqual(channels[0]['id'], 'second')
+
     def test_set_channel_helper_accepts_known_ids(self):
         from types import SimpleNamespace
         coordinator = SimpleNamespace(
