@@ -309,6 +309,23 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('#settingTheme').inputValue(),'auto');
     }finally{await page.close();}
   });
+  await check('registered country language fallback works without country branches and respects HA profile',async()=>{
+    const page=await mount('settings');try{
+      const values=await page.evaluate(async()=>{
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-19');
+        const profile={locale:{}};
+        const locale=createI18n({},()=>profile);
+        locale.configure({language:'auto',country:'zz',countries:[{code:'zz',language:'fr'}]});
+        const initial=locale.language;
+        const draft=locale.resolve({language:'auto',country:'zz'});
+        profile.locale.language='nl';locale.configure({language:'auto',country:'zz',country_language:'fr'});
+        const ha=locale.language;
+        locale.configure({language:'de',country:'zz'});
+        return {initial,draft,ha,explicit:locale.language};
+      });
+      assert.deepEqual(values,{initial:'fr',draft:'fr',ha:'nl',explicit:'de'});
+    }finally{await page.close();}
+  });
   await check('new registered country appears and saves without frontend country code changes',async()=>{
     const page=await mount('new-country');try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
