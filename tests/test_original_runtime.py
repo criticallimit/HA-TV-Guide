@@ -308,7 +308,145 @@ class GuideRuntimeTests(unittest.TestCase):
                 guide.result(timeout=5)
             self.assertTrue(result['ok'])
             self.assertEqual(self.backend.request('settings','GET')['language'],'en')
-            self.assertIsNone(self.backend._guide_cache, 'A guide built across a settings change must not be cached')
+            self.assertEqual(guide.result()['ui']['language'], 'en', 'A crossing guide must be rebuilt with the committed settings')
+
+    def test_rapid_country_and_language_saves_during_guide_and_provider_work(self):
+        entered, release = threading.Event(), threading.Event()
+        providers_entered, providers_release = threading.Event(), threading.Event()
+        original = self.runtime.PERSONAL_CHANNELS.guide
+        calls = []
+        def delayed_guide(store):
+            calls.append(store.country)
+            if len(calls) == 1:
+                payload = original(store)
+                entered.set()
+                if not release.wait(5):
+                    raise TimeoutError('Guide test was not released')
+                return payload
+            return original(store)
+        def delayed_provider(store, force=False):
+            providers_entered.set()
+            providers_release.wait(10)
+            store.refresh_running = False
+        settings = self.backend.request('settings', 'GET')
+        self.runtime.start_background = self.submit
+        with patch.object(self.runtime.EPGStore, 'refresh', delayed_provider), \
+                patch.object(self.runtime.PERSONAL_CHANNELS, 'guide', delayed_guide), \
+                ThreadPoolExecutor(max_workers=2) as pool:
+            pending = pool.submit(self.backend.request, 'guide', 'GET')
+            try:
+                self.assertTrue(entered.wait(2))
+                for country, language in [('at','en'), ('fr','fr'), ('de','nl'), ('gb','auto')]:
+                    result = pool.submit(self.backend.request, 'settings', 'POST',
+                                         {**settings, 'country':country, 'language':language}).result(timeout=1)
+                    self.assertTrue(result['ok'])
+                    self.assertEqual(result['settings']['language'], language)
+                self.assertTrue(providers_entered.wait(2))
+                release.set()
+                result = pending.result(timeout=5)
+                self.assertEqual(result['country'], 'gb')
+                self.assertEqual(result['ui']['language'], 'auto')
+                self.assertEqual(self.runtime.STORE.country, 'gb')
+                self.assertEqual(self.backend.request('settings', 'GET')['language'], 'auto')
+            finally:
+                release.set()
+                providers_release.set()
+                pending.result(timeout=5)
+
+    def test_obsolete_queued_countries_do_not_delay_latest_country(self):
+        entered, release, latest = threading.Event(), threading.Event(), threading.Event()
+        started, fetched = [], []
+        def refresh(store, force=False):
+            started.append(store.country)
+            try:
+                if store.country in {'at', 'fr'}:
+                    if len(started) == 2:
+                        entered.set()
+                    release.wait(5)
+                if not self.backend._worker_stopped():
+                    fetched.append(store.country)
+                if store.country == 'nl':
+                    latest.set()
+            finally:
+                store.refresh_running = False
+        settings = self.backend.request('settings', 'GET')
+        self.runtime.start_background = self.submit
+        with patch.object(self.runtime.EPGStore, 'refresh', refresh):
+            try:
+                for country in ('at', 'fr'):
+                    self.backend.request('settings', 'POST', {**settings, 'country':country})
+                self.assertTrue(entered.wait(2))
+                for country in ('gb', 'nl'):
+                    self.backend.request('settings', 'POST', {**settings, 'country':country})
+                release.set()
+                self.assertTrue(latest.wait(2))
+                self.assertNotIn('gb', started, 'Skip obsolete queued country downloads')
+                self.assertEqual(fetched, ['nl'], 'Only the latest unselected country may continue IO')
+            finally:
+                release.set()
+                self.backend.close()
+
+    def test_worker_retains_personal_country_and_restarts_reselected_country(self):
+        entered, release, resumed = threading.Event(), threading.Event(), threading.Event()
+        calls = []
+        def refresh(store, force=False):
+            calls.append(store.country)
+            if len(calls) == 1:
+                entered.set()
+                release.wait(5)
+                self.assertTrue(self.backend._worker_stopped())
+                # Reselect the same owned country after cancellation was observed.
+                with self.runtime.SETTINGS_LOCK:
+                    self.runtime.STORE = store
+                    self.runtime.prune_country_stores()
+            else:
+                self.assertFalse(self.backend._worker_stopped())
+                resumed.set()
+                store.refresh_running = False
+        store = self.runtime.STORE
+        store.refresh_running = True
+        with patch.object(self.runtime.EPGStore, 'refresh', refresh):
+            future = self.submit(store.refresh)
+            try:
+                self.assertTrue(entered.wait(2))
+                with self.runtime.SETTINGS_LOCK:
+                    other = self.runtime.EPGStore('at')
+                    self.runtime.COUNTRY_STORES['at'] = other
+                    self.runtime.STORE = other
+                    self.runtime.prune_country_stores()
+                release.set()
+                future.result(timeout=3)
+                self.assertTrue(resumed.is_set())
+            finally:
+                release.set()
+        with self.runtime.SETTINGS_LOCK:
+            self.runtime.STORE = other
+            self.runtime.COUNTRY_STORES['at'] = other
+        order = [f'de:{store.channels[0]["id"]}']
+        self.runtime.PERSONAL_CHANNELS.save(order, ['de'], other)
+        self.backend._worker_context.store = store
+        self.backend._worker_context.cancelled = False
+        try:
+            self.assertFalse(self.backend._worker_stopped(), 'A personal-list country remains required')
+        finally:
+            self.backend._worker_context.store = None
+            self.backend._worker_context.cancelled = False
+
+    def test_old_guide_reader_does_not_restart_obsolete_country_downloads(self):
+        old = self.runtime.STORE
+        other = self.runtime.EPGStore('at')
+        with self.runtime.SETTINGS_LOCK:
+            self.runtime.STORE = other
+            self.runtime.COUNTRY_STORES['at'] = other
+            self.runtime.prune_country_stores(keep={'de'})
+        self.assertIs(self.runtime.COUNTRY_STORES['de'], old)
+        self.backend._worker_context.store = old
+        self.backend._worker_context.cancelled = False
+        try:
+            self.assertTrue(self.backend._worker_stopped(), 'Retaining cache metadata must not retain obsolete network work')
+        finally:
+            self.backend._worker_context.store = None
+            self.backend._worker_context.cancelled = False
 
     def test_settings_save_does_not_wait_for_epg_snapshot_build(self):
         settings=self.backend.request('settings','GET')

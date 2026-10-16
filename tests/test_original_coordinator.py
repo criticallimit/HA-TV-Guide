@@ -83,6 +83,44 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(c.refresh_running)
         self.assertEqual(c.update_interval.total_seconds(),3600)
 
+    async def test_late_snapshot_cannot_restore_country_before_latest_settings_commit(self):
+        c = self.coordinator
+        entered, release = asyncio.Event(), asyncio.Event()
+        status = {'country':'de', 'last_loaded':None, 'refresh_running':False,
+                  'source_attempts':[], 'refresh_minutes':180}
+        def snapshot():
+            return ([status['country']], [], [], dict(status))
+        def request(endpoint, method, body):
+            status.update(country=body['country'], refresh_minutes=body['refresh_minutes'])
+            return {'ok':True, 'country':status['country']}
+        c.backend.state_snapshot = snapshot
+        c.backend.request = request
+        first = True
+        async def executor(fn, *args):
+            nonlocal first
+            result = fn(*args)
+            if fn is snapshot and first:
+                first = False
+                entered.set()
+                await release.wait()
+            return result
+        self.hass.async_add_executor_job = executor
+        await c._sync_lock.acquire()
+        pending = asyncio.create_task(c._snapshot())
+        try:
+            await entered.wait()
+            for country, interval in [('at',360), ('fr',60), ('gb',120)]:
+                await c.async_guide_request('settings', 'POST', {'country':country, 'refresh_minutes':interval})
+            release.set()
+            records = await pending
+            self.assertEqual(c.country, 'gb', 'Old snapshots must not trigger an HA reload for a committed country')
+            self.assertEqual(c.update_interval.total_seconds(), 120*60)
+            self.assertEqual(records, ['gb'])
+        finally:
+            release.set()
+            c._sync_lock.release()
+            await asyncio.gather(pending, *self.tasks, return_exceptions=True)
+
     async def test_unchanged_refresh_state_does_not_notify_again(self):
         coordinator = self.coordinator
         notifications = []

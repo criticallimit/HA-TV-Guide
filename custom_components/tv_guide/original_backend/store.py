@@ -347,6 +347,8 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
 
                 candidate_urls = self._candidate_urls()
                 for index, url in enumerate(candidate_urls, start=1):
+                    if self.runtime.worker_stopped():
+                        return
                     try:
                         print(
                             f"[TV Guide] Lade EPG-Quelle {index}/{len(candidate_urls)}: {url}",
@@ -413,7 +415,11 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                     merged = [{**channel, "programs": [], "available": False, "preset": True}
                               for channel in self.catalog["channels"]]
                 self.source_metrics = source_metrics
+                if self.runtime.worker_stopped():
+                    return
                 supplemented = self._supplement_missing_channels(merged)
+                if self.runtime.worker_stopped():
+                    return
                 if not any(channel.get("programs") for channel in supplemented):
                     self.last_error = " | ".join(errors) if errors else "Keine EPG-Quelle verfügbar."
                     print(f"[TV Guide] EPG-Fehler: {self.last_error}", flush=True)

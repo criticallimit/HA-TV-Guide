@@ -10,6 +10,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
+import threading
 from unittest.mock import patch
 
 from homeassistant import loader
@@ -74,7 +75,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=35' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=36' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_maintenance is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -157,6 +158,45 @@ async def main():
                 await request('settings','POST',{**settings,'columns_desktop':4})
                 await hass.async_block_till_done()
                 assert (await request('settings'))['columns_desktop'] == 4
+                # A completed old executor snapshot must not restore the old
+                # country and cause an options-listener reload after a save.
+                entered, release = threading.Event(), threading.Event()
+                original_snapshot = coordinator.backend.state_snapshot
+                first_snapshot = True
+                def delayed_snapshot():
+                    nonlocal first_snapshot
+                    captured = original_snapshot()
+                    if first_snapshot:
+                        first_snapshot = False
+                        entered.set()
+                        if not release.wait(10):
+                            raise TimeoutError('Country snapshot test was not released')
+                    return captured
+                with patch.object(coordinator.backend, 'state_snapshot', delayed_snapshot), \
+                        patch.object(hass.config_entries, 'async_reload', side_effect=AssertionError('Settings must not reload the integration')) as reload_entry:
+                    old_snapshot = asyncio.create_task(coordinator._snapshot())
+                    try:
+                        assert await asyncio.to_thread(entered.wait, 2)
+                        for country, language in [('fr','fr'), ('de','nl'), ('gb','auto')]:
+                            result = await asyncio.wait_for(request('settings', 'POST',
+                                {**settings, 'columns_desktop':4, 'country':country, 'language':language}), 2)
+                            assert result['ok']
+                        release.set()
+                        await old_snapshot
+                        await hass.async_block_till_done()
+                        assert coordinator.country == 'gb'
+                        assert entry.options['country'] == 'gb'
+                        assert entry.options['language'] == 'auto'
+                        current = await request('guide')
+                        assert current['country'] == 'gb' and current['ui']['language'] == 'auto'
+                        assert hass.data['tv_guide'][entry.entry_id] is coordinator
+                        reload_entry.assert_not_called()
+                    finally:
+                        release.set()
+                        await old_snapshot
+                await request('settings', 'POST', {**settings, 'columns_desktop':4})
+                await hass.async_block_till_done()
+                print('PASS HA rapid country/language changes during a delayed snapshot without reload or blocked saves', flush=True)
                 fields = {'id':programme['id'],'title':programme['title'],'channel':'Das Erste','channel_id':'at:'+'x'*160,
                           'start':programme['start'],'end':programme['end']}
                 await hass.services.async_call('tv_guide','save_bookmark',fields,blocking=True)

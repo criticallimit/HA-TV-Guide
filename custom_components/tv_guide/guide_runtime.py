@@ -60,11 +60,13 @@ class GuideRuntime:
         self._snapshot_lock = threading.Lock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
+        self._worker_context = threading.local()
         self._wake = wake
         self._guide_cache = None
         self._guide_cached_at = 0.0
         self._guide_revision = uuid4().hex
         self._guide_generation = 0
+        self._settings_generation = 0
         self._snapshot_cache = None
         name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
         self._module_name = name
@@ -95,8 +97,9 @@ class GuideRuntime:
             self._pool.shutdown(wait=False, cancel_futures=True)
             raise
         self.runtime = runtime
-        runtime.urlopen = partial(worker_urlopen, runtime.urlopen, lambda:self.closed)
+        runtime.urlopen = partial(worker_urlopen, runtime.urlopen, self._worker_stopped)
         runtime.start_background = self.start_background
+        runtime.worker_stopped = self._worker_stopped
         runtime.normalized_logo_urls = self.logo_urls
 
     def _invalidate_caches(self, *, programmes=True):
@@ -138,6 +141,14 @@ class GuideRuntime:
                     result.append("data:image/svg+xml," + quote(svg))
         return tuple(result)
 
+    def _worker_stopped(self):
+        """Stop obsolete country IO without interrupting personal-list countries."""
+        store = getattr(self._worker_context, 'store', None)
+        if store is not None and (store.country not in self.runtime.REQUIRED_COUNTRIES
+                                  or self.runtime.COUNTRY_STORES.get(store.country) is not store):
+            self._worker_context.cancelled = True
+        return self.closed or getattr(self._worker_context, 'cancelled', False)
+
     def start_background(self, function, **kwargs):
         with self._lock:
             if self.closed:
@@ -153,9 +164,27 @@ class GuideRuntime:
             self._jobs[function] = job
             def run():
                 while True:
-                    function(**job['kwargs'])
+                    owner = getattr(function, '__self__', None)
+                    store = owner if isinstance(owner, self.runtime.EPGStore) else None
+                    self._worker_context.store = store
+                    self._worker_context.cancelled = False
+                    cancelled = False
+                    try:
+                        if self._worker_stopped():
+                            if store is not None:
+                                with self.runtime.SETTINGS_LOCK:
+                                    store.refresh_running = False
+                                    self.runtime.prune_country_stores()
+                        else:
+                            function(**job['kwargs'])
+                        cancelled = self._worker_context.cancelled
+                    finally:
+                        self._worker_context.store = None
+                        self._worker_context.cancelled = False
                     with self._lock:
-                        if not self.closed and job['pending_force']:
+                        retry_selected = (cancelled and store is not None and store.country in self.runtime.REQUIRED_COUNTRIES
+                                          and self.runtime.COUNTRY_STORES.get(store.country) is store)
+                        if not self.closed and (job['pending_force'] or retry_selected):
                             job['pending_force'] = False
                             job['forced'] = True
                             job['kwargs']['force'] = True
@@ -240,6 +269,19 @@ class GuideRuntime:
 
 
     def request(self, endpoint: str, method: str, body=None):
+        """Never return a guide built across a committed settings change."""
+        if endpoint != "guide" or method != "GET":
+            return self._request(endpoint, method, body)
+        with self._request_lock:
+            while True:
+                with self._lock:
+                    generation = self._settings_generation
+                result = self._request(endpoint, method, body)
+                with self._lock:
+                    if generation == self._settings_generation or self.closed:
+                        return result
+
+    def _request(self, endpoint: str, method: str, body=None):
         """Dispatch the original route code in-process, without opening HTTP ports."""
         if method == "GET" and endpoint == "refresh":
             with self._lock:
@@ -288,7 +330,10 @@ class GuideRuntime:
                     # A concurrent guide can start after the pre-write
                     # invalidation but still read the old persisted values.
                     # Never let that snapshot survive completion of a write.
-                    self._invalidate_caches(programmes=endpoint != "personal-channels")
+                    with self._lock:
+                        if endpoint == "settings":
+                            self._settings_generation += 1
+                        self._invalidate_caches(programmes=endpoint != "personal-channels")
             if endpoint == "guide":
                 for channel in result.get("channels", []):
                     channel_id = channel.get("source_channel_id") or channel["id"]

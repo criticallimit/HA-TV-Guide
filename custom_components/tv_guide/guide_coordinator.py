@@ -25,6 +25,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         self._startup_task = None
         self._sync_pending = False
         self._sync_requested = False
+        self._settings_generation = 0
         self._sync_lock = asyncio.Lock()
         self._last_refresh_notification = None
         self._cancel_maintenance = None
@@ -58,7 +59,11 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
                 self._sync_pending = False
 
     async def _snapshot(self):
-        records, catalogue, channels, status = await self.hass.async_add_executor_job(self.backend.state_snapshot)
+        while True:
+            generation = self._settings_generation
+            records, catalogue, channels, status = await self.hass.async_add_executor_job(self.backend.state_snapshot)
+            if generation == self._settings_generation or self._closed:
+                break
         self.country = status['country']
         self.canonical_channels, self.channels = catalogue, channels
         self.refresh_running = status['refresh_running']
@@ -119,6 +124,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
             # The settings file is committed. Publish its small routing fields
             # immediately so the HA options listener does not reload the entry.
             # Rebuilding the EPG may be busy; it must not delay this response.
+            self._settings_generation += 1
             self.country = result["country"]
             self.update_interval = timedelta(minutes=body["refresh_minutes"])
             self._schedule_sync()

@@ -193,6 +193,7 @@ let lastGuideLoadedAt = 0;
 const GUIDE_VISIBILITY_REFRESH_AGE = 60 * 1000;
 let channelSettingsRequest = 0;
 let appSettingsRequest = 0;
+let settingsWrite = 0, settingsSaving = false;
 let channelView = "main";
 let reminders = [];
 let bookmarksRevision = 0, bookmarksRequest = 0;
@@ -509,6 +510,12 @@ async function openAppSettings() {
 }
 
 async function persistAppSettings() {
+  const write = ++settingsWrite;
+  settingsSaving = true;
+  // A guide started before this transaction must not repaint the old country
+  // or language while the latest selection is being committed.
+  ++guideRequest;
+  clearTimeout(startupReloadTimer); startupReloadTimer = null;
   const request = appSettingsRequest;
   const isCurrent = () => request === appSettingsRequest && appSettingsDialog.open;
   appSettingsStatus.textContent = t("Wird gespeichert …");
@@ -528,19 +535,19 @@ async function persistAppSettings() {
     });
     if (!payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
     saved = true;
+    if (write !== settingsWrite) return;
     const committed = payload.settings || changes;
-    if (guide && committed.country === guide.country) {
+    i18n.configure({...committed, home_assistant:guide?.ui?.home_assistant});
+    if (guide) {
       // Apply persisted appearance locally; do not wait for EPG transfer.
       guide = {...guide, ui:{...guide.ui, ...committed}};
-      i18n.configure({...guide.ui,country:guide.country});
       root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
       syncHomeAssistantTheme();
       render(); renderBookmarks(); if (activeDetail) updateDetailControls();
-      saveFirstPaintGuide(guide);
+      lastGuideLoadedAt = 0;
+      if (committed.country === guide.country) saveFirstPaintGuide(guide);
+      else { try { sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY); } catch {} }
     }
-    // The settings action has committed. Refresh programmes independently so
-    // a slow guide response cannot turn a successful save into a timeout.
-    loadGuide().catch(() => {});
     if (!isCurrent()) return;
     appSettingsStatus.textContent = payload.refresh_started
       ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.")
@@ -549,6 +556,12 @@ async function persistAppSettings() {
   } catch (err) {
     if (isCurrent()) appSettingsStatus.textContent = t(err.message);
   } finally {
+    if (write === settingsWrite) {
+      settingsSaving = false;
+      // Refresh independently of the committed save, including after failure
+      // so a rejected transaction cannot leave guide polling suspended.
+      loadGuide().catch(() => {});
+    }
     if (isCurrent() && !saved) {
       setAppSettingsEditing(true);
       saveAppSettings.disabled = false;
@@ -741,7 +754,7 @@ function scheduleGuideReload(failed = false) {
   if (delay) startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), delay);
 }
 async function loadGuide(preview=false) {
-  if (guidePageSuspended) return;
+  if (guidePageSuspended || settingsSaving) return;
   clearTimeout(startupReloadTimer);
   startupReloadTimer = null;
   const request = ++guideRequest;
