@@ -68,6 +68,8 @@ jobs:
         run: python3 tests/prepare_logo_fixtures.py
       - name: Verify scoped view bundle
         run: python tools/build_frontend_view.py --check
+      - name: Verify stable release retention safety
+        run: node tests/release-retention.cjs
       - name: Check TV Guide card syntax
         run: node --check custom_components/tv_guide/frontend/tv-guide-card.js
       - name: Verify and stage pinned read-only reference frontend
