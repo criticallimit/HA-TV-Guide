@@ -70,7 +70,7 @@ Your saved programmes and channel lists are available on devices using the same 
 
 ## Ready to use
 
-After adding the integration, open **TV Guide** in the Home Assistant sidebar. The complete programme view is available there automatically. Home Assistant supplies the initial country and language; TV Guide loads programme data and the logo library in the background. The first opening shows preparation progress while downloads are running.
+After adding the integration, open **TV Guide** in the Home Assistant sidebar. The complete programme view is available there automatically. Home Assistant supplies the initial country and language; TV Guide loads programme data and the logo library in the background. The first opening shows preparation progress while downloads are running. Logo versions are checked in the background once every 24 hours. Unchanged versions need only a small conditional request; new versions download only changed packages. Verified updates appear automatically without restarting Home Assistant, while failed updates keep the installed logos available.
 
 The guide needs no dashboard card, YAML configuration or resource setup. You can start using it directly from the sidebar.
 

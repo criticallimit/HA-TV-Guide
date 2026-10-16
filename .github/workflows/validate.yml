@@ -29,6 +29,8 @@ jobs:
           python-version: '3.13'
       - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
+      - name: Verify published logo update descriptor
+        run: python tools/build_logo_updates.py --check
       - name: Check Python syntax
         run: python -m compileall -q custom_components
       - name: Check JSON validity
