@@ -189,7 +189,9 @@
     "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download failed. You can still use the guide.",
     "Vorbereitung abgeschlossen": "Preparation complete",
     "Quellen geprüft": "sources checked",
-    "Ohne Titel": "Untitled"
+    "Ohne Titel": "Untitled",
+    "Polen": "Poland",
+    "Polski": "Polish"
   },
   "home_assistant": {
     "config": {

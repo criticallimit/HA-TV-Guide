@@ -1476,5 +1476,19 @@
     "display_name_prefixes": [
       "ES - "
     ]
+  },
+  "pl": {
+    "name": "Polen",
+    "timezone": "Europe/Warsaw",
+    "catalog": "channels_pl.json",
+    "language": "pl",
+    "sources": [
+      "https://www.open-epg.com/files/poland1.xml.gz",
+      "https://iptv-epg.org/files/epg-pl.xml.gz",
+      "https://epgshare01.online/epgshare01/epg_ripper_PL1.xml.gz"
+    ],
+    "display_name_prefixes": [
+      "PL - "
+    ]
   }
 }

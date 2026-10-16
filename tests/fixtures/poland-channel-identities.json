@@ -1,0 +1,1168 @@
+{
+  "open-poland1": [
+    {
+      "id": "pl_tvp1",
+      "source_id": "TVP 1 HD.pl",
+      "name": "TVP 1 HD.pl"
+    },
+    {
+      "id": "pl_tvp1",
+      "source_id": "TVP 1.pl",
+      "name": "TVP 1.pl"
+    },
+    {
+      "id": "pl_tvp2",
+      "source_id": "TVP 2 HD.pl",
+      "name": "TVP 2 HD.pl"
+    },
+    {
+      "id": "pl_tvp2",
+      "source_id": "TVP 2.pl",
+      "name": "TVP 2.pl"
+    },
+    {
+      "id": "pl_polsat",
+      "source_id": "Polsat HD.pl",
+      "name": "Polsat HD.pl"
+    },
+    {
+      "id": "pl_polsat",
+      "source_id": "Polsat.pl",
+      "name": "Polsat.pl"
+    },
+    {
+      "id": "pl_tvn",
+      "source_id": "TVN HD.pl",
+      "name": "TVN HD.pl"
+    },
+    {
+      "id": "pl_tvn",
+      "source_id": "TVN.pl",
+      "name": "TVN.pl"
+    },
+    {
+      "id": "pl_tv4",
+      "source_id": "TV 4 HD.pl",
+      "name": "TV 4 HD.pl"
+    },
+    {
+      "id": "pl_tv4",
+      "source_id": "TV 4.pl",
+      "name": "TV 4.pl"
+    },
+    {
+      "id": "pl_tvn7",
+      "source_id": "TVN 7 HD.pl",
+      "name": "TVN 7 HD.pl"
+    },
+    {
+      "id": "pl_tvn7",
+      "source_id": "TVN 7.pl",
+      "name": "TVN 7.pl"
+    },
+    {
+      "id": "pl_tvpuls",
+      "source_id": "TV Puls HD.pl",
+      "name": "TV Puls HD.pl"
+    },
+    {
+      "id": "pl_tvpuls",
+      "source_id": "TV Puls.pl",
+      "name": "TV Puls.pl"
+    },
+    {
+      "id": "pl_tv6",
+      "source_id": "TV 6 HD.pl",
+      "name": "TV 6 HD.pl"
+    },
+    {
+      "id": "pl_tv6",
+      "source_id": "TV 6.pl",
+      "name": "TV 6.pl"
+    },
+    {
+      "id": "pl_puls2",
+      "source_id": "PULS 2 HD.pl",
+      "name": "PULS 2 HD.pl"
+    },
+    {
+      "id": "pl_puls2",
+      "source_id": "PULS 2.pl",
+      "name": "PULS 2.pl"
+    },
+    {
+      "id": "pl_ttv",
+      "source_id": "TTV HD.pl",
+      "name": "TTV HD.pl"
+    },
+    {
+      "id": "pl_ttv",
+      "source_id": "TTV.pl",
+      "name": "TTV.pl"
+    },
+    {
+      "id": "pl_tvp3",
+      "source_id": "TVP 3.pl",
+      "name": "TVP 3.pl"
+    },
+    {
+      "id": "pl_tvpinfo",
+      "source_id": "TVP Info HD.pl",
+      "name": "TVP Info HD.pl"
+    },
+    {
+      "id": "pl_tvpinfo",
+      "source_id": "TVP Info.pl",
+      "name": "TVP Info.pl"
+    },
+    {
+      "id": "pl_tvn24",
+      "source_id": "TVN 24 HD.pl",
+      "name": "TVN 24 HD.pl"
+    },
+    {
+      "id": "pl_tvn24",
+      "source_id": "TVN 24.pl",
+      "name": "TVN 24.pl"
+    },
+    {
+      "id": "pl_polsatnews",
+      "source_id": "Polsat News HD.pl",
+      "name": "Polsat News HD.pl"
+    },
+    {
+      "id": "pl_polsatnews",
+      "source_id": "Polsat News.pl",
+      "name": "Polsat News.pl"
+    },
+    {
+      "id": "pl_tvn24bis",
+      "source_id": "TVN24 BiS HD.pl",
+      "name": "TVN24 BiS HD.pl"
+    },
+    {
+      "id": "pl_tvn24bis",
+      "source_id": "TVN24 BiS.pl",
+      "name": "TVN24 BiS.pl"
+    },
+    {
+      "id": "pl_republika",
+      "source_id": "Republika HD.pl",
+      "name": "Republika HD.pl"
+    },
+    {
+      "id": "pl_republika",
+      "source_id": "Republika.pl",
+      "name": "Republika.pl"
+    },
+    {
+      "id": "pl_superpolsat",
+      "source_id": "Super Polsat HD.pl",
+      "name": "Super Polsat HD.pl"
+    },
+    {
+      "id": "pl_superpolsat",
+      "source_id": "Super Polsat.pl",
+      "name": "Super Polsat.pl"
+    },
+    {
+      "id": "pl_stopklatka",
+      "source_id": "STOPKLATKA HD.pl",
+      "name": "STOPKLATKA HD.pl"
+    },
+    {
+      "id": "pl_stopklatka",
+      "source_id": "STOPKLATKA.pl",
+      "name": "STOPKLATKA.pl"
+    },
+    {
+      "id": "pl_fokustv",
+      "source_id": "Fokus TV HD.pl",
+      "name": "Fokus TV HD.pl"
+    },
+    {
+      "id": "pl_fokustv",
+      "source_id": "Fokus TV.pl",
+      "name": "Fokus TV.pl"
+    },
+    {
+      "id": "pl_metro",
+      "source_id": "METRO HD.pl",
+      "name": "METRO HD.pl"
+    },
+    {
+      "id": "pl_metro",
+      "source_id": "METRO.pl",
+      "name": "METRO.pl"
+    },
+    {
+      "id": "pl_zoomtv",
+      "source_id": "ZOOM TV HD.pl",
+      "name": "ZOOM TV HD.pl"
+    },
+    {
+      "id": "pl_zoomtv",
+      "source_id": "ZOOM TV.pl",
+      "name": "ZOOM TV.pl"
+    },
+    {
+      "id": "pl_nowatv",
+      "source_id": "Nowa TV HD.pl",
+      "name": "Nowa TV HD.pl"
+    },
+    {
+      "id": "pl_nowatv",
+      "source_id": "Nowa TV.pl",
+      "name": "Nowa TV.pl"
+    },
+    {
+      "id": "pl_wp",
+      "source_id": "WP HD.pl",
+      "name": "WP HD.pl"
+    },
+    {
+      "id": "pl_wp",
+      "source_id": "WP.pl",
+      "name": "WP.pl"
+    },
+    {
+      "id": "pl_antena",
+      "source_id": "Antena.pl",
+      "name": "Antena.pl"
+    },
+    {
+      "id": "pl_tvpkultura",
+      "source_id": "TVP Kultura HD.pl",
+      "name": "TVP Kultura HD.pl"
+    },
+    {
+      "id": "pl_tvpkultura",
+      "source_id": "TVP Kultura.pl",
+      "name": "TVP Kultura.pl"
+    },
+    {
+      "id": "pl_tvphistoria",
+      "source_id": "TVP Historia.pl",
+      "name": "TVP Historia.pl"
+    },
+    {
+      "id": "pl_tvpdokument",
+      "source_id": "TVP Dokument.pl",
+      "name": "TVP Dokument.pl"
+    },
+    {
+      "id": "pl_tvpkobieta",
+      "source_id": "TVP Kobieta.pl",
+      "name": "TVP Kobieta.pl"
+    },
+    {
+      "id": "pl_tvprozrywka",
+      "source_id": "TVP Rozrywka.pl",
+      "name": "TVP Rozrywka.pl"
+    },
+    {
+      "id": "pl_tvpseriale",
+      "source_id": "TVP Seriale.pl",
+      "name": "TVP Seriale.pl"
+    },
+    {
+      "id": "pl_tvppolonia",
+      "source_id": "TVP Polonia.pl",
+      "name": "TVP Polonia.pl"
+    },
+    {
+      "id": "pl_tvpabc",
+      "source_id": "TVP ABC.pl",
+      "name": "TVP ABC.pl"
+    },
+    {
+      "id": "pl_tvtrwam",
+      "source_id": "TV Trwam.pl",
+      "name": "TV Trwam.pl"
+    },
+    {
+      "id": "pl_tvnstyle",
+      "source_id": "TVN Style HD.pl",
+      "name": "TVN Style HD.pl"
+    },
+    {
+      "id": "pl_tvnstyle",
+      "source_id": "TVN Style.pl",
+      "name": "TVN Style.pl"
+    },
+    {
+      "id": "pl_tvnturbo",
+      "source_id": "TVN Turbo HD.pl",
+      "name": "TVN Turbo HD.pl"
+    },
+    {
+      "id": "pl_tvnturbo",
+      "source_id": "TVN Turbo.pl",
+      "name": "TVN Turbo.pl"
+    },
+    {
+      "id": "pl_tvnfabula",
+      "source_id": "TVN Fabuła HD.pl",
+      "name": "TVN Fabuła HD.pl"
+    },
+    {
+      "id": "pl_tvnfabula",
+      "source_id": "TVN Fabuła.pl",
+      "name": "TVN Fabuła.pl"
+    },
+    {
+      "id": "pl_polsat2",
+      "source_id": "Polsat 2 HD.pl",
+      "name": "Polsat 2 HD.pl"
+    },
+    {
+      "id": "pl_polsat2",
+      "source_id": "Polsat 2.pl",
+      "name": "Polsat 2.pl"
+    },
+    {
+      "id": "pl_polsatfilm",
+      "source_id": "Polsat Film HD.pl",
+      "name": "Polsat Film HD.pl"
+    },
+    {
+      "id": "pl_polsatfilm",
+      "source_id": "Polsat Film.pl",
+      "name": "Polsat Film.pl"
+    },
+    {
+      "id": "pl_polsatcafe",
+      "source_id": "Polsat Café HD.pl",
+      "name": "Polsat Café HD.pl"
+    },
+    {
+      "id": "pl_polsatcafe",
+      "source_id": "Polsat Café.pl",
+      "name": "Polsat Café.pl"
+    },
+    {
+      "id": "pl_polsatplay",
+      "source_id": "Polsat Play HD.pl",
+      "name": "Polsat Play HD.pl"
+    },
+    {
+      "id": "pl_polsatplay",
+      "source_id": "Polsat Play.pl",
+      "name": "Polsat Play.pl"
+    },
+    {
+      "id": "pl_kinopolska",
+      "source_id": "Kino Polska HD.pl",
+      "name": "Kino Polska HD.pl"
+    },
+    {
+      "id": "pl_kinopolska",
+      "source_id": "Kino Polska.pl",
+      "name": "Kino Polska.pl"
+    },
+    {
+      "id": "pl_discovery",
+      "source_id": "Discovery Channel HD.pl",
+      "name": "Discovery Channel HD.pl"
+    },
+    {
+      "id": "pl_discovery",
+      "source_id": "Discovery Channel.pl",
+      "name": "Discovery Channel.pl"
+    },
+    {
+      "id": "pl_nationalgeographic",
+      "source_id": "National Geographic HD.pl",
+      "name": "National Geographic HD.pl"
+    },
+    {
+      "id": "pl_nationalgeographic",
+      "source_id": "National Geographic.pl",
+      "name": "National Geographic.pl"
+    },
+    {
+      "id": "pl_tvpsport",
+      "source_id": "TVP Sport HD.pl",
+      "name": "TVP Sport HD.pl"
+    },
+    {
+      "id": "pl_tvpsport",
+      "source_id": "TVP Sport.pl",
+      "name": "TVP Sport.pl"
+    },
+    {
+      "id": "pl_polsatsport1",
+      "source_id": "Polsat Sport 1 HD.pl",
+      "name": "Polsat Sport 1 HD.pl"
+    },
+    {
+      "id": "pl_polsatsport1",
+      "source_id": "Polsat Sport 1.pl",
+      "name": "Polsat Sport 1.pl"
+    },
+    {
+      "id": "pl_eurosport1",
+      "source_id": "Eurosport 1 HD.pl",
+      "name": "Eurosport 1 HD.pl"
+    },
+    {
+      "id": "pl_eurosport1",
+      "source_id": "Eurosport 1.pl",
+      "name": "Eurosport 1.pl"
+    },
+    {
+      "id": "pl_canalpremium",
+      "source_id": "CANAL+ PREMIUM HD.pl",
+      "name": "CANAL+ PREMIUM HD.pl"
+    },
+    {
+      "id": "pl_canalpremium",
+      "source_id": "CANAL+ PREMIUM.pl",
+      "name": "CANAL+ PREMIUM.pl"
+    },
+    {
+      "id": "pl_hbo",
+      "source_id": "HBO HD.pl",
+      "name": "HBO HD.pl"
+    },
+    {
+      "id": "pl_hbo",
+      "source_id": "HBO.pl",
+      "name": "HBO.pl"
+    },
+    {
+      "id": "pl_nickelodeon",
+      "source_id": "Nickelodeon.pl",
+      "name": "Nickelodeon.pl"
+    },
+    {
+      "id": "pl_eskatv",
+      "source_id": "Eska TV HD.pl",
+      "name": "Eska TV HD.pl"
+    },
+    {
+      "id": "pl_eskatv",
+      "source_id": "Eska TV.pl",
+      "name": "Eska TV.pl"
+    }
+  ],
+  "iptv-epg": [
+    {
+      "id": "pl_tvp1",
+      "source_id": "TVP1.pl",
+      "name": "PL - TVP 1"
+    },
+    {
+      "id": "pl_tvp2",
+      "source_id": "TVP2.pl",
+      "name": "PL - TVP 2"
+    },
+    {
+      "id": "pl_polsat",
+      "source_id": "Polsat.pl",
+      "name": "PL - Polsat"
+    },
+    {
+      "id": "pl_tvn",
+      "source_id": "TVN.pl",
+      "name": "PL - TVN"
+    },
+    {
+      "id": "pl_tv4",
+      "source_id": "TV4.pl",
+      "name": "PL - TV 4"
+    },
+    {
+      "id": "pl_tvn7",
+      "source_id": "TVN7.pl",
+      "name": "PL - TVN 7"
+    },
+    {
+      "id": "pl_tvpuls",
+      "source_id": "TVPuls.pl",
+      "name": "PL - TV Puls"
+    },
+    {
+      "id": "pl_tv6",
+      "source_id": "TV6.pl",
+      "name": "PL - TV 6"
+    },
+    {
+      "id": "pl_puls2",
+      "source_id": "PULS2.pl",
+      "name": "PL - PULS 2"
+    },
+    {
+      "id": "pl_ttv",
+      "source_id": "TTV.pl",
+      "name": "PL - TTV"
+    },
+    {
+      "id": "pl_tvp3",
+      "source_id": "TVP3.pl",
+      "name": "PL - TVP 3"
+    },
+    {
+      "id": "pl_tvpinfo",
+      "source_id": "TVPInfo.pl",
+      "name": "PL - TVP Info"
+    },
+    {
+      "id": "pl_tvn24",
+      "source_id": "TVN24.pl",
+      "name": "PL - TVN 24"
+    },
+    {
+      "id": "pl_polsatnews",
+      "source_id": "PolsatNews.pl",
+      "name": "PL - Polsat News"
+    },
+    {
+      "id": "pl_tvn24bis",
+      "source_id": "TVN24BiS.pl",
+      "name": "PL - TVN24 BiS"
+    },
+    {
+      "id": "pl_republika",
+      "source_id": "TVRepublika.pl",
+      "name": "PL - TV Republika"
+    },
+    {
+      "id": "pl_superpolsat",
+      "source_id": "SuperPolsat.pl",
+      "name": "PL - Super Polsat"
+    },
+    {
+      "id": "pl_stopklatka",
+      "source_id": "STOPKLATKA.pl",
+      "name": "PL - STOPKLATKA"
+    },
+    {
+      "id": "pl_fokustv",
+      "source_id": "FokusTV.pl",
+      "name": "PL - Fokus TV"
+    },
+    {
+      "id": "pl_metro",
+      "source_id": "METRO.pl",
+      "name": "PL - METRO"
+    },
+    {
+      "id": "pl_zoomtv",
+      "source_id": "ZOOMTV.pl",
+      "name": "PL - ZOOM TV"
+    },
+    {
+      "id": "pl_nowatv",
+      "source_id": "NowaTV.pl",
+      "name": "PL - Nowa TV"
+    },
+    {
+      "id": "pl_wp",
+      "source_id": "WP.pl",
+      "name": "PL - WP"
+    },
+    {
+      "id": "pl_antena",
+      "source_id": "Antena.pl",
+      "name": "PL - Antena"
+    },
+    {
+      "id": "pl_tvpkultura",
+      "source_id": "TVPKultura.pl",
+      "name": "PL - TVP Kultura"
+    },
+    {
+      "id": "pl_tvphistoria",
+      "source_id": "TVPHistoria.pl",
+      "name": "PL - TVP Historia"
+    },
+    {
+      "id": "pl_tvpdokument",
+      "source_id": "TVPDokument.pl",
+      "name": "PL - TVP Dokument"
+    },
+    {
+      "id": "pl_tvpkobieta",
+      "source_id": "TVPKobieta.pl",
+      "name": "PL - TVP Kobieta"
+    },
+    {
+      "id": "pl_tvprozrywka",
+      "source_id": "TVPRozrywka.pl",
+      "name": "PL - TVP Rozrywka"
+    },
+    {
+      "id": "pl_tvpseriale",
+      "source_id": "TVPSeriale.pl",
+      "name": "PL - TVP Seriale"
+    },
+    {
+      "id": "pl_tvppolonia",
+      "source_id": "TVPPolonia.pl",
+      "name": "PL - TVP Polonia"
+    },
+    {
+      "id": "pl_tvpabc",
+      "source_id": "TVPABC.pl",
+      "name": "PL - TVP ABC"
+    },
+    {
+      "id": "pl_tvtrwam",
+      "source_id": "TVTrwam.pl",
+      "name": "PL - TV Trwam"
+    },
+    {
+      "id": "pl_tvnstyle",
+      "source_id": "TVNStyle.pl",
+      "name": "PL - TVN Style"
+    },
+    {
+      "id": "pl_tvnturbo",
+      "source_id": "TVNTurbo.pl",
+      "name": "PL - TVN Turbo"
+    },
+    {
+      "id": "pl_tvnfabula",
+      "source_id": "TVNFabula.pl",
+      "name": "PL - TVN Fabuła"
+    },
+    {
+      "id": "pl_polsat2",
+      "source_id": "Polsat2.pl",
+      "name": "PL - Polsat 2"
+    },
+    {
+      "id": "pl_polsatfilm",
+      "source_id": "PolsatFilm.pl",
+      "name": "PL - Polsat Film"
+    },
+    {
+      "id": "pl_polsatcafe",
+      "source_id": "PolsatCafe.pl",
+      "name": "PL - Polsat Café"
+    },
+    {
+      "id": "pl_polsatplay",
+      "source_id": "PolsatPlay.pl",
+      "name": "PL - Polsat Play"
+    },
+    {
+      "id": "pl_kinopolska",
+      "source_id": "KinoPolska.pl",
+      "name": "PL - Kino Polska"
+    },
+    {
+      "id": "pl_discovery",
+      "source_id": "DiscoveryChannel.pl",
+      "name": "PL - Discovery Channel"
+    },
+    {
+      "id": "pl_nationalgeographic",
+      "source_id": "NationalGeographic.pl",
+      "name": "PL - National Geographic"
+    },
+    {
+      "id": "pl_tvpsport",
+      "source_id": "TVPSport.pl",
+      "name": "PL - TVP Sport"
+    },
+    {
+      "id": "pl_polsatsport1",
+      "source_id": "PolsatSport1.pl",
+      "name": "PL - Polsat Sport 1"
+    },
+    {
+      "id": "pl_eurosport1",
+      "source_id": "Eurosport1.pl",
+      "name": "PL - Eurosport 1"
+    },
+    {
+      "id": "pl_canalpremium",
+      "source_id": "CANAL+PREMIUM.pl",
+      "name": "PL - CANAL+ PREMIUM"
+    },
+    {
+      "id": "pl_hbo",
+      "source_id": "HBO.pl",
+      "name": "PL - HBO"
+    },
+    {
+      "id": "pl_nickelodeon",
+      "source_id": "Nickelodeon.pl",
+      "name": "PL - Nickelodeon"
+    },
+    {
+      "id": "pl_eskatv",
+      "source_id": "EskaTV.pl",
+      "name": "PL - Eska TV"
+    }
+  ],
+  "epgshare": [
+    {
+      "id": "pl_tvp1",
+      "source_id": "TVP.1.HD.pl",
+      "name": "TVP 1 HD"
+    },
+    {
+      "id": "pl_tvp1",
+      "source_id": "TVP.1.pl",
+      "name": "TVP 1"
+    },
+    {
+      "id": "pl_tvp2",
+      "source_id": "TVP.2.HD.pl",
+      "name": "TVP 2 HD"
+    },
+    {
+      "id": "pl_tvp2",
+      "source_id": "TVP.2.pl",
+      "name": "TVP 2"
+    },
+    {
+      "id": "pl_polsat",
+      "source_id": "Polsat.pl",
+      "name": "Polsat"
+    },
+    {
+      "id": "pl_polsat",
+      "source_id": "Polsat.HD.pl",
+      "name": "Polsat HD"
+    },
+    {
+      "id": "pl_tvn",
+      "source_id": "TVN.pl",
+      "name": "TVN"
+    },
+    {
+      "id": "pl_tvn",
+      "source_id": "TVN.HD.pl",
+      "name": "TVN HD"
+    },
+    {
+      "id": "pl_tv4",
+      "source_id": "TV.4.pl",
+      "name": "TV 4"
+    },
+    {
+      "id": "pl_tv4",
+      "source_id": "TV.4.HD.pl",
+      "name": "TV 4 HD"
+    },
+    {
+      "id": "pl_tvn7",
+      "source_id": "TVN.7.pl",
+      "name": "TVN 7"
+    },
+    {
+      "id": "pl_tvn7",
+      "source_id": "TVN.7.HD.pl",
+      "name": "TVN 7 HD"
+    },
+    {
+      "id": "pl_tvpuls",
+      "source_id": "TV.Puls.HD.pl",
+      "name": "TV Puls HD"
+    },
+    {
+      "id": "pl_tvpuls",
+      "source_id": "TV.Puls.pl",
+      "name": "TV Puls"
+    },
+    {
+      "id": "pl_tv6",
+      "source_id": "TV.6.HD.pl",
+      "name": "TV 6 HD"
+    },
+    {
+      "id": "pl_tv6",
+      "source_id": "TV.6.pl",
+      "name": "TV 6"
+    },
+    {
+      "id": "pl_puls2",
+      "source_id": "PULS.2.pl",
+      "name": "PULS 2"
+    },
+    {
+      "id": "pl_puls2",
+      "source_id": "PULS.2.HD.pl",
+      "name": "PULS 2 HD"
+    },
+    {
+      "id": "pl_ttv",
+      "source_id": "TTV.pl",
+      "name": "TTV"
+    },
+    {
+      "id": "pl_ttv",
+      "source_id": "TTV.HD.pl",
+      "name": "TTV HD"
+    },
+    {
+      "id": "pl_tvp3",
+      "source_id": "TVP.3.pl",
+      "name": "TVP 3"
+    },
+    {
+      "id": "pl_tvpinfo",
+      "source_id": "TVP.Info.HD.pl",
+      "name": "TVP Info HD"
+    },
+    {
+      "id": "pl_tvpinfo",
+      "source_id": "TVP.Info.pl",
+      "name": "TVP Info"
+    },
+    {
+      "id": "pl_tvn24",
+      "source_id": "TVN.24.pl",
+      "name": "TVN 24"
+    },
+    {
+      "id": "pl_tvn24",
+      "source_id": "TVN.24.HD.pl",
+      "name": "TVN 24 HD"
+    },
+    {
+      "id": "pl_polsatnews",
+      "source_id": "Polsat.News.HD.pl",
+      "name": "Polsat News HD"
+    },
+    {
+      "id": "pl_polsatnews",
+      "source_id": "Polsat.News.pl",
+      "name": "Polsat News"
+    },
+    {
+      "id": "pl_tvn24bis",
+      "source_id": "TVN24.BiS.HD.pl",
+      "name": "TVN24 BiS HD"
+    },
+    {
+      "id": "pl_tvn24bis",
+      "source_id": "TVN24.BiS.pl",
+      "name": "TVN24 BiS"
+    },
+    {
+      "id": "pl_republika",
+      "source_id": "TV.Republika.pl",
+      "name": "TV Republika"
+    },
+    {
+      "id": "pl_republika",
+      "source_id": "TV.Republika.HD.pl",
+      "name": "TV Republika HD"
+    },
+    {
+      "id": "pl_superpolsat",
+      "source_id": "Super.Polsat.HD.pl",
+      "name": "Super Polsat HD"
+    },
+    {
+      "id": "pl_superpolsat",
+      "source_id": "Super.Polsat.pl",
+      "name": "Super Polsat"
+    },
+    {
+      "id": "pl_stopklatka",
+      "source_id": "STOPKLATKA.pl",
+      "name": "STOPKLATKA"
+    },
+    {
+      "id": "pl_stopklatka",
+      "source_id": "STOPKLATKA.HD.pl",
+      "name": "STOPKLATKA HD"
+    },
+    {
+      "id": "pl_fokustv",
+      "source_id": "Fokus.TV.HD.pl",
+      "name": "Fokus TV HD"
+    },
+    {
+      "id": "pl_fokustv",
+      "source_id": "Fokus.TV.pl",
+      "name": "Fokus TV"
+    },
+    {
+      "id": "pl_metro",
+      "source_id": "METRO.pl",
+      "name": "METRO"
+    },
+    {
+      "id": "pl_metro",
+      "source_id": "METRO.HD.pl",
+      "name": "METRO HD"
+    },
+    {
+      "id": "pl_zoomtv",
+      "source_id": "ZOOM.TV.HD.pl",
+      "name": "ZOOM TV HD"
+    },
+    {
+      "id": "pl_zoomtv",
+      "source_id": "ZOOM.TV.pl",
+      "name": "ZOOM TV"
+    },
+    {
+      "id": "pl_nowatv",
+      "source_id": "Nowa.TV.HD.pl",
+      "name": "Nowa TV HD"
+    },
+    {
+      "id": "pl_nowatv",
+      "source_id": "Nowa.TV.pl",
+      "name": "Nowa TV"
+    },
+    {
+      "id": "pl_wp",
+      "source_id": "WP.pl",
+      "name": "WP"
+    },
+    {
+      "id": "pl_wp",
+      "source_id": "WP.HD.pl",
+      "name": "WP HD"
+    },
+    {
+      "id": "pl_antena",
+      "source_id": "Antena.pl",
+      "name": "Antena"
+    },
+    {
+      "id": "pl_antena",
+      "source_id": "Antena.HD.pl",
+      "name": "Antena HD"
+    },
+    {
+      "id": "pl_tvpkultura",
+      "source_id": "TVP.Kultura.pl",
+      "name": "TVP Kultura"
+    },
+    {
+      "id": "pl_tvpkultura",
+      "source_id": "TVP.Kultura.HD.pl",
+      "name": "TVP Kultura HD"
+    },
+    {
+      "id": "pl_tvphistoria",
+      "source_id": "TVP.Historia.pl",
+      "name": "TVP Historia"
+    },
+    {
+      "id": "pl_tvpdokument",
+      "source_id": "TVP.Dokument.HD.pl",
+      "name": "TVP Dokument HD"
+    },
+    {
+      "id": "pl_tvpdokument",
+      "source_id": "TVP.Dokument.pl",
+      "name": "TVP Dokument"
+    },
+    {
+      "id": "pl_tvpkobieta",
+      "source_id": "TVP.Kobieta.HD.pl",
+      "name": "TVP Kobieta HD"
+    },
+    {
+      "id": "pl_tvpkobieta",
+      "source_id": "TVP.Kobieta.pl",
+      "name": "TVP Kobieta"
+    },
+    {
+      "id": "pl_tvprozrywka",
+      "source_id": "TVP.Rozrywka.pl",
+      "name": "TVP Rozrywka"
+    },
+    {
+      "id": "pl_tvpseriale",
+      "source_id": "TVP.Seriale.pl",
+      "name": "TVP Seriale"
+    },
+    {
+      "id": "pl_tvppolonia",
+      "source_id": "TVP.Polonia.pl",
+      "name": "TVP Polonia"
+    },
+    {
+      "id": "pl_tvppolonia",
+      "source_id": "TVP.Polonia.HD.pl",
+      "name": "TVP Polonia HD"
+    },
+    {
+      "id": "pl_tvpabc",
+      "source_id": "TVP.ABC.pl",
+      "name": "TVP ABC"
+    },
+    {
+      "id": "pl_tvtrwam",
+      "source_id": "TV.Trwam.pl",
+      "name": "TV Trwam"
+    },
+    {
+      "id": "pl_tvnstyle",
+      "source_id": "TVN.Style.HD.pl",
+      "name": "TVN Style HD"
+    },
+    {
+      "id": "pl_tvnstyle",
+      "source_id": "TVN.Style.pl",
+      "name": "TVN Style"
+    },
+    {
+      "id": "pl_tvnturbo",
+      "source_id": "TVN.Turbo.HD.pl",
+      "name": "TVN Turbo HD"
+    },
+    {
+      "id": "pl_tvnturbo",
+      "source_id": "TVN.Turbo.pl",
+      "name": "TVN Turbo"
+    },
+    {
+      "id": "pl_tvnfabula",
+      "source_id": "TVN.Fabuła.HD.pl",
+      "name": "TVN Fabuła HD"
+    },
+    {
+      "id": "pl_tvnfabula",
+      "source_id": "TVN.Fabuła.pl",
+      "name": "TVN Fabuła"
+    },
+    {
+      "id": "pl_polsat2",
+      "source_id": "Polsat.2.pl",
+      "name": "Polsat 2"
+    },
+    {
+      "id": "pl_polsat2",
+      "source_id": "Polsat.2.HD.pl",
+      "name": "Polsat 2 HD"
+    },
+    {
+      "id": "pl_polsatfilm",
+      "source_id": "Polsat.Film.pl",
+      "name": "Polsat Film"
+    },
+    {
+      "id": "pl_polsatfilm",
+      "source_id": "Polsat.Film.HD.pl",
+      "name": "Polsat Film HD"
+    },
+    {
+      "id": "pl_polsatcafe",
+      "source_id": "Polsat.Café.pl",
+      "name": "Polsat Café"
+    },
+    {
+      "id": "pl_polsatcafe",
+      "source_id": "Polsat.Café.HD.pl",
+      "name": "Polsat Café HD"
+    },
+    {
+      "id": "pl_polsatplay",
+      "source_id": "Polsat.Play.HD.pl",
+      "name": "Polsat Play HD"
+    },
+    {
+      "id": "pl_polsatplay",
+      "source_id": "Polsat.Play.pl",
+      "name": "Polsat Play"
+    },
+    {
+      "id": "pl_kinopolska",
+      "source_id": "Kino.Polska.HD.pl",
+      "name": "Kino Polska HD"
+    },
+    {
+      "id": "pl_kinopolska",
+      "source_id": "Kino.Polska.pl",
+      "name": "Kino Polska"
+    },
+    {
+      "id": "pl_discovery",
+      "source_id": "Discovery.Channel.pl",
+      "name": "Discovery Channel"
+    },
+    {
+      "id": "pl_discovery",
+      "source_id": "Discovery.Channel.HD.pl",
+      "name": "Discovery Channel HD"
+    },
+    {
+      "id": "pl_nationalgeographic",
+      "source_id": "National.Geographic.pl",
+      "name": "National Geographic"
+    },
+    {
+      "id": "pl_nationalgeographic",
+      "source_id": "National.Geographic.HD.pl",
+      "name": "National Geographic HD"
+    },
+    {
+      "id": "pl_tvpsport",
+      "source_id": "TVP.Sport.pl",
+      "name": "TVP Sport"
+    },
+    {
+      "id": "pl_tvpsport",
+      "source_id": "TVP.Sport.HD.pl",
+      "name": "TVP Sport HD"
+    },
+    {
+      "id": "pl_polsatsport1",
+      "source_id": "Polsat.Sport.HD.pl",
+      "name": "Polsat Sport HD"
+    },
+    {
+      "id": "pl_polsatsport1",
+      "source_id": "Polsat.Sport.pl",
+      "name": "Polsat Sport"
+    },
+    {
+      "id": "pl_eurosport1",
+      "source_id": "Eurosport.1.pl",
+      "name": "Eurosport 1"
+    },
+    {
+      "id": "pl_eurosport1",
+      "source_id": "Eurosport.1.HD.pl",
+      "name": "Eurosport 1 HD"
+    },
+    {
+      "id": "pl_canalpremium",
+      "source_id": "CANAL+.PREMIUM.pl",
+      "name": "CANAL+ PREMIUM"
+    },
+    {
+      "id": "pl_canalpremium",
+      "source_id": "CANAL+.PREMIUM.HD.pl",
+      "name": "CANAL+ PREMIUM HD"
+    },
+    {
+      "id": "pl_hbo",
+      "source_id": "HBO.pl",
+      "name": "HBO"
+    },
+    {
+      "id": "pl_hbo",
+      "source_id": "HBO.HD.pl",
+      "name": "HBO HD"
+    },
+    {
+      "id": "pl_nickelodeon",
+      "source_id": "Nickelodeon.pl",
+      "name": "Nickelodeon"
+    },
+    {
+      "id": "pl_eskatv",
+      "source_id": "Eska.TV.HD.pl",
+      "name": "Eska TV HD"
+    },
+    {
+      "id": "pl_eskatv",
+      "source_id": "Eska.TV.pl",
+      "name": "Eska TV"
+    }
+  ]
+}

@@ -189,7 +189,9 @@
     "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Échec du téléchargement. Le guide reste utilisable.",
     "Vorbereitung abgeschlossen": "Préparation terminée",
     "Quellen geprüft": "sources vérifiées",
-    "Ohne Titel": "Sans titre"
+    "Ohne Titel": "Sans titre",
+    "Polen": "Pologne",
+    "Polski": "Polonais"
   },
   "home_assistant": {
     "config": {

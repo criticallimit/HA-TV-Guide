@@ -189,7 +189,9 @@
     "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download mislykkedes. Guiden kan stadig bruges.",
     "Vorbereitung abgeschlossen": "Klargøring fuldført",
     "Quellen geprüft": "kilder kontrolleret",
-    "Ohne Titel": "Uden titel"
+    "Ohne Titel": "Uden titel",
+    "Polen": "Polen",
+    "Polski": "Polsk"
   },
   "home_assistant": {
     "config": {

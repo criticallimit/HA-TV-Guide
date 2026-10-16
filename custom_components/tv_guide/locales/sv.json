@@ -189,7 +189,9 @@
     "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Hämtningen misslyckades. Guiden kan fortfarande användas.",
     "Vorbereitung abgeschlossen": "Förberedelsen klar",
     "Quellen geprüft": "källor kontrollerade",
-    "Ohne Titel": "Utan titel"
+    "Ohne Titel": "Utan titel",
+    "Polen": "Polen",
+    "Polski": "Polska"
   },
   "home_assistant": {
     "config": {

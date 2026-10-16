@@ -1,0 +1,780 @@
+{
+  "profile": "standard_pl",
+  "group": "Hauptsender",
+  "note": "General-interest channels follow Polish programme-guide order; news, free-to-air, thematic and popular subscription channels extend the main list. Exact identities distinguish TVP 3 regional variants and international language feeds. All additional channels, including the sixteen regional TVP 3 services, remain selectable from the available feeds.",
+  "sources": [
+    "https://www.teleman.pl/",
+    "https://tv.wp.pl/",
+    "https://programtv.onet.pl/"
+  ],
+  "channels": [
+    {
+      "id": "pl_tvp1",
+      "name": "TVP 1",
+      "order": 1,
+      "xmltv_ids": [
+        "TVP 1 HD.pl",
+        "TVP 1.pl",
+        "TVP1.pl",
+        "TVP.1.HD.pl",
+        "TVP.1.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvp1-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvp1-light.svg"
+    },
+    {
+      "id": "pl_tvp2",
+      "name": "TVP 2",
+      "order": 2,
+      "xmltv_ids": [
+        "TVP 2 HD.pl",
+        "TVP 2.pl",
+        "TVP2.pl",
+        "TVP.2.HD.pl",
+        "TVP.2.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvp2-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvp2-light.svg"
+    },
+    {
+      "id": "pl_polsat",
+      "name": "Polsat",
+      "order": 3,
+      "xmltv_ids": [
+        "Polsat HD.pl",
+        "Polsat.pl",
+        "Polsat.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsat-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsat-light.svg"
+    },
+    {
+      "id": "pl_tvn",
+      "name": "TVN",
+      "order": 4,
+      "xmltv_ids": [
+        "TVN HD.pl",
+        "TVN.pl",
+        "TVN.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvn-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvn-light.svg"
+    },
+    {
+      "id": "pl_tv4",
+      "name": "TV4",
+      "order": 5,
+      "xmltv_ids": [
+        "TV 4 HD.pl",
+        "TV 4.pl",
+        "TV4.pl",
+        "TV.4.pl",
+        "TV.4.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tv4-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tv4-light.svg"
+    },
+    {
+      "id": "pl_tvn7",
+      "name": "TVN 7",
+      "order": 6,
+      "xmltv_ids": [
+        "TVN 7 HD.pl",
+        "TVN 7.pl",
+        "TVN7.pl",
+        "TVN.7.pl",
+        "TVN.7.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvn7-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvn7-light.svg"
+    },
+    {
+      "id": "pl_tvpuls",
+      "name": "TV Puls",
+      "order": 7,
+      "xmltv_ids": [
+        "TV Puls HD.pl",
+        "TV Puls.pl",
+        "TVPuls.pl",
+        "TV.Puls.HD.pl",
+        "TV.Puls.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpuls-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpuls-light.svg"
+    },
+    {
+      "id": "pl_tv6",
+      "name": "TV6",
+      "order": 8,
+      "xmltv_ids": [
+        "TV 6 HD.pl",
+        "TV 6.pl",
+        "TV6.pl",
+        "TV.6.HD.pl",
+        "TV.6.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tv6-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tv6-light.svg"
+    },
+    {
+      "id": "pl_puls2",
+      "name": "Puls 2",
+      "order": 9,
+      "xmltv_ids": [
+        "PULS 2 HD.pl",
+        "PULS 2.pl",
+        "PULS2.pl",
+        "PULS.2.pl",
+        "PULS.2.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_puls2-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_puls2-light.svg"
+    },
+    {
+      "id": "pl_ttv",
+      "name": "TTV",
+      "order": 10,
+      "xmltv_ids": [
+        "TTV HD.pl",
+        "TTV.pl",
+        "TTV.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_ttv-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_ttv-light.svg"
+    },
+    {
+      "id": "pl_tvp3",
+      "name": "TVP 3",
+      "order": 11,
+      "xmltv_ids": [
+        "TVP 3.pl",
+        "TVP3.pl",
+        "TVP.3.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvp3-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvp3-light.svg"
+    },
+    {
+      "id": "pl_tvpinfo",
+      "name": "TVP Info",
+      "order": 12,
+      "xmltv_ids": [
+        "TVP Info HD.pl",
+        "TVP Info.pl",
+        "TVPInfo.pl",
+        "TVP.Info.HD.pl",
+        "TVP.Info.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpinfo-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpinfo-light.svg"
+    },
+    {
+      "id": "pl_tvn24",
+      "name": "TVN24",
+      "order": 13,
+      "xmltv_ids": [
+        "TVN 24 HD.pl",
+        "TVN 24.pl",
+        "TVN24.pl",
+        "TVN.24.pl",
+        "TVN.24.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvn24-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvn24-light.svg"
+    },
+    {
+      "id": "pl_polsatnews",
+      "name": "Polsat News",
+      "order": 14,
+      "xmltv_ids": [
+        "Polsat News HD.pl",
+        "Polsat News.pl",
+        "PolsatNews.pl",
+        "Polsat.News.HD.pl",
+        "Polsat.News.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsatnews-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsatnews-light.svg"
+    },
+    {
+      "id": "pl_tvn24bis",
+      "name": "TVN24 BiS",
+      "order": 15,
+      "xmltv_ids": [
+        "TVN24 BiS HD.pl",
+        "TVN24 BiS.pl",
+        "TVN24BiS.pl",
+        "TVN24.BiS.HD.pl",
+        "TVN24.BiS.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvn24bis-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvn24bis-light.svg"
+    },
+    {
+      "id": "pl_republika",
+      "name": "Republika",
+      "order": 16,
+      "xmltv_ids": [
+        "Republika HD.pl",
+        "Republika.pl",
+        "TVRepublika.pl",
+        "TV.Republika.pl",
+        "TV.Republika.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_republika-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_republika-light.svg"
+    },
+    {
+      "id": "pl_superpolsat",
+      "name": "Super Polsat",
+      "order": 17,
+      "xmltv_ids": [
+        "Super Polsat HD.pl",
+        "Super Polsat.pl",
+        "SuperPolsat.pl",
+        "Super.Polsat.HD.pl",
+        "Super.Polsat.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_superpolsat-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_superpolsat-light.svg"
+    },
+    {
+      "id": "pl_stopklatka",
+      "name": "Stopklatka",
+      "order": 18,
+      "xmltv_ids": [
+        "STOPKLATKA HD.pl",
+        "STOPKLATKA.pl",
+        "STOPKLATKA.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_stopklatka-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_stopklatka-light.svg"
+    },
+    {
+      "id": "pl_fokustv",
+      "name": "Fokus TV",
+      "order": 19,
+      "xmltv_ids": [
+        "Fokus TV HD.pl",
+        "Fokus TV.pl",
+        "FokusTV.pl",
+        "Fokus.TV.HD.pl",
+        "Fokus.TV.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_fokustv-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_fokustv-light.svg"
+    },
+    {
+      "id": "pl_metro",
+      "name": "Metro",
+      "order": 20,
+      "xmltv_ids": [
+        "METRO HD.pl",
+        "METRO.pl",
+        "METRO.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_metro-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_metro-light.svg"
+    },
+    {
+      "id": "pl_zoomtv",
+      "name": "Zoom TV",
+      "order": 21,
+      "xmltv_ids": [
+        "ZOOM TV HD.pl",
+        "ZOOM TV.pl",
+        "ZOOMTV.pl",
+        "ZOOM.TV.HD.pl",
+        "ZOOM.TV.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_zoomtv-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_zoomtv-light.svg"
+    },
+    {
+      "id": "pl_nowatv",
+      "name": "Nowa TV",
+      "order": 22,
+      "xmltv_ids": [
+        "Nowa TV HD.pl",
+        "Nowa TV.pl",
+        "NowaTV.pl",
+        "Nowa.TV.HD.pl",
+        "Nowa.TV.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_nowatv-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_nowatv-light.svg"
+    },
+    {
+      "id": "pl_wp",
+      "name": "WP",
+      "order": 23,
+      "xmltv_ids": [
+        "WP HD.pl",
+        "WP.pl",
+        "WP.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_wp-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_wp-light.svg"
+    },
+    {
+      "id": "pl_antena",
+      "name": "Antena",
+      "order": 24,
+      "xmltv_ids": [
+        "Antena.pl",
+        "Antena HD.pl",
+        "Antena.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_antena-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_antena-light.svg"
+    },
+    {
+      "id": "pl_tvpkultura",
+      "name": "TVP Kultura",
+      "order": 25,
+      "xmltv_ids": [
+        "TVP Kultura HD.pl",
+        "TVP Kultura.pl",
+        "TVPKultura.pl",
+        "TVP.Kultura.pl",
+        "TVP.Kultura.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpkultura-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpkultura-light.svg"
+    },
+    {
+      "id": "pl_tvphistoria",
+      "name": "TVP Historia",
+      "order": 26,
+      "xmltv_ids": [
+        "TVP Historia.pl",
+        "TVPHistoria.pl",
+        "TVP.Historia.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvphistoria-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvphistoria-light.svg"
+    },
+    {
+      "id": "pl_tvpdokument",
+      "name": "TVP Dokument",
+      "order": 27,
+      "xmltv_ids": [
+        "TVP Dokument.pl",
+        "TVP Dokument HD.pl",
+        "TVPDokument.pl",
+        "TVP.Dokument.HD.pl",
+        "TVP.Dokument.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpdokument-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpdokument-light.svg"
+    },
+    {
+      "id": "pl_tvpkobieta",
+      "name": "TVP Kobieta",
+      "order": 28,
+      "xmltv_ids": [
+        "TVP Kobieta.pl",
+        "TVP Kobieta HD.pl",
+        "TVPKobieta.pl",
+        "TVP.Kobieta.HD.pl",
+        "TVP.Kobieta.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpkobieta-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpkobieta-light.svg"
+    },
+    {
+      "id": "pl_tvprozrywka",
+      "name": "TVP Rozrywka",
+      "order": 29,
+      "xmltv_ids": [
+        "TVP Rozrywka.pl",
+        "TVPRozrywka.pl",
+        "TVP.Rozrywka.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvprozrywka-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvprozrywka-light.svg"
+    },
+    {
+      "id": "pl_tvpseriale",
+      "name": "TVP Seriale",
+      "order": 30,
+      "xmltv_ids": [
+        "TVP Seriale.pl",
+        "TVPSeriale.pl",
+        "TVP.Seriale.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpseriale-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpseriale-light.svg"
+    },
+    {
+      "id": "pl_tvppolonia",
+      "name": "TVP Polonia",
+      "order": 31,
+      "xmltv_ids": [
+        "TVP Polonia.pl",
+        "TVP Polonia HD.pl",
+        "TVPPolonia.pl",
+        "TVP.Polonia.pl",
+        "TVP.Polonia.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvppolonia-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvppolonia-light.svg"
+    },
+    {
+      "id": "pl_tvpabc",
+      "name": "TVP ABC",
+      "order": 32,
+      "xmltv_ids": [
+        "TVP ABC.pl",
+        "TVPABC.pl",
+        "TVP.ABC.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpabc-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpabc-light.svg"
+    },
+    {
+      "id": "pl_tvtrwam",
+      "name": "TV Trwam",
+      "order": 33,
+      "xmltv_ids": [
+        "TV Trwam.pl",
+        "TVTrwam.pl",
+        "TV.Trwam.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvtrwam-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvtrwam-light.svg"
+    },
+    {
+      "id": "pl_tvnstyle",
+      "name": "TVN Style",
+      "order": 34,
+      "xmltv_ids": [
+        "TVN Style HD.pl",
+        "TVN Style.pl",
+        "TVNStyle.pl",
+        "TVN.Style.HD.pl",
+        "TVN.Style.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvnstyle-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvnstyle-light.svg"
+    },
+    {
+      "id": "pl_tvnturbo",
+      "name": "TVN Turbo",
+      "order": 35,
+      "xmltv_ids": [
+        "TVN Turbo HD.pl",
+        "TVN Turbo.pl",
+        "TVNTurbo.pl",
+        "TVN.Turbo.HD.pl",
+        "TVN.Turbo.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvnturbo-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvnturbo-light.svg"
+    },
+    {
+      "id": "pl_tvnfabula",
+      "name": "TVN Fabuła",
+      "order": 36,
+      "xmltv_ids": [
+        "TVN Fabuła HD.pl",
+        "TVN Fabuła.pl",
+        "TVNFabula.pl",
+        "TVN.Fabuła.HD.pl",
+        "TVN.Fabuła.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvnfabula-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvnfabula-light.svg"
+    },
+    {
+      "id": "pl_polsat2",
+      "name": "Polsat 2",
+      "order": 37,
+      "xmltv_ids": [
+        "Polsat 2 HD.pl",
+        "Polsat 2.pl",
+        "Polsat2.pl",
+        "Polsat.2.pl",
+        "Polsat.2.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsat2-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsat2-light.svg"
+    },
+    {
+      "id": "pl_polsatfilm",
+      "name": "Polsat Film",
+      "order": 38,
+      "xmltv_ids": [
+        "Polsat Film HD.pl",
+        "Polsat Film.pl",
+        "PolsatFilm.pl",
+        "Polsat.Film.pl",
+        "Polsat.Film.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsatfilm-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsatfilm-light.svg"
+    },
+    {
+      "id": "pl_polsatcafe",
+      "name": "Polsat Café",
+      "order": 39,
+      "xmltv_ids": [
+        "Polsat Café HD.pl",
+        "Polsat Café.pl",
+        "PolsatCafe.pl",
+        "Polsat.Café.pl",
+        "Polsat.Café.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsatcafe-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsatcafe-light.svg"
+    },
+    {
+      "id": "pl_polsatplay",
+      "name": "Polsat Play",
+      "order": 40,
+      "xmltv_ids": [
+        "Polsat Play HD.pl",
+        "Polsat Play.pl",
+        "PolsatPlay.pl",
+        "Polsat.Play.HD.pl",
+        "Polsat.Play.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsatplay-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsatplay-light.svg"
+    },
+    {
+      "id": "pl_kinopolska",
+      "name": "Kino Polska",
+      "order": 41,
+      "xmltv_ids": [
+        "Kino Polska HD.pl",
+        "Kino Polska.pl",
+        "KinoPolska.pl",
+        "Kino.Polska.HD.pl",
+        "Kino.Polska.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_kinopolska-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_kinopolska-light.svg"
+    },
+    {
+      "id": "pl_discovery",
+      "name": "Discovery Channel",
+      "order": 42,
+      "xmltv_ids": [
+        "Discovery Channel HD.pl",
+        "Discovery Channel.pl",
+        "DiscoveryChannel.pl",
+        "Discovery.Channel.pl",
+        "Discovery.Channel.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_discovery-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_discovery-light.svg"
+    },
+    {
+      "id": "pl_nationalgeographic",
+      "name": "National Geographic",
+      "order": 43,
+      "xmltv_ids": [
+        "National Geographic HD.pl",
+        "National Geographic.pl",
+        "NationalGeographic.pl",
+        "National.Geographic.pl",
+        "National.Geographic.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_nationalgeographic-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_nationalgeographic-light.svg"
+    },
+    {
+      "id": "pl_tvpsport",
+      "name": "TVP Sport",
+      "order": 44,
+      "xmltv_ids": [
+        "TVP Sport HD.pl",
+        "TVP Sport.pl",
+        "TVPSport.pl",
+        "TVP.Sport.pl",
+        "TVP.Sport.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_tvpsport-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_tvpsport-light.svg"
+    },
+    {
+      "id": "pl_polsatsport1",
+      "name": "Polsat Sport 1",
+      "order": 45,
+      "xmltv_ids": [
+        "Polsat Sport 1 HD.pl",
+        "Polsat Sport 1.pl",
+        "PolsatSport1.pl",
+        "Polsat.Sport.HD.pl",
+        "Polsat.Sport.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_polsatsport1-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_polsatsport1-light.svg"
+    },
+    {
+      "id": "pl_eurosport1",
+      "name": "Eurosport 1",
+      "order": 46,
+      "xmltv_ids": [
+        "Eurosport 1 HD.pl",
+        "Eurosport 1.pl",
+        "Eurosport1.pl",
+        "Eurosport.1.pl",
+        "Eurosport.1.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_eurosport1-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_eurosport1-light.svg"
+    },
+    {
+      "id": "pl_canalpremium",
+      "name": "CANAL+ Premium",
+      "order": 47,
+      "xmltv_ids": [
+        "CANAL+ PREMIUM HD.pl",
+        "CANAL+ PREMIUM.pl",
+        "CANAL+PREMIUM.pl",
+        "CANAL+.PREMIUM.pl",
+        "CANAL+.PREMIUM.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_canalpremium-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_canalpremium-light.svg"
+    },
+    {
+      "id": "pl_hbo",
+      "name": "HBO",
+      "order": 48,
+      "xmltv_ids": [
+        "HBO HD.pl",
+        "HBO.pl",
+        "HBO.HD.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_hbo-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_hbo-light.svg"
+    },
+    {
+      "id": "pl_nickelodeon",
+      "name": "Nickelodeon",
+      "order": 49,
+      "xmltv_ids": [
+        "Nickelodeon.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_nickelodeon-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_nickelodeon-light.svg"
+    },
+    {
+      "id": "pl_eskatv",
+      "name": "Eska TV",
+      "order": 50,
+      "xmltv_ids": [
+        "Eska TV HD.pl",
+        "Eska TV.pl",
+        "EskaTV.pl",
+        "Eska.TV.HD.pl",
+        "Eska.TV.pl"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/pl/pl_eskatv-dark.svg",
+      "logo_file_light": "logos/channels/pl/pl_eskatv-light.svg"
+    }
+  ]
+}
