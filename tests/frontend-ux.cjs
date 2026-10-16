@@ -82,6 +82,30 @@ const server=http.createServer((req,res)=>{
       await page.evaluate(()=>{delayGuide=false;releaseGuide();});
     }finally{await page.close();}
   });
+  await check('cached preview requests full schedules when changing time',async()=>{
+    const page=await mount('cache-contiguous');try{
+      await page.waitForFunction(()=>typeof releaseGuide==='function');
+      const before=await page.evaluate(()=>guideRequests.length);
+      await page.locator('.tab[data-mode="1800"]').click();
+      await page.waitForFunction(before=>guideRequests.length>before,before,{timeout:1500});
+      assert.equal(await page.locator('.channel-card').count(),2,'Keep the station cards visible while requesting the missing timelines');
+      assert.equal(await page.evaluate(()=>guideRequests.at(-1).body?.known_revision),undefined);
+      await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+      await page.waitForFunction(()=>card._app.lastGuideLoadedAt>0);
+    }finally{await page.close();}
+  });
+  await check('detached preview requests full schedules when changing time',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{delayGuide=true;card.remove();document.body.append(card);});
+      await page.waitForFunction(()=>typeof releaseGuide==='function');
+      const before=await page.evaluate(()=>guideRequests.length);
+      await page.locator('.tab[data-mode="2200"]').click();
+      await page.waitForFunction(before=>guideRequests.length>before,before,{timeout:1500});
+      await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+      await page.waitForFunction(()=>card._app.lastGuideLoadedAt>0);
+    }finally{await page.close();}
+  });
   await check('saved display settings apply before delayed guide',async()=>{
     const page=await mount('settings');try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);

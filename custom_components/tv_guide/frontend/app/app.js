@@ -704,7 +704,8 @@ function setMode(nextMode) {
   // an already loaded guide locally instead of waiting for a Home Assistant
   // websocket round trip on every time-tab click. Custom XMLTV responses are
   // bounded windows and must request rows for the newly selected time instead.
-  if (guide && !guide._windowed) render();
+  // Cached and detached-card previews also contain only seven rows per sender.
+  if (guide && !guide._windowed && !guide._preview) render();
   else loadGuide().catch(() => {});
 }
 
@@ -830,7 +831,7 @@ applyCustomTime.addEventListener("click", () => {
   root.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === "other"));
   customTimeDialog.close();
-  if (guide && !guide._windowed) render();
+  if (guide && !guide._windowed && !guide._preview) render();
   else loadGuide().catch(() => {});
 });
 
