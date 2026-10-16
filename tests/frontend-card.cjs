@@ -334,7 +334,7 @@ const server = http.createServer((req,res) => {
   await guidePage.waitForFunction(()=>calls.some(c=>c.service==='retry_preparation'));
   await guidePage.evaluate(()=>{preparation.complete=true;preparation.logos.completed=37;preparation.logos.ready=true;preparation.programmes={running:false,ready:true,sources_completed:3,error:false};});
   await frame.locator('#preparationBadge').waitFor({state:'hidden',timeout:15000});
-  await frame.locator('#preparationClose').click();
+  await frame.locator('#preparationDialog').waitFor({state:'hidden',timeout:3000});
   console.log('PASS preparation progress, downloaded logos, focus preservation and failure recovery');
 
   await guidePage.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-panel.js',type:'module'});

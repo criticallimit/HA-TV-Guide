@@ -101,7 +101,9 @@ jobs:
         run: node tests/frontend-card.cjs
 
       - name: Verify native card stability in Chromium
-        run: node tests/frontend-stability.cjs
+        run: |
+          node tests/frontend-stability.cjs
+          node tests/frontend-ux.cjs
 
   webkit:
     runs-on: ubuntu-latest
@@ -118,4 +120,6 @@ jobs:
       - name: Verify repeated opening, resource cleanup and stable theme updates
         env:
           TVG_ENGINE: webkit
-        run: node tests/frontend-stability.cjs
+        run: |
+          node tests/frontend-stability.cjs
+          node tests/frontend-ux.cjs
