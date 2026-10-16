@@ -1,6 +1,7 @@
 """Country baseline selection tests without Home Assistant."""
 import importlib.util
 import unittest
+import json
 import sys
 import types
 from pathlib import Path
@@ -37,8 +38,9 @@ class CountrySourceTests(unittest.TestCase):
         self.assertEqual(sources.feed_candidates({"country": "at"}), (COUNTRY_FEEDS["at"],))
         self.assertEqual(sources.feed_candidates({}), ())
 
-    def test_ten_sources_have_safe_syntax(self):
-        self.assertEqual(len(COUNTRY_FEEDS), 10)
+    def test_all_registered_sources_have_safe_syntax(self):
+        countries = json.loads((Path(__file__).resolve().parents[1] / "custom_components/tv_guide/countries.json").read_text())
+        self.assertEqual(set(COUNTRY_FEEDS), set(countries))
         for source in COUNTRY_FEEDS.values():
             self.assertEqual(validate_feed_url(source), source)
 

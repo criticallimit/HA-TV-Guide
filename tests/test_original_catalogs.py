@@ -1,6 +1,7 @@
 """Offline tests for original bundled sender lists and EPG ID matching."""
 
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import types
@@ -19,8 +20,8 @@ spec.loader.exec_module(loaded)
 
 
 class OriginalCatalogueTests(unittest.TestCase):
-    def test_all_ten_countries_have_ordered_main_channels(self):
-        self.assertEqual(len(loaded.CATALOG_FILES), 10)
+    def test_all_registered_countries_have_ordered_main_channels(self):
+        self.assertEqual(set(loaded.CATALOG_FILES), set(json.loads((ROOT / "countries.json").read_text())))
         for country in loaded.CATALOG_FILES:
             with self.subTest(country=country):
                 channels = loaded.load_channel_catalog(country)

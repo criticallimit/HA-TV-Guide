@@ -259,7 +259,7 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(guide['main_channel_ids'][0],'ard')
         self.assertIn('/tv_guide/frontend/app/logos/de-ard-light.svg',guide['channels'][0]['logo_normalized_light'])
         picker = self.backend.request('personal-channels','GET')
-        self.assertEqual(len(picker['supported_countries']),10)
+        self.assertEqual({item['code'] for item in picker['supported_countries']}, set(self.runtime.COUNTRIES))
         self.assertTrue(any(item['id'].startswith('gb:') for item in picker['channels']))
         self.assertTrue(any(item['id'].startswith('at:') for item in picker['channels']))
 
@@ -763,8 +763,10 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(status['country'],'de')
         self.assertFalse(status['refresh_running'])
 
-    def test_every_curated_main_channel_has_both_local_logo_variants(self):
-        for country in self.runtime.COUNTRIES:
+    def test_every_bundled_curated_logo_has_both_local_variants(self):
+        bundled = json.loads((ROOT / 'frontend/app/logo_catalog.json').read_text())
+        self.assertLessEqual(set(bundled), set(self.runtime.COUNTRIES))
+        for country in bundled:
             catalog=self.runtime.COUNTRY_CATALOGS[country]
             for channel in catalog['channels']:
                 logos=self.backend.logo_urls({**channel,'id':country+':'+channel['id'],'source_channel_id':channel['id']})

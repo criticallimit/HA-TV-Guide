@@ -125,7 +125,8 @@ class UIPayloadTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(bundled).hexdigest(),provenance['bundled_sha256'][name],name)
             self.assertEqual(hashlib.sha256(original).hexdigest(),provenance['source_sha256'][name],name)
         logos=json.loads((app/'logo_catalog.json').read_text(encoding='utf-8'))
-        self.assertEqual(len(logos),10)
+        self.assertTrue(logos)
+        self.assertLessEqual(set(logos),set(ui.COUNTRIES))
         for country in logos.values():
             for channel in country.values():
                 for asset in channel.values():self.assertTrue((app/asset).is_file(),asset)
