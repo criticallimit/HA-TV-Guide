@@ -58,7 +58,7 @@ class PublicProgrammeSources:
             return provider["url"] + f"/{day.year}-{day.month}-{day.day}?" + urlencode(
                 [("ch", marker) for marker in provider["channels"]])
         if kind == "tvgids":
-            if day == self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date():
+            if day == self.runtime.datetime.now(self.timezone).date():
                 return provider["url"].replace("{date}/", "")
             return provider["url"].format(date=day.strftime("%d-%m-%Y"))
         zone = ZoneInfo(self.runtime.COUNTRIES[self.country]["timezone"])
@@ -162,7 +162,7 @@ class PublicProgrammeSources:
         return url, result
 
     def _fetch_public_programs(self, provider):
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         today = now.date()
         programmes = []
         offsets = [0] if provider["kind"] == "joynat" else range(-1, 3)
@@ -183,7 +183,7 @@ class PublicProgrammeSources:
                             or start.utcoffset() is None or end.utcoffset() is None
                             or not 0 < end.timestamp() - start.timestamp() <= 86400):
                         continue
-                    start, end = start.astimezone(self.runtime.EPG_TIMEZONE), end.astimezone(self.runtime.EPG_TIMEZONE)
+                    start, end = start.astimezone(self.timezone), end.astimezone(self.timezone)
                     if provider["kind"] != "joynat" and not day - timedelta(days=1) <= start.date() <= day + timedelta(days=1):
                         continue
                     if end <= now - timedelta(hours=6) or not today - timedelta(days=1) <= start.date() < today + timedelta(days=3):

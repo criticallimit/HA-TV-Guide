@@ -70,8 +70,9 @@ class GuideRequestHandler:
             return self._json({
                 "country": store.country,
                 "language": options["language"],
+                "country_language": ui["country_language"],
                 "home_assistant": self.runtime.home_assistant_locale(),
-                "countries": [{"code": code, "name": item["name"]} for code, item in self.runtime.COUNTRIES.items()],
+                "countries": [{"code": code, "name": item["name"], "language": item.get("language")} for code, item in self.runtime.COUNTRIES.items()],
                 "default_view": ui["default_view"],
                 "columns_desktop": ui["columns_desktop"],
                 "max_channels": ui["max_channels"],

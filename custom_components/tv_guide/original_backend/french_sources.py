@@ -163,8 +163,8 @@ class FrenchProgrammeSources:
                 continue
             if not today <= start.date() < today + timedelta(days=3):
                 continue
-            valid.append({**row, 'start_dt': start.astimezone(self.runtime.EPG_TIMEZONE),
-                          'end_dt': end.astimezone(self.runtime.EPG_TIMEZONE)})
+            valid.append({**row, 'start_dt': start.astimezone(self.timezone),
+                          'end_dt': end.astimezone(self.timezone)})
         programmes = self._build_programmes_from_starts(valid)
         for programme, row in zip(programmes, valid):
             programme['end'] = row['end_dt'].isoformat()

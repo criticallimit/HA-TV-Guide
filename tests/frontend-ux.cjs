@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium,webkit}=require('playwright');
 const root=path.resolve('custom_components/tv_guide/frontend');
+const countryOptions=Object.entries(JSON.parse(fs.readFileSync(path.join(root,'../countries.json'),'utf8'))).map(([code,item])=>({code,name:item.name,language:item.language}));
 const engine=process.env.TVG_ENGINE||'chromium';
 const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
@@ -21,7 +22,8 @@ const server=http.createServer((req,res)=>{
     page.on('pageerror',e=>errors.push(e.message));page.on('crash',()=>errors.push('Page crashed'));
     await page.goto(base);await page.clock.setFixedTime(new Date('2026-10-14T18:00:00Z'));
     await page.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-card.js',type:'module'});
-    await page.evaluate(scenario=>{
+    await page.evaluate(({scenario,countryOptions})=>{
+      if(scenario==='new-country')countryOptions.push({code:'zz',name:'New country',language:'en'});
       const now=Date.now();
       window.settings={country:'de',language:'de',default_view:'now',theme_mode:'auto',columns_desktop:5,max_channels:0,refresh_minutes:180,notification_service:'persistent_notification.create'};
       const channels=['a','b'].map((id,index)=>({id,name:'Station '+id,source_country:'de',country_name:'Deutschland',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:Array.from({length:7},(_,i)=>({id:id+i,title:'Programme '+id+i,start:new Date(now+(i+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString(),end:new Date(now+(i+1+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString()}))}));
@@ -45,7 +47,7 @@ const server=http.createServer((req,res)=>{
           if(method==='POST'){settingsPosts++;if(scenario==='held-settings'||holdSettings)await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');Object.assign(settings,body);model.ui={...settings};if(scenario==='switching'){model.country=settings.country;model.channels.forEach(ch=>ch.name=settings.country+' station '+ch.id);}settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
           if(holdSettingsReads)await new Promise(resolve=>window.releaseSettingsRead=resolve);
           if(window.failSettingsRead)throw Error('Settings unavailable');
-          return {response:{...structuredClone(settings),...(scenario==='xmltv-menu'?{}:{countries:[{code:'de',name:'Deutschland'}]})}};
+          return {response:{...structuredClone(settings),...(scenario==='xmltv-menu'?{country_choices:countryOptions}:{countries:countryOptions})}};
         }
         if(endpoint==='personal-channels'){
           if(scenario==='personal'){
@@ -69,7 +71,7 @@ const server=http.createServer((req,res)=>{
         return {response:structuredClone(model)};
       }};
       window.card=document.createElement('tv-guide-card');card.hass=hass;document.body.append(card);
-    },scenario);
+    },{scenario,countryOptions});
     return page;
   }
   async function check(name,test){try{await test();console.log('PASS',engine,name);}catch(error){failures.push(name+': '+error.message);console.error('FAIL',engine,name,error.message);}}
@@ -305,6 +307,19 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('#settingLanguage').inputValue(),'de');
       assert.equal(await page.locator('#settingColumns').inputValue(),'5');
       assert.equal(await page.locator('#settingTheme').inputValue(),'auto');
+    }finally{await page.close();}
+  });
+  await check('new registered country appears and saves without frontend country code changes',async()=>{
+    const page=await mount('new-country');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.deepEqual((await page.locator('#settingCountry option').evaluateAll(options=>options.map(option=>option.value))).sort(),[...countryOptions.map(item=>item.code),'zz'].sort());
+      await page.locator('#settingCountry').evaluate(select=>select.closest('details').open=true);
+      await page.selectOption('#settingCountry','zz');
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved);
+      assert.equal(await page.evaluate(()=>settings.country),'zz');
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingCountry').inputValue(),'zz');
     }finally{await page.close();}
   });
   for(const [scenario,unsupported] of [['settings',true],['xmltv-menu',false]])await check('XMLTV country option capability: '+scenario,async()=>{

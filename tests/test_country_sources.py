@@ -1,13 +1,17 @@
 """Country baseline selection tests without Home Assistant."""
 import importlib.util
 import unittest
+import sys
+import types
 from pathlib import Path
 
 
 def load_module(name):
     """Load pure helpers without shadowing standard-library modules."""
     path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(name, path)
+    package = types.ModuleType("_tvguide_country_tests"); package.__path__ = [str(path.parent)]
+    sys.modules[package.__name__] = package
+    spec = importlib.util.spec_from_file_location(package.__name__ + "." + name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

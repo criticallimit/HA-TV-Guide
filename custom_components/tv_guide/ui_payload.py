@@ -6,7 +6,7 @@ from pathlib import Path
 from hashlib import sha256
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-COUNTRY_NAMES={'de':'Deutschland','at':'Österreich','ch':'Schweiz','nl':'Niederlande','be':'Belgien','dk':'Dänemark','no':'Norwegen','fr':'Frankreich','se':'Schweden','gb':'Großbritannien'}
+from .countries import COUNTRIES, COUNTRY_NAMES
 UI_DEFAULTS={'language':'auto','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
 MAX_DISPLAY_CHANNELS=200
 
@@ -15,7 +15,7 @@ def logo_catalog():
     return json.loads((Path(__file__).parent/'frontend'/'app'/'logo_catalog.json').read_text(encoding='utf-8'))
 
 def ui_settings(options):
-    return {**UI_DEFAULTS,**{key:options[key] for key in UI_DEFAULTS if key in options},'country':options.get('country','')}
+    return {**UI_DEFAULTS,**{key:options[key] for key in UI_DEFAULTS if key in options},'country':options.get('country',''),'country_language':COUNTRIES.get(options.get('country',''),{}).get('language')}
 
 def normalize_ui_settings(values):
     """Validate all UI writes before touching config-entry options."""

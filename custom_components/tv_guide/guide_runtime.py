@@ -19,6 +19,7 @@ from .logo_download import LogoDownload
 from .logo_updates import LogoUpdates
 from .worker_io import worker_urlopen
 from .ui_payload import guide_preview
+from .countries import COUNTRIES, ROOT as COUNTRY_ROOT
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
 POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
@@ -72,6 +73,11 @@ class GuideRuntime:
         self._module_name = name
         spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
         runtime = importlib.util.module_from_spec(spec)
+        runtime.GUIDE_COUNTRIES = COUNTRIES
+        runtime.GUIDE_CATALOGS = {
+            code: json.loads((COUNTRY_ROOT / "catalogs" / item["catalog"]).read_text(encoding="utf-8"))
+            for code, item in COUNTRIES.items()
+        }
         runtime.GUIDE_ASSET_ROOT = assets
         runtime.GUIDE_STORAGE_ROOT = storage
         runtime.GUIDE_LOCALE = locale

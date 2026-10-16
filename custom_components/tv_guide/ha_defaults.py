@@ -1,8 +1,7 @@
 """Automatic initial settings from the Home Assistant installation."""
-from .country_sources import COUNTRY_FEEDS
+from .countries import COUNTRIES, COUNTRY_ALIASES, LANGUAGE_COUNTRIES
 
 LANGUAGES = {"de", "en", "da", "nl", "fr", "it", "nb", "sv"}
-LANGUAGE_COUNTRIES = {"de": "de", "en": "gb", "da": "dk", "nl": "nl", "fr": "fr", "nb": "no", "sv": "se"}
 
 
 def installation_defaults(config):
@@ -13,9 +12,8 @@ def installation_defaults(config):
     if language not in LANGUAGES:
         language = "en"
     country = str(getattr(config, "country", "") or "").lower()
-    if country == "uk":
-        country = "gb"
-    if country not in COUNTRY_FEEDS:
+    country = COUNTRY_ALIASES.get(country, country)
+    if country not in COUNTRIES:
         country = LANGUAGE_COUNTRIES.get(language, "de")
     return {"country": country, "language": language,
             "channels": [], "notification_service": "persistent_notification.create"}

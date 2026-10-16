@@ -16,27 +16,14 @@ from .programme_values import normalize as normalize
 from .programme_values import xmltv_datetime as xmltv_datetime
 from .providers import ARD_PROGRAM_URL as ARD_PROGRAM_URL
 from .providers import ARD_RB_PROGRAM_URL as ARD_RB_PROGRAM_URL
-from .providers import BUILTIN_EPG_URLS as BUILTIN_EPG_URLS
-from .providers import EPGPW_EPG_URL as EPGPW_EPG_URL
-from .providers import EPGSHARE_EPG_URL as EPGSHARE_EPG_URL
-from .providers import OFFICIAL_PROVIDER_BY_CHANNEL as OFFICIAL_PROVIDER_BY_CHANNEL
-from .providers import OPEN_EPG_URL as OPEN_EPG_URL
-from .providers import (
-    SECONDARY_WEB_PROVIDER_BY_CHANNEL as SECONDARY_WEB_PROVIDER_BY_CHANNEL,
-)
 from .providers import SR_PROGRAM_URL as SR_PROGRAM_URL
 from .providers import SWR_PROGRAM_URL as SWR_PROGRAM_URL
-from .providers import TELETEXT_PROVIDER_BY_CHANNEL as TELETEXT_PROVIDER_BY_CHANNEL
 from .providers import ZDF_PROGRAM_URL as ZDF_PROGRAM_URL
 from .store import GuideStore
 
 BASE = GUIDE_ASSET_ROOT
-CHANNELS = json.loads((BASE / "data" / "channels.json").read_text(encoding="utf-8"))
-COUNTRIES = json.loads((BASE / "data" / "countries.json").read_text(encoding="utf-8"))
-COUNTRY_CATALOGS = {
-    code: json.loads((BASE / "data" / item["catalog"]).read_text(encoding="utf-8"))
-    for code, item in COUNTRIES.items() if code != "de"
-}
+COUNTRIES = GUIDE_COUNTRIES
+COUNTRY_CATALOGS = GUIDE_CATALOGS
 LOGO_LIBRARY = json.loads((BASE / "data" / "logo_library.json").read_text(encoding="utf-8"))
 LOGO_UPDATES_FILE = BASE / "data" / "logo_updates.json"
 if LOGO_UPDATES_FILE.is_file():
@@ -57,15 +44,6 @@ PARSED_CACHE_SCHEMA_VERSION = 10
 CHANNEL_PREFS_FILE = GUIDE_STORAGE_ROOT / "tv_guide_channel_order.json"
 
 
-# Every curated main channel goes through the same official-source layer. Channels
-# without a stable public schedule endpoint remain XMLTV-only until a verified
-# official endpoint is added here; no guessed URLs are used.
-OFFICIAL_PROVIDER_AUDIT = {
-    channel_id: OFFICIAL_PROVIDER_BY_CHANNEL.get(channel_id)
-    for channel_id in [ch["id"] for ch in CHANNELS["channels"]]
-}
-
-
 DEFAULT_REFRESH_MINUTES = 180
 
 LANGUAGES = {"da", "de", "en", "nl", "fr", "it", "nb", "sv"}
@@ -83,8 +61,9 @@ def country_code(value):
 
 
 def country_file(path, country):
-    # Preserve every existing German installation's file paths.
-    return path if country == "de" else path.with_name(f"{country}_{path.name}")
+    # Existing prefixes remain stable; new registrations use the same namespacing rule.
+    prefix = COUNTRIES[country].get("storage_prefix", country + "_")
+    return path.with_name(prefix + path.name)
 
 
 def active_store(store=None):
@@ -93,7 +72,7 @@ def active_store(store=None):
 
 def channel_catalog(store=None):
     store = active_store(store)
-    return store.catalog if store is not None else CHANNELS
+    return store.catalog if store is not None else COUNTRY_CATALOGS[country_code(None)]
 
 
 def channel_preferences_file(store=None):
@@ -137,6 +116,7 @@ def load_options_ui():
     if theme_mode not in {"auto", "dark", "light"}:
         theme_mode = "auto"
     return {
+        "country_language": COUNTRIES[country_code(data.get("country"))].get("language"),
         "default_view": default_view,
         "columns_desktop": max(3, min(6, columns)),
         "max_channels": max(0, min(500, max_channels)),

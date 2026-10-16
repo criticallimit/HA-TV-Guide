@@ -46,7 +46,7 @@ class PersonalChannels:
         stores[store.country] = store
         result = {}
         for country in self.runtime.COUNTRIES:
-            catalog = self.runtime.CHANNELS if country == "de" else self.runtime.COUNTRY_CATALOGS[country]
+            catalog = self.runtime.COUNTRY_CATALOGS[country]
             channels = {item["id"]: item for item in catalog["channels"]}
             # Cached additional feed channels remain selectable after a restart.
             cached_path = self.runtime.country_file(self.runtime.PARSED_CACHE_FILE, country)

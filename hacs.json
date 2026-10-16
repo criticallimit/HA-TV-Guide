@@ -1,6 +1,5 @@
 {
   "name": "TV Guide",
   "homeassistant": "2026.10.1",
-  "hide_default_branch": false,
-  "country": ["AT", "BE", "CH", "DE", "DK", "FR", "GB", "NL", "NO", "SE"]
+  "hide_default_branch": false
 }

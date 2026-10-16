@@ -14,7 +14,7 @@ def normalize(value):
     value = re.sub(r"\b(hd|uhd|sd)\b", "", value)
     return re.sub(r"[^a-z0-9]+", "", value)
 
-def xmltv_datetime(value):
+def xmltv_datetime(value, default_timezone=EPG_TIMEZONE):
     value = (value or "").strip()
     if not value:
         return None
@@ -38,10 +38,10 @@ def xmltv_datetime(value):
             return None
         dt = dt.replace(tzinfo=timezone(sign * timedelta(hours=hours, minutes=minutes)))
     else:
-        dt = dt.replace(tzinfo=EPG_TIMEZONE)
+        dt = dt.replace(tzinfo=default_timezone)
     try:
         dt.astimezone(timezone.utc)
-        return dt.astimezone(EPG_TIMEZONE)
+        return dt.astimezone(default_timezone)
     except (ValueError, OverflowError):
         return None
 

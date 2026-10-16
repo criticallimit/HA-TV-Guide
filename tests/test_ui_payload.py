@@ -5,8 +5,12 @@ import importlib.util
 import json
 from pathlib import Path
 import unittest
+import sys
+import types
 ROOT=Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'
-spec=importlib.util.spec_from_file_location('_tvguide_ui_payload_tests',ROOT/'ui_payload.py')
+package=types.ModuleType('_tvguide_ui_payload_tests');package.__path__=[str(ROOT)]
+sys.modules[package.__name__]=package
+spec=importlib.util.spec_from_file_location(package.__name__+'.ui_payload',ROOT/'ui_payload.py')
 ui=importlib.util.module_from_spec(spec);spec.loader.exec_module(ui)
 
 class UIPayloadTests(unittest.TestCase):
