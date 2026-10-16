@@ -56,7 +56,7 @@ class ItalyTests(unittest.TestCase):
                 self.assertIn('data:image/',svg)
                 self.assertNotIn('href="https:',svg)
         for path in [ROOT/'README.md',ROOT/'info.md']:
-            self.assertIn('flags/it.svg',path.read_text())
+            self.assertIn('🇮🇹 Italy',path.read_text())
         for path in [* (ROOT/'docs').glob('*.html'),* (ROOT/'docs/manuals').glob('*.html')]:
             if path.name in ('404.html','screenshots.html'):
                 continue
