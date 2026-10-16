@@ -314,6 +314,61 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('#settingCountry option[value=""]').evaluate(option=>option.disabled),disabled);
     }finally{await page.close();}
   });
+  await check('existing custom refresh interval survives unrelated settings saves',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{settings.refresh_minutes=90;});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingRefresh').inputValue(),'90');
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingColumns').value='4';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved);
+      assert.equal(await page.evaluate(()=>settings.refresh_minutes),90);
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden'});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingRefresh').inputValue(),'90');
+    }finally{await page.close();}
+  });
+  for(const editDraft of [false,true])await check('late successful save reconciles a UI timeout; draft edits='+editDraft,async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0&&card._pending.size===0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{
+        holdSettings=true;
+        const nativeTimeout=window.setTimeout;
+        window.settingsTimeouts=[];
+        window.setTimeout=(callback,delay,...args)=>{if(delay===15000)settingsTimeouts.push(callback);return nativeTimeout(callback,delay,...args);};
+        card.shadowRoot.querySelector('#settingColumns').value='4';
+      });
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>typeof releaseSave==='function');
+      await page.evaluate(()=>settingsTimeouts[0]());
+      await page.waitForFunction(()=>card.shadowRoot.querySelector('#appSettingsStatus').textContent==='Home Assistant request timed out');
+      assert.equal(await page.locator('#saveAppSettings').isEnabled(),true);
+      await page.evaluate(edit=>{if(edit)card.shadowRoot.querySelector('#settingColumns').value='6';holdSettings=false;releaseSave();},editDraft);
+      await page.waitForFunction(()=>settings.columns_desktop===4);
+      await page.waitForFunction(()=>card.shadowRoot.querySelector('.guide-root').style.getPropertyValue('--desktop-columns')==='4',null,{timeout:1500});
+      if(editDraft){
+        assert.equal(await page.locator('#appSettingsDialog').isVisible(),true);
+        assert.equal(await page.locator('#settingColumns').inputValue(),'6','A late acknowledgement must preserve an unsaved newer draft');
+        assert.equal(await page.locator('#saveAppSettings').isEnabled(),true);
+      }else await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+    }finally{await page.close();}
+  });
+  await check('invalid numeric settings do not commit and can be corrected',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      for(const [id,value] of [['settingColumns',''],['settingColumns','6.5'],['settingMaxChannels','501']]){
+        await page.evaluate(({id,value})=>{const root=card.shadowRoot;root.querySelector('#settingColumns').value='5';root.querySelector('#settingMaxChannels').value='0';root.querySelector('#'+id).value=value;},{id,value});
+        await page.locator('#saveAppSettings').click();
+        assert.equal(await page.evaluate(()=>settingsPosts),0,'Invalid number fields must never start a settings write');
+        assert.equal(await page.locator('#saveAppSettings').isEnabled(),true);
+      }
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingColumns').value='4';card.shadowRoot.querySelector('#settingMaxChannels').value='1';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved);
+      assert.equal(await page.evaluate(()=>settings.columns_desktop),4);
+      assert.equal(await page.locator('.channel-card').count(),1);
+    }finally{await page.close();}
+  });
   await check('reset controls recover before delayed guide',async()=>{
     const page=await mount('reset');try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);

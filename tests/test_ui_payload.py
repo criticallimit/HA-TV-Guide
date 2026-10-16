@@ -105,6 +105,13 @@ class UIPayloadTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             ui.normalize_ui_settings({'max_channels':501})
 
+    def test_valid_existing_custom_refresh_intervals_remain_editable(self):
+        for value in (30, 90, 1440):
+            self.assertEqual(ui.normalize_ui_settings({'refresh_minutes':value})['refresh_minutes'], value)
+        for value in (29, 1441, True, 90.5):
+            with self.assertRaises(ValueError):
+                ui.normalize_ui_settings({'refresh_minutes':value})
+
     def test_scoped_modules_and_pinned_reference_provenance(self):
         app=ROOT/'frontend'/'app'
         provenance=json.loads((app/'REFERENCE.json').read_text(encoding='utf-8'))

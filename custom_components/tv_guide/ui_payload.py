@@ -35,7 +35,7 @@ def normalize_ui_settings(values):
                 raise ValueError('Invalid '+key)
             result[key]=value
     if 'refresh_minutes' in values:
-        if type(values['refresh_minutes']) is not int or values['refresh_minutes'] not in (30,60,120,180,360,720,1440):
+        if type(values['refresh_minutes']) is not int or not 30<=values['refresh_minutes']<=1440:
             raise ValueError('Invalid refresh interval')
         result['refresh_minutes']=values['refresh_minutes']
     if 'notification_service' in values:

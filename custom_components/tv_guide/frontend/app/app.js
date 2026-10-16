@@ -510,7 +510,14 @@ async function openAppSettings() {
     settingColumns.value = String(settings.columns_desktop || 5);
     settingMaxChannels.value = String(settings.max_channels ?? 0);
     settingTheme.value = settings.theme_mode || "auto";
-    settingRefresh.value = String(settings.refresh_minutes || 180);
+    const interval = String(settings.refresh_minutes || 180);
+    settingRefresh.querySelectorAll('[data-custom-interval]').forEach(option => option.remove());
+    if (![...settingRefresh.options].some(option => option.value === interval)) {
+      const option = new Option(interval + ' min', interval);
+      option.dataset.customInterval = '1';
+      settingRefresh.append(option);
+    }
+    settingRefresh.value = interval;
     await loadNotificationServiceChoices(
       settings.notification_service || "persistent_notification.create", isCurrent
     );
@@ -523,7 +530,35 @@ async function openAppSettings() {
   }
 }
 
+function appSettingsValues() {
+  return {
+    country:settingCountry.value, language:settingLanguage.value,
+    default_view:settingDefaultView.value, columns_desktop:Number(settingColumns.value),
+    max_channels:Number(settingMaxChannels.value), theme_mode:settingTheme.value,
+    refresh_minutes:Number(settingRefresh.value), notification_service:settingNotificationService.value.trim()
+  };
+}
+
+function applyCommittedAppSettings(committed) {
+  i18n.configure({...committed, home_assistant:guide?.ui?.home_assistant});
+  if (!guide) return;
+  guide = {...guide, ui:{...guide.ui, ...committed}};
+  root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
+  syncHomeAssistantTheme();
+  render(); renderBookmarks(); if (activeDetail) updateDetailControls();
+  lastGuideLoadedAt = 0;
+  if (committed.country === guide.country) saveFirstPaintGuide(guide);
+  else { try { sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY); } catch {} }
+}
+
 async function persistAppSettings() {
+  for (const control of [settingColumns, settingMaxChannels]) {
+    if (!control.checkValidity()) {
+      control.closest('details').open = true;
+      control.reportValidity();
+      return;
+    }
+  }
   const write = ++settingsWrite;
   settingsSaving = true;
   // A guide started before this transaction must not repaint the old country
@@ -535,40 +570,33 @@ async function persistAppSettings() {
   appSettingsStatus.textContent = t("Wird gespeichert …");
   saveAppSettings.disabled = true;
   setAppSettingsEditing(false);
-  let saved = false;
-  const changes = {
-    country:settingCountry.value, language:settingLanguage.value,
-    default_view:settingDefaultView.value, columns_desktop:Number(settingColumns.value),
-    max_channels:Number(settingMaxChannels.value), theme_mode:settingTheme.value,
-    refresh_minutes:Number(settingRefresh.value), notification_service:settingNotificationService.value.trim()
+  let saved = false, lateConfirmed = false;
+  const changes = appSettingsValues();
+  const confirm = (payload, late = false) => {
+    if (!payload.ok || write !== settingsWrite) return;
+    lateConfirmed ||= late;
+    const preserveDraft = late && isCurrent() && JSON.stringify(appSettingsValues()) !== JSON.stringify(changes);
+    applyCommittedAppSettings(payload.settings || changes);
+    if (isCurrent()) {
+      if (preserveDraft) appSettingsStatus.textContent = "";
+      else {
+        setAppSettingsEditing(false);
+        saveAppSettings.disabled = true;
+        appSettingsStatus.textContent = payload.refresh_started
+          ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.") : t("Gespeichert.");
+        setTimeout(() => { if (isCurrent()) appSettingsDialog.close(); }, 500);
+      }
+    }
+    if (late) loadGuide().catch(() => {});
   };
   try {
-    const payload = await requestAction({endpoint:"settings",
-      method:"POST",
-      body:changes
-    });
+    const payload = await requestAction({endpoint:"settings", method:"POST", body:changes,
+      onLateResponse:payload => confirm(payload, true)});
     if (!payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
     saved = true;
-    if (write !== settingsWrite) return;
-    const committed = payload.settings || changes;
-    i18n.configure({...committed, home_assistant:guide?.ui?.home_assistant});
-    if (guide) {
-      // Apply persisted appearance locally; do not wait for EPG transfer.
-      guide = {...guide, ui:{...guide.ui, ...committed}};
-      root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
-      syncHomeAssistantTheme();
-      render(); renderBookmarks(); if (activeDetail) updateDetailControls();
-      lastGuideLoadedAt = 0;
-      if (committed.country === guide.country) saveFirstPaintGuide(guide);
-      else { try { sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY); } catch {} }
-    }
-    if (!isCurrent()) return;
-    appSettingsStatus.textContent = payload.refresh_started
-      ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.")
-      : t("Gespeichert.");
-    setTimeout(() => { if (isCurrent()) appSettingsDialog.close(); }, 500);
+    confirm(payload);
   } catch (err) {
-    if (isCurrent()) appSettingsStatus.textContent = t(err.message);
+    if (isCurrent() && !lateConfirmed) appSettingsStatus.textContent = t(err.message);
   } finally {
     if (write === settingsWrite) {
       settingsSaving = false;
@@ -576,7 +604,7 @@ async function persistAppSettings() {
       // so a rejected transaction cannot leave guide polling suspended.
       loadGuide().catch(() => {});
     }
-    if (isCurrent() && !saved) {
+    if (isCurrent() && !saved && !lateConfirmed) {
       setAppSettingsEditing(true);
       saveAppSettings.disabled = false;
     }

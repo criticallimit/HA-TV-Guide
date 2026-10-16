@@ -1,5 +1,5 @@
 import {createGuideApp} from './app/app.js?v=native-17';
-import {viewMarkup, viewStyles} from './app/view-template.js?v=native-11';
+import {viewMarkup, viewStyles} from './app/view-template.js?v=native-12';
 
 let fontsRegistered = false;
 function registerGuideFonts() {
@@ -339,7 +339,9 @@ class TVGuideCard extends HTMLElement {
     if (!this.isConnected || !this._hass) throw new Error("Card closed");
     const generation=this._generation;
     return new Promise((resolve,reject)=>{
+      let timedOut = false;
       const pending={reject,timer:window.setTimeout(()=>{
+        timedOut = true;
         this._pending.delete(pending);
         if (pending.savedRead && this._savedRead === pending.savedRead) this._savedRead = null;
         reject(new Error("Home Assistant request timed out"));
@@ -349,6 +351,7 @@ class TVGuideCard extends HTMLElement {
       if (request.method === "GET" && ["bookmarks", "reminders"].includes(request.endpoint)) pending.savedRead = this._savedRead;
       operation.then(response=>{
         if (!this.isConnected || generation!==this._generation) throw new Error("Card closed");
+        if (timedOut) { request.onLateResponse?.(response); return; }
         resolve(response);
       }).catch(reject).finally(()=>{
         window.clearTimeout(pending.timer); this._pending.delete(pending);
