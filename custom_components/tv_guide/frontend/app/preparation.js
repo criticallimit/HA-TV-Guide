@@ -1,16 +1,7 @@
 /* Initial preparation stays in HA when this view closes. */
-export function createPreparation({root, request:requestAction, scope, render}) {
+export function createPreparation({root, request:requestAction, scope, i18n, render}) {
   const setTimeout=scope.setTimeout, clearTimeout=scope.clearTimeout;
-  const messages = {
-    de: ['TV Guide wird vorbereitet', 'Senderlisten verfügbar', 'Programmdaten', 'Logo-Bibliothek', 'Wird geladen …', 'Verfügbar', 'Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.', 'Schließen', 'Erneut versuchen', 'Download fehlgeschlagen. Die Übersicht bleibt nutzbar.', 'Vorbereitung abgeschlossen', 'Quellen geprüft'],
-    en: ['Preparing TV Guide', 'Channel lists available', 'Programme data', 'Logo library', 'Loading …', 'Available', 'You can close this window. Preparation continues in the background.', 'Close', 'Retry', 'Download failed. You can still use the guide.', 'Preparation complete', 'sources checked'],
-    da: ['TV Guide klargøres', 'Kanallister er tilgængelige', 'Programdata', 'Logobibliotek', 'Indlæser …', 'Tilgængelig', 'Du kan lukke vinduet. Klargøringen fortsætter i baggrunden.', 'Luk', 'Prøv igen', 'Download mislykkedes. Guiden kan stadig bruges.', 'Klargøring fuldført', 'kilder kontrolleret'],
-    fr: ['Préparation de TV Guide', 'Listes des chaînes disponibles', 'Programmes', 'Bibliothèque de logos', 'Chargement…', 'Disponible', 'Vous pouvez fermer cette fenêtre. La préparation continue en arrière-plan.', 'Fermer', 'Réessayer', 'Échec du téléchargement. Le guide reste utilisable.', 'Préparation terminée', 'sources vérifiées'],
-    it: ['Preparazione di TV Guide', 'Elenchi dei canali disponibili', 'Programmi', 'Libreria dei loghi', 'Caricamento…', 'Disponibile', 'Puoi chiudere la finestra. La preparazione continua in background.', 'Chiudi', 'Riprova', 'Download non riuscito. La guida resta utilizzabile.', 'Preparazione completata', 'fonti controllate'],
-    nl: ['TV Guide wordt voorbereid', 'Zenderlijsten beschikbaar', 'Programmagegevens', 'Logobibliotheek', 'Laden …', 'Beschikbaar', 'Je kunt dit venster sluiten. De voorbereiding gaat op de achtergrond verder.', 'Sluiten', 'Opnieuw proberen', 'Download mislukt. De gids blijft bruikbaar.', 'Voorbereiding voltooid', 'bronnen gecontroleerd'],
-    nb: ['TV Guide klargjøres', 'Kanallister tilgjengelige', 'Programdata', 'Logobibliotek', 'Laster …', 'Tilgjengelig', 'Du kan lukke vinduet. Klargjøringen fortsetter i bakgrunnen.', 'Lukk', 'Prøv igjen', 'Nedlasting mislyktes. Guiden kan fortsatt brukes.', 'Klargjøring fullført', 'kilder kontrollert'],
-    sv: ['TV Guide förbereds', 'Kanallistor tillgängliga', 'Programdata', 'Logobibliotek', 'Läser in …', 'Tillgänglig', 'Du kan stänga fönstret. Förberedelsen fortsätter i bakgrunden.', 'Stäng', 'Försök igen', 'Hämtningen misslyckades. Guiden kan fortfarande användas.', 'Förberedelsen klar', 'källor kontrollerade']
-  };
+  const t = message => i18n.t(message);
   const style = document.createElement('style');
   style.textContent = `#preparationDialog{color:var(--primary-text-color,#eee);background:var(--card-background-color,#202529);border:1px solid var(--divider-color,#666);border-radius:10px;max-width:440px;width:calc(100cqw - 48px);padding:24px;box-sizing:border-box}#preparationDialog h2{margin-top:0}#preparationDialog progress{width:100%}#preparationDialog button,#preparationBadge{padding:8px 12px;border:1px solid var(--divider-color,#888);border-radius:6px;background:var(--card-background-color,#202529);color:var(--primary-text-color,#eee);cursor:pointer}#preparationBadge{position:fixed;right:12px;bottom:12px;z-index:30}#preparationDialog::backdrop{background:#0008}#preparationDialog p{line-height:1.5}`;
   root.append(style);
@@ -23,7 +14,6 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   root.append(dialog, badge);
   const node = id => dialog.querySelector('#preparation' + id);
   let completionTimer, timer, stopped = false, current, shown = false, lastLogos = 0, key = '', sequence = 0, repairPending = false;
-  const text = () => messages[root.lang] || messages.en;
   const dismissed = () => { try { return sessionStorage.getItem(key) === '1'; } catch { return shown; } };
   dialog.addEventListener('close', () => { try { sessionStorage.setItem(key, '1'); } catch {} });
   node('Close').onclick = () => dialog.close();
@@ -31,9 +21,25 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   node('Retry').onclick = async () => {
     node('Retry').disabled = true;
     try { await requestAction({endpoint:'preparation',method:'POST'}); repairPending = true; }
-    catch { node('Error').textContent = text()[9]; }
+    catch { node('Error').textContent = t("Download fehlgeschlagen. Die Übersicht bleibt nutzbar."); }
     finally { node('Retry').disabled = false; if (!stopped) {clearTimeout(timer); void poll();} }
   };
+  function updateLanguage() {
+    if (!current) return;
+    const {logos, programmes} = current;
+    const error = Boolean(logos.error || programmes.error);
+    node('Title').textContent = current.complete ? t("Vorbereitung abgeschlossen") : t("TV Guide wird vorbereitet");
+    node('Channels').textContent = '✓ ' + t("Senderlisten verfügbar");
+    node('Programmes').textContent = t("Programmdaten") + ': ' + (programmes.running ? t("Wird geladen …") : programmes.ready ? t("Verfügbar") : '—') + ' (' + programmes.sources_completed + ' ' + t("Quellen geprüft") + ')';
+    node('Logos').textContent = t("Logo-Bibliothek") + ': ' + logos.completed + ' / ' + logos.total;
+    node('Progress').max = logos.total || 1; node('Progress').value = logos.completed;
+    node('Progress').setAttribute('aria-label', t("Logo-Bibliothek"));
+    node('Error').textContent = error ? t("Download fehlgeschlagen. Die Übersicht bleibt nutzbar.") : '';
+    node('Hint').textContent = t("Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter."); node('Close').textContent = t("Schließen");
+    node('Retry').textContent = t("Erneut versuchen"); node('Retry').hidden = !error;
+    badge.textContent = error ? t("Download fehlgeschlagen. Die Übersicht bleibt nutzbar.") : t("TV Guide wird vorbereitet") + ' · ' + logos.completed + '/' + logos.total;
+    badge.hidden = current.complete && !error;
+  }
   async function poll() {
     if (stopped || document.hidden) return;
     const request = ++sequence;
@@ -42,19 +48,9 @@ export function createPreparation({root, request:requestAction, scope, render}) 
       if (stopped || request !== sequence || !result.logos) return;
       current = result;
       key = 'tv-guide-preparation-' + current.installation_id;
-      const m = text(), logos = current.logos, programmes = current.programmes;
+      const logos = current.logos, programmes = current.programmes;
       const error = Boolean(logos.error || programmes.error);
-      node('Title').textContent = current.complete ? m[10] : m[0];
-      node('Channels').textContent = '✓ ' + m[1];
-      node('Programmes').textContent = m[2] + ': ' + (programmes.running ? m[4] : programmes.ready ? m[5] : '—') + ' (' + programmes.sources_completed + ' ' + m[11] + ')';
-      node('Logos').textContent = m[3] + ': ' + logos.completed + ' / ' + logos.total;
-      node('Progress').max = logos.total || 1; node('Progress').value = logos.completed;
-      node('Progress').setAttribute('aria-label', m[3]);
-      node('Error').textContent = error ? m[9] : '';
-      node('Hint').textContent = m[6]; node('Close').textContent = m[7];
-      node('Retry').textContent = m[8]; node('Retry').hidden = !error;
-      badge.textContent = error ? m[9] : m[0] + ' · ' + logos.completed + '/' + logos.total;
-      badge.hidden = current.complete && !error;
+      updateLanguage();
       if (current.complete && !error && dialog.open && !completionTimer) {
         completionTimer = setTimeout(() => {
           completionTimer = null;
@@ -87,6 +83,7 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   });
   void poll();
   return {
+    updateLanguage,
     suspend(){stopped=true; ++sequence; clearTimeout(timer); clearTimeout(completionTimer); completionTimer=null;},
     resume(){stopped=false; if(!current?.complete || current?.logos?.error || current?.programmes?.error)void poll();}
   };

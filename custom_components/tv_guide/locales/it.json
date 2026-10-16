@@ -177,7 +177,19 @@
     "Ansicht wird aktualisiert …": "Aggiornamento della vista …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Connessione interrotta. Nuovo tentativo …",
     "Spanien": "Spagna",
-    "Español": "Spagnolo"
+    "Español": "Spagnolo",
+    "TV Guide wird vorbereitet": "Preparazione di TV Guide",
+    "Senderlisten verfügbar": "Elenchi dei canali disponibili",
+    "Programmdaten": "Programmi",
+    "Logo-Bibliothek": "Libreria dei loghi",
+    "Wird geladen …": "Caricamento…",
+    "Verfügbar": "Disponibile",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Puoi chiudere la finestra. La preparazione continua in background.",
+    "Erneut versuchen": "Riprova",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download non riuscito. La guida resta utilizzabile.",
+    "Vorbereitung abgeschlossen": "Preparazione completata",
+    "Quellen geprüft": "fonti controllate",
+    "Ohne Titel": "Senza titolo"
   },
   "home_assistant": {
     "config": {

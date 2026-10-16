@@ -90,6 +90,14 @@ class ProgrammeSources:
         channel_meta = {}
         claimed_source_ids = set()
 
+        def bind_source(internal_id, source_id, display_name, icon):
+            meta = channel_meta.setdefault(internal_id, {
+                "xmltv_id": source_id, "xmltv_ids": [],
+                "display_name": display_name, "icon": icon, "configured": True,
+            })
+            if source_id not in meta["xmltv_ids"]:
+                meta["xmltv_ids"].append(source_id)
+
         for elem in self._xml_records("channel"):
 
             cid = elem.attrib.get("id", "")
@@ -105,12 +113,7 @@ class ProgrammeSources:
 
             if cid in shared_source_ids:
                 for internal_id in shared_source_ids[cid]:
-                    channel_meta[internal_id] = {
-                        "xmltv_id": cid,
-                        "display_name": display_name,
-                        "icon": icon_url,
-                        "configured": True,
-                    }
+                    bind_source(internal_id, cid, display_name, icon_url)
                 claimed_source_ids.add(cid)
                 elem.clear()
                 continue
@@ -143,13 +146,11 @@ class ProgrammeSources:
             unique = list(dict.fromkeys(candidates))
             if len(unique) == 1 and cid not in claimed_source_ids:
                 internal_id = unique[0]
-                if internal_id not in channel_meta:
-                    channel_meta[internal_id] = {
-                        "xmltv_id": cid,
-                        "display_name": display_name,
-                        "icon": icon_url,
-                        "configured": True,
-                    }
+                # Only declared identities may join an existing main station.
+                # Display-name/fuzzy matches still keep regional variants separate.
+                declared = internal_id in literal_ids.get(cid, ()) or internal_id in exact_ids.get(cid_key, ())
+                if internal_id not in channel_meta or declared:
+                    bind_source(internal_id, cid, display_name, icon_url)
                     claimed_source_ids.add(cid)
                     elem.clear()
                     continue
@@ -182,7 +183,8 @@ class ProgrammeSources:
 
         xml_to_internal = {}
         for internal_id, meta in channel_meta.items():
-            xml_to_internal.setdefault(meta["xmltv_id"], []).append(internal_id)
+            for source_id in meta.get("xmltv_ids", [meta["xmltv_id"]]):
+                xml_to_internal.setdefault(source_id, []).append(internal_id)
 
         programmes = {internal_id: [] for internal_id in channel_meta}
         seen_programmes = 0
@@ -213,7 +215,7 @@ class ProgrammeSources:
 
             icon = elem.find("icon")
             item = {
-                "title": self.runtime.first_text(elem, "title") or "Ohne Titel",
+                "title": self.runtime.first_text(elem, "title") or "",
                 "subtitle": self.runtime.first_text(elem, "sub-title"),
                 "desc": self.runtime.first_text(elem, "desc"),
                 "category": self.runtime.first_text(elem, "category"),
@@ -247,6 +249,8 @@ class ProgrammeSources:
         dynamic_order = 10000
         for internal_id, meta in channel_meta.items():
             items = sorted(programmes.get(internal_id, []), key=lambda x: x["start"])
+            if len(meta.get("xmltv_ids", ())) > 1:
+                items = self._merge_program_lists([], items)
             configured = configured_by_id.get(internal_id)
 
             if configured:

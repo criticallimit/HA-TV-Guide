@@ -811,7 +811,7 @@ class GuideRuntimeTests(unittest.TestCase):
         valid={'title':'Valid cache','start':(now-timedelta(minutes=10)).isoformat(),'end':(now+timedelta(minutes=50)).isoformat()}
         invalid={'title':'invalid-utc','start':'9999-12-31T23:30:00-01:00','end':'9999-12-31T23:45:00-01:00'}
         channel={**self.runtime.STORE.channels[0],'programs':[valid,invalid,{'title':'broken','start':'invalid','end':valid['end']},{**valid,'start':'2026-10-14T11:00:00'},None]}
-        payload={'schema_version':10,'country':'de','channels':[channel],'source_metrics':[{'ok':True},'bad'],'official_metrics':['bad'],'feed_latest_end':'invalid'}
+        payload={'schema_version':self.runtime.PARSED_CACHE_SCHEMA_VERSION,'country':'de','channels':[channel],'source_metrics':[{'ok':True},'bad'],'official_metrics':['bad'],'feed_latest_end':'invalid'}
         self.runtime.STORE.parsed_cache_file.write_text(json.dumps(payload),encoding='utf-8')
         restored=self.runtime.EPGStore('de')
         self.assertEqual(restored.channels[0]['programs'],[valid])
@@ -825,7 +825,7 @@ class GuideRuntimeTests(unittest.TestCase):
         current = self.runtime.COUNTRY_CATALOGS['de']['channels'][0]
         channel = {**current, 'name':'Outdated station', 'order':99999, 'logo_file':'logos/obsolete.svg', 'programs':[programme]}
         self.runtime.STORE.parsed_cache_file.write_text(json.dumps({
-            'schema_version':10, 'country':'de', 'channels':[channel], 'source_metrics':[{'ok':True}]
+            'schema_version':self.runtime.PARSED_CACHE_SCHEMA_VERSION, 'country':'de', 'channels':[channel], 'source_metrics':[{'ok':True}]
         }), encoding='utf-8')
         restored = self.runtime.EPGStore('de')
         first = restored.channels[0]
@@ -844,7 +844,7 @@ class GuideRuntimeTests(unittest.TestCase):
 
     def test_wrong_cached_programme_container_is_replaced_by_empty_guide_data(self):
         channel={**self.runtime.STORE.channels[0],'programs':{'bad':'container'}}
-        payload={'schema_version':10,'country':'de','channels':[channel],'source_metrics':[{'ok':True}]}
+        payload={'schema_version':self.runtime.PARSED_CACHE_SCHEMA_VERSION,'country':'de','channels':[channel],'source_metrics':[{'ok':True}]}
         self.runtime.STORE.parsed_cache_file.write_text(json.dumps(payload),encoding='utf-8')
         restored=self.runtime.EPGStore('de')
         self.assertFalse(restored.channels[0]['programs'])

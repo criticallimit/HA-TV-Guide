@@ -220,7 +220,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Visningen opdateres …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Forbindelsen blev afbrudt. Prøver igen …",
     "Spanien": "Spanien",
-    "Español": "Spansk"
+    "Español": "Spansk",
+    "TV Guide wird vorbereitet": "TV Guide klargøres",
+    "Senderlisten verfügbar": "Kanallister er tilgængelige",
+    "Programmdaten": "Programdata",
+    "Logo-Bibliothek": "Logobibliotek",
+    "Wird geladen …": "Indlæser …",
+    "Verfügbar": "Tilgængelig",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Du kan lukke vinduet. Klargøringen fortsætter i baggrunden.",
+    "Erneut versuchen": "Prøv igen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download mislykkedes. Guiden kan stadig bruges.",
+    "Vorbereitung abgeschlossen": "Klargøring fuldført",
+    "Quellen geprüft": "kilder kontrolleret",
+    "Ohne Titel": "Uden titel"
   },
   "de": {
     "Alle Sender des eigenen Feeds": "Alle Sender des eigenen Feeds",
@@ -400,7 +412,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Ansicht wird aktualisiert …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Verbindung unterbrochen. Erneuter Versuch …",
     "Spanien": "Spanien",
-    "Español": "Spanisch"
+    "Español": "Spanisch",
+    "TV Guide wird vorbereitet": "TV Guide wird vorbereitet",
+    "Senderlisten verfügbar": "Senderlisten verfügbar",
+    "Programmdaten": "Programmdaten",
+    "Logo-Bibliothek": "Logo-Bibliothek",
+    "Wird geladen …": "Wird geladen …",
+    "Verfügbar": "Verfügbar",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.",
+    "Erneut versuchen": "Erneut versuchen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.",
+    "Vorbereitung abgeschlossen": "Vorbereitung abgeschlossen",
+    "Quellen geprüft": "Quellen geprüft",
+    "Ohne Titel": "Ohne Titel"
   },
   "en": {
     "Alle Sender des eigenen Feeds": "All channels from your feed",
@@ -580,7 +604,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Updating view …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Connection interrupted. Retrying …",
     "Spanien": "Spain",
-    "Español": "Spanish"
+    "Español": "Spanish",
+    "TV Guide wird vorbereitet": "Preparing TV Guide",
+    "Senderlisten verfügbar": "Channel lists available",
+    "Programmdaten": "Programme data",
+    "Logo-Bibliothek": "Logo library",
+    "Wird geladen …": "Loading …",
+    "Verfügbar": "Available",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "You can close this window. Preparation continues in the background.",
+    "Erneut versuchen": "Retry",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download failed. You can still use the guide.",
+    "Vorbereitung abgeschlossen": "Preparation complete",
+    "Quellen geprüft": "sources checked",
+    "Ohne Titel": "Untitled"
   },
   "nl": {
     "Alle Sender des eigenen Feeds": "Alle zenders uit je eigen feed",
@@ -760,7 +796,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Weergave wordt bijgewerkt …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Verbinding verbroken. Opnieuw proberen …",
     "Spanien": "Spanje",
-    "Español": "Spaans"
+    "Español": "Spaans",
+    "TV Guide wird vorbereitet": "TV Guide wordt voorbereid",
+    "Senderlisten verfügbar": "Zenderlijsten beschikbaar",
+    "Programmdaten": "Programmagegevens",
+    "Logo-Bibliothek": "Logobibliotheek",
+    "Wird geladen …": "Laden …",
+    "Verfügbar": "Beschikbaar",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Je kunt dit venster sluiten. De voorbereiding gaat op de achtergrond verder.",
+    "Erneut versuchen": "Opnieuw proberen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download mislukt. De gids blijft bruikbaar.",
+    "Vorbereitung abgeschlossen": "Voorbereiding voltooid",
+    "Quellen geprüft": "bronnen gecontroleerd",
+    "Ohne Titel": "Zonder titel"
   },
   "fr": {
     "Alle Sender des eigenen Feeds": "Toutes les chaînes de votre flux",
@@ -940,7 +988,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Mise à jour de l’affichage …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Connexion interrompue. Nouvelle tentative …",
     "Spanien": "Espagne",
-    "Español": "Espagnol"
+    "Español": "Espagnol",
+    "TV Guide wird vorbereitet": "Préparation de TV Guide",
+    "Senderlisten verfügbar": "Listes des chaînes disponibles",
+    "Programmdaten": "Programmes",
+    "Logo-Bibliothek": "Bibliothèque de logos",
+    "Wird geladen …": "Chargement…",
+    "Verfügbar": "Disponible",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Vous pouvez fermer cette fenêtre. La préparation continue en arrière-plan.",
+    "Erneut versuchen": "Réessayer",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Échec du téléchargement. Le guide reste utilisable.",
+    "Vorbereitung abgeschlossen": "Préparation terminée",
+    "Quellen geprüft": "sources vérifiées",
+    "Ohne Titel": "Sans titre"
   },
   "it": {
     "Alle Sender des eigenen Feeds": "Tutti i canali del proprio feed",
@@ -1120,7 +1180,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Aggiornamento della vista …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Connessione interrotta. Nuovo tentativo …",
     "Spanien": "Spagna",
-    "Español": "Spagnolo"
+    "Español": "Spagnolo",
+    "TV Guide wird vorbereitet": "Preparazione di TV Guide",
+    "Senderlisten verfügbar": "Elenchi dei canali disponibili",
+    "Programmdaten": "Programmi",
+    "Logo-Bibliothek": "Libreria dei loghi",
+    "Wird geladen …": "Caricamento…",
+    "Verfügbar": "Disponibile",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Puoi chiudere la finestra. La preparazione continua in background.",
+    "Erneut versuchen": "Riprova",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download non riuscito. La guida resta utilizzabile.",
+    "Vorbereitung abgeschlossen": "Preparazione completata",
+    "Quellen geprüft": "fonti controllate",
+    "Ohne Titel": "Senza titolo"
   },
   "nb": {
     "Alle Sender des eigenen Feeds": "Alle kanaler fra egen kilde",
@@ -1300,7 +1372,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Visningen oppdateres …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Forbindelsen ble brutt. Prøver igjen …",
     "Spanien": "Spania",
-    "Español": "Spansk"
+    "Español": "Spansk",
+    "TV Guide wird vorbereitet": "TV Guide klargjøres",
+    "Senderlisten verfügbar": "Kanallister tilgjengelige",
+    "Programmdaten": "Programdata",
+    "Logo-Bibliothek": "Logobibliotek",
+    "Wird geladen …": "Laster …",
+    "Verfügbar": "Tilgjengelig",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Du kan lukke vinduet. Klargjøringen fortsetter i bakgrunnen.",
+    "Erneut versuchen": "Prøv igjen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Nedlasting mislyktes. Guiden kan fortsatt brukes.",
+    "Vorbereitung abgeschlossen": "Klargjøring fullført",
+    "Quellen geprüft": "kilder kontrollert",
+    "Ohne Titel": "Uten tittel"
   },
   "sv": {
     "Alle Sender des eigenen Feeds": "Alla kanaler från ditt eget flöde",
@@ -1480,7 +1564,19 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Vyn uppdateras …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Anslutningen avbröts. Försöker igen …",
     "Spanien": "Spanien",
-    "Español": "Spanska"
+    "Español": "Spanska",
+    "TV Guide wird vorbereitet": "TV Guide förbereds",
+    "Senderlisten verfügbar": "Kanallistor tillgängliga",
+    "Programmdaten": "Programdata",
+    "Logo-Bibliothek": "Logobibliotek",
+    "Wird geladen …": "Läser in …",
+    "Verfügbar": "Tillgänglig",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Du kan stänga fönstret. Förberedelsen fortsätter i bakgrunden.",
+    "Erneut versuchen": "Försök igen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Hämtningen misslyckades. Guiden kan fortfarande användas.",
+    "Vorbereitung abgeschlossen": "Förberedelsen klar",
+    "Quellen geprüft": "källor kontrollerade",
+    "Ohne Titel": "Utan titel"
   },
   "es": {
     "Alle Sender des eigenen Feeds": "Todos los canales de tu fuente",
@@ -1660,6 +1756,18 @@ export const translations = {
     "Ansicht wird aktualisiert …": "Actualizando la vista …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Conexión interrumpida. Reintentando …",
     "Spanien": "España",
-    "Español": "Español"
+    "Español": "Español",
+    "TV Guide wird vorbereitet": "Preparando TV Guide",
+    "Senderlisten verfügbar": "Listas de canales disponibles",
+    "Programmdaten": "Programación",
+    "Logo-Bibliothek": "Biblioteca de logos",
+    "Wird geladen …": "Cargando …",
+    "Verfügbar": "Disponible",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Puedes cerrar esta ventana. La preparación continúa en segundo plano.",
+    "Erneut versuchen": "Reintentar",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Error de descarga. Puedes seguir utilizando la guía.",
+    "Vorbereitung abgeschlossen": "Preparación completada",
+    "Quellen geprüft": "fuentes comprobadas",
+    "Ohne Titel": "Sin título"
   }
 };

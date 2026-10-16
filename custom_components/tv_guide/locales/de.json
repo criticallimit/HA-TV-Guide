@@ -177,7 +177,19 @@
     "Ansicht wird aktualisiert …": "Ansicht wird aktualisiert …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Verbindung unterbrochen. Erneuter Versuch …",
     "Spanien": "Spanien",
-    "Español": "Spanisch"
+    "Español": "Spanisch",
+    "TV Guide wird vorbereitet": "TV Guide wird vorbereitet",
+    "Senderlisten verfügbar": "Senderlisten verfügbar",
+    "Programmdaten": "Programmdaten",
+    "Logo-Bibliothek": "Logo-Bibliothek",
+    "Wird geladen …": "Wird geladen …",
+    "Verfügbar": "Verfügbar",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.",
+    "Erneut versuchen": "Erneut versuchen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.",
+    "Vorbereitung abgeschlossen": "Vorbereitung abgeschlossen",
+    "Quellen geprüft": "Quellen geprüft",
+    "Ohne Titel": "Ohne Titel"
   },
   "home_assistant": {
     "config": {

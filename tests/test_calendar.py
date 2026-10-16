@@ -74,3 +74,12 @@ class CalendarTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([event.summary for event in events],['ZDF'])
         self.entry.options['channels']=['unknown']
         self.assertEqual(await self.calendar.async_get_events(self.hass,self.now,self.now+timedelta(minutes=30)),[])
+
+    def test_untitled_calendar_events_follow_ha_language_without_translating_source_titles(self):
+        labels = {code: module.messages(code)["Ohne Titel"] for code in module.LANGUAGES}
+        calendar = module.TVGuideProgrammeCalendar(self.coordinator, self.entry, labels)
+        calendar.hass = types.SimpleNamespace(config=types.SimpleNamespace(language='es-ES'))
+        self.assertEqual(calendar._to_event(self.record('ard', 0, 30, '')).summary, 'Sin título')
+        self.assertEqual(calendar._to_event(self.record('ard', 0, 30, 'Ohne Titel')).summary, 'Ohne Titel')
+        calendar.hass.config.language = 'en'
+        self.assertEqual(calendar._to_event(self.record('ard', 0, 30, '')).summary, 'Untitled')

@@ -69,7 +69,7 @@ class ProgrammeTitleTests(unittest.TestCase):
         programme = {'title':'Cached programme','start':'2026-10-04T12:00:00+02:00','end':'2026-10-04T13:00:00+02:00'}
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'parsed.json'
-            for version in [0, 5, 6, 7, 9, app.PARSED_CACHE_SCHEMA_VERSION]:
+            for version in [0, 5, 6, 7, 9, 10, app.PARSED_CACHE_SCHEMA_VERSION]:
                 with self.subTest(version=version):
                     path.write_text(json.dumps({'schema_version':version,'country':'de',
                         'channels':[{'id':'vox','programs':[programme]}]}),encoding='utf-8')
