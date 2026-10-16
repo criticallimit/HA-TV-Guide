@@ -1,5 +1,6 @@
 export const translations = {
   "da": {
+    "Alle Sender des eigenen Feeds": "Alle kanaler fra eget feed",
     "{channel} anzeigen": "Vis {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: “{title}” begynder kl. {time}.",
     "{count} angezeigt": "{count} vist",
@@ -174,6 +175,7 @@ export const translations = {
     "Großbritannien": "Storbritannien"
   },
   "de": {
+    "Alle Sender des eigenen Feeds": "Alle Sender des eigenen Feeds",
     "{channel} anzeigen": "{channel} anzeigen",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: „{title}“ beginnt um {time} Uhr.",
     "{count} angezeigt": "{count} angezeigt",
@@ -348,6 +350,7 @@ export const translations = {
     "Großbritannien": "Großbritannien"
   },
   "en": {
+    "Alle Sender des eigenen Feeds": "All channels from your feed",
     "{channel} anzeigen": "Show {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: “{title}” starts at {time}.",
     "{count} angezeigt": "{count} shown",
@@ -522,6 +525,7 @@ export const translations = {
     "Großbritannien": "United Kingdom"
   },
   "nl": {
+    "Alle Sender des eigenen Feeds": "Alle zenders uit je eigen feed",
     "{channel} anzeigen": "{channel} tonen",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: ‘{title}’ begint om {time}.",
     "{count} angezeigt": "{count} getoond",
@@ -696,6 +700,7 @@ export const translations = {
     "Großbritannien": "Verenigd Koninkrijk"
   },
   "fr": {
+    "Alle Sender des eigenen Feeds": "Toutes les chaînes de votre flux",
     "{channel} anzeigen": "Afficher {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel} : « {title} » commence à {time}.",
     "{count} angezeigt": "{count} affichées",
@@ -870,6 +875,7 @@ export const translations = {
     "Großbritannien": "Royaume-Uni"
   },
   "it": {
+    "Alle Sender des eigenen Feeds": "Tutti i canali del proprio feed",
     "{channel} anzeigen": "Mostra {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: «{title}» inizia alle {time}.",
     "{count} angezeigt": "{count} mostrati",
@@ -1044,6 +1050,7 @@ export const translations = {
     "Großbritannien": "Regno Unito"
   },
   "nb": {
+    "Alle Sender des eigenen Feeds": "Alle kanaler fra egen kilde",
     "{channel} anzeigen": "Vis {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: «{title}» begynner kl. {time}.",
     "{count} angezeigt": "{count} vist",
@@ -1218,6 +1225,7 @@ export const translations = {
     "Großbritannien": "Storbritannia"
   },
   "sv": {
+    "Alle Sender des eigenen Feeds": "Alla kanaler från ditt eget flöde",
     "{channel} anzeigen": "Visa {channel}",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: ”{title}” börjar kl. {time}.",
     "{count} angezeigt": "{count} visas",

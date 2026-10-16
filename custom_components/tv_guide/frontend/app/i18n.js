@@ -1,4 +1,4 @@
-import {translations} from './translations.js';
+import {translations} from './translations.js?v=native-18';
 export function createI18n(root, getHass) {
   const supported = ['da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'];
   let language = 'de';
