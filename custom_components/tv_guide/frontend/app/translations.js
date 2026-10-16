@@ -175,6 +175,7 @@ export const translations = {
     "Großbritannien": "Storbritannien"
   },
   "de": {
+    "Alle Sender des eigenen Feeds": "Alle Sender des eigenen Feeds",
     "{channel} anzeigen": "{channel} anzeigen",
     "{channel}: „{title}“ beginnt um {time} Uhr.": "{channel}: „{title}“ beginnt um {time} Uhr.",
     "{count} angezeigt": "{count} angezeigt",
