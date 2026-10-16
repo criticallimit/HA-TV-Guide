@@ -97,6 +97,8 @@ class ProgrammeSources:
                 elem.clear()
                 continue
             names = [(x.text or "").strip() for x in elem.findall("display-name") if x.text]
+            for prefix in self.country_config.get("display_name_prefixes", []):
+                names = [name.removeprefix(prefix).strip() for name in names]
             icon = elem.find("icon")
             icon_url = icon.attrib.get("src") if icon is not None else None
             display_name = names[0] if names else cid

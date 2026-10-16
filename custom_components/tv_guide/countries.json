@@ -1447,5 +1447,19 @@
     "aliases": [
       "uk"
     ]
+  },
+  "it": {
+    "name": "Italien",
+    "timezone": "Europe/Rome",
+    "catalog": "channels_it.json",
+    "language": "it",
+    "sources": [
+      "https://iptv-epg.org/files/epg-it.xml.gz",
+      "https://www.open-epg.com/files/italy8.xml.gz",
+      "https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz"
+    ],
+    "display_name_prefixes": [
+      "IT - "
+    ]
   }
 }

@@ -172,7 +172,8 @@
     "EPG-Aktualisierung läuft": "Mise à jour EPG en cours",
     "Letzte EPG-Aktualisierung": "Dernière mise à jour EPG",
     "Nächste Erinnerung": "Prochain rappel",
-    "Großbritannien": "Royaume-Uni"
+    "Großbritannien": "Royaume-Uni",
+    "Italien": "Italie"
   },
   "home_assistant": {
     "config": {

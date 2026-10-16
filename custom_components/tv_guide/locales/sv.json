@@ -172,7 +172,8 @@
     "EPG-Aktualisierung läuft": "EPG-uppdatering pågår",
     "Letzte EPG-Aktualisierung": "Senaste EPG-uppdatering",
     "Nächste Erinnerung": "Nästa påminnelse",
-    "Großbritannien": "Storbritannien"
+    "Großbritannien": "Storbritannien",
+    "Italien": "Italien"
   },
   "home_assistant": {
     "config": {

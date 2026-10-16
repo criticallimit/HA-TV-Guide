@@ -1002,5 +1002,187 @@
       "logo_normalized_light": "logos/se-se_svt24-light.svg",
       "logo_normalized_dark": "logos/se-se_svt24-dark.svg"
     }
+  },
+  "it": {
+    "it_rai1": {
+      "logo_normalized_light": "logos/it-it_rai1-light.svg",
+      "logo_normalized_dark": "logos/it-it_rai1-dark.svg"
+    },
+    "it_rai2": {
+      "logo_normalized_light": "logos/it-it_rai2-light.svg",
+      "logo_normalized_dark": "logos/it-it_rai2-dark.svg"
+    },
+    "it_rai3": {
+      "logo_normalized_light": "logos/it-it_rai3-light.svg",
+      "logo_normalized_dark": "logos/it-it_rai3-dark.svg"
+    },
+    "it_rete4": {
+      "logo_normalized_light": "logos/it-it_rete4-light.svg",
+      "logo_normalized_dark": "logos/it-it_rete4-dark.svg"
+    },
+    "it_canale5": {
+      "logo_normalized_light": "logos/it-it_canale5-light.svg",
+      "logo_normalized_dark": "logos/it-it_canale5-dark.svg"
+    },
+    "it_italia1": {
+      "logo_normalized_light": "logos/it-it_italia1-light.svg",
+      "logo_normalized_dark": "logos/it-it_italia1-dark.svg"
+    },
+    "it_la7": {
+      "logo_normalized_light": "logos/it-it_la7-light.svg",
+      "logo_normalized_dark": "logos/it-it_la7-dark.svg"
+    },
+    "it_tv8": {
+      "logo_normalized_light": "logos/it-it_tv8-light.svg",
+      "logo_normalized_dark": "logos/it-it_tv8-dark.svg"
+    },
+    "it_nove": {
+      "logo_normalized_light": "logos/it-it_nove-light.svg",
+      "logo_normalized_dark": "logos/it-it_nove-dark.svg"
+    },
+    "it_mediaset20": {
+      "logo_normalized_light": "logos/it-it_mediaset20-light.svg",
+      "logo_normalized_dark": "logos/it-it_mediaset20-dark.svg"
+    },
+    "it_rai4": {
+      "logo_normalized_light": "logos/it-it_rai4-light.svg",
+      "logo_normalized_dark": "logos/it-it_rai4-dark.svg"
+    },
+    "it_iris": {
+      "logo_normalized_light": "logos/it-it_iris-light.svg",
+      "logo_normalized_dark": "logos/it-it_iris-dark.svg"
+    },
+    "it_rai5": {
+      "logo_normalized_light": "logos/it-it_rai5-light.svg",
+      "logo_normalized_dark": "logos/it-it_rai5-dark.svg"
+    },
+    "it_raimovie": {
+      "logo_normalized_light": "logos/it-it_raimovie-light.svg",
+      "logo_normalized_dark": "logos/it-it_raimovie-dark.svg"
+    },
+    "it_raipremium": {
+      "logo_normalized_light": "logos/it-it_raipremium-light.svg",
+      "logo_normalized_dark": "logos/it-it_raipremium-dark.svg"
+    },
+    "it_cielo": {
+      "logo_normalized_light": "logos/it-it_cielo-light.svg",
+      "logo_normalized_dark": "logos/it-it_cielo-dark.svg"
+    },
+    "it_twentyseven": {
+      "logo_normalized_light": "logos/it-it_twentyseven-light.svg",
+      "logo_normalized_dark": "logos/it-it_twentyseven-dark.svg"
+    },
+    "it_tv2000": {
+      "logo_normalized_light": "logos/it-it_tv2000-light.svg",
+      "logo_normalized_dark": "logos/it-it_tv2000-dark.svg"
+    },
+    "it_la7cinema": {
+      "logo_normalized_light": "logos/it-it_la7cinema-light.svg",
+      "logo_normalized_dark": "logos/it-it_la7cinema-dark.svg"
+    },
+    "it_la5": {
+      "logo_normalized_light": "logos/it-it_la5-light.svg",
+      "logo_normalized_dark": "logos/it-it_la5-dark.svg"
+    },
+    "it_realtime": {
+      "logo_normalized_light": "logos/it-it_realtime-light.svg",
+      "logo_normalized_dark": "logos/it-it_realtime-dark.svg"
+    },
+    "it_foodnetwork": {
+      "logo_normalized_light": "logos/it-it_foodnetwork-light.svg",
+      "logo_normalized_dark": "logos/it-it_foodnetwork-dark.svg"
+    },
+    "it_cine34": {
+      "logo_normalized_light": "logos/it-it_cine34-light.svg",
+      "logo_normalized_dark": "logos/it-it_cine34-dark.svg"
+    },
+    "it_focus": {
+      "logo_normalized_light": "logos/it-it_focus-light.svg",
+      "logo_normalized_dark": "logos/it-it_focus-dark.svg"
+    },
+    "it_warnertv": {
+      "logo_normalized_light": "logos/it-it_warnertv-light.svg",
+      "logo_normalized_dark": "logos/it-it_warnertv-dark.svg"
+    },
+    "it_giallo": {
+      "logo_normalized_light": "logos/it-it_giallo-light.svg",
+      "logo_normalized_dark": "logos/it-it_giallo-dark.svg"
+    },
+    "it_topcrime": {
+      "logo_normalized_light": "logos/it-it_topcrime-light.svg",
+      "logo_normalized_dark": "logos/it-it_topcrime-dark.svg"
+    },
+    "it_boing": {
+      "logo_normalized_light": "logos/it-it_boing-light.svg",
+      "logo_normalized_dark": "logos/it-it_boing-dark.svg"
+    },
+    "it_raigulp": {
+      "logo_normalized_light": "logos/it-it_raigulp-light.svg",
+      "logo_normalized_dark": "logos/it-it_raigulp-dark.svg"
+    },
+    "it_raiyoyo": {
+      "logo_normalized_light": "logos/it-it_raiyoyo-light.svg",
+      "logo_normalized_dark": "logos/it-it_raiyoyo-dark.svg"
+    },
+    "it_italia2": {
+      "logo_normalized_light": "logos/it-it_italia2-light.svg",
+      "logo_normalized_dark": "logos/it-it_italia2-dark.svg"
+    },
+    "it_dmax": {
+      "logo_normalized_light": "logos/it-it_dmax-light.svg",
+      "logo_normalized_dark": "logos/it-it_dmax-dark.svg"
+    },
+    "it_raistoria": {
+      "logo_normalized_light": "logos/it-it_raistoria-light.svg",
+      "logo_normalized_dark": "logos/it-it_raistoria-dark.svg"
+    },
+    "it_mediasetextra": {
+      "logo_normalized_light": "logos/it-it_mediasetextra-light.svg",
+      "logo_normalized_dark": "logos/it-it_mediasetextra-dark.svg"
+    },
+    "it_raisport": {
+      "logo_normalized_light": "logos/it-it_raisport-light.svg",
+      "logo_normalized_dark": "logos/it-it_raisport-dark.svg"
+    },
+    "it_rainews24": {
+      "logo_normalized_light": "logos/it-it_rainews24-light.svg",
+      "logo_normalized_dark": "logos/it-it_rainews24-dark.svg"
+    },
+    "it_tgcom24": {
+      "logo_normalized_light": "logos/it-it_tgcom24-light.svg",
+      "logo_normalized_dark": "logos/it-it_tgcom24-dark.svg"
+    },
+    "it_skytg24": {
+      "logo_normalized_light": "logos/it-it_skytg24-light.svg",
+      "logo_normalized_dark": "logos/it-it_skytg24-dark.svg"
+    },
+    "it_k2": {
+      "logo_normalized_light": "logos/it-it_k2-light.svg",
+      "logo_normalized_dark": "logos/it-it_k2-dark.svg"
+    },
+    "it_frisbee": {
+      "logo_normalized_light": "logos/it-it_frisbee-light.svg",
+      "logo_normalized_dark": "logos/it-it_frisbee-dark.svg"
+    },
+    "it_cartoonito": {
+      "logo_normalized_light": "logos/it-it_cartoonito-light.svg",
+      "logo_normalized_dark": "logos/it-it_cartoonito-dark.svg"
+    },
+    "it_super": {
+      "logo_normalized_light": "logos/it-it_super-light.svg",
+      "logo_normalized_dark": "logos/it-it_super-dark.svg"
+    },
+    "it_raiscuola": {
+      "logo_normalized_light": "logos/it-it_raiscuola-light.svg",
+      "logo_normalized_dark": "logos/it-it_raiscuola-dark.svg"
+    },
+    "it_sportitalia": {
+      "logo_normalized_light": "logos/it-it_sportitalia-light.svg",
+      "logo_normalized_dark": "logos/it-it_sportitalia-dark.svg"
+    },
+    "it_supertennis": {
+      "logo_normalized_light": "logos/it-it_supertennis-light.svg",
+      "logo_normalized_dark": "logos/it-it_supertennis-dark.svg"
+    }
   }
 }
