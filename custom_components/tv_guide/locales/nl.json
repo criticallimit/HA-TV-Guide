@@ -173,7 +173,9 @@
     "Letzte EPG-Aktualisierung": "Laatste EPG-update",
     "Nächste Erinnerung": "Volgende herinnering",
     "Großbritannien": "Verenigd Koninkrijk",
-    "Italien": "Italië"
+    "Italien": "Italië",
+    "Ansicht wird aktualisiert …": "Weergave wordt bijgewerkt …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Verbinding verbroken. Opnieuw proberen …"
   },
   "home_assistant": {
     "config": {

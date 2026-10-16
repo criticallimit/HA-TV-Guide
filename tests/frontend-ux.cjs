@@ -75,6 +75,7 @@ const server=http.createServer((req,res)=>{
         }
         if(endpoint!=='guide')throw Error('Unexpected UX endpoint');
         guideRequests.push(message.service_data);
+        if(window.failGuide)throw Error('Guide unavailable');
         if(scenario==='switching'){
           const response=structuredClone(model);
           if(holdGuides)return new Promise(resolve=>heldGuides.push(()=>resolve({response})));
@@ -213,7 +214,38 @@ const server=http.createServer((req,res)=>{
       const state=await page.evaluate(()=>({language:card.shadowRoot.querySelector('.guide-root').lang,columns:card.shadowRoot.querySelector('.guide-root').style.getPropertyValue('--desktop-columns'),saveDisabled:card.shadowRoot.querySelector('#saveAppSettings').disabled}));
       assert.deepEqual(state,{language:'en',columns:'4',saveDisabled:true},'Persisted settings must apply immediately and prevent duplicate saves');
       await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+      await page.locator('#settingsLoading').waitFor({state:'visible'});
+      assert.match(await page.locator('#settingsLoadingLabel').textContent(),/Updating view/);
+      assert.equal(await page.locator('#grid').getAttribute('aria-busy'),'true');
+      const geometry=await page.evaluate(()=>{const r=card.shadowRoot;return {overlay:r.querySelector('.settings-loading-scrim').getBoundingClientRect().height,card:r.querySelector('.guide-root').clientHeight};});
+      assert.equal(geometry.overlay,geometry.card);
+      await page.screenshot({path:'work/settings-loading-implemented.png'});
+      await page.emulateMedia({reducedMotion:'reduce'});
+      assert.equal(await page.locator('.settings-loading-spinner').evaluate(el=>getComputedStyle(el).animationName),'none');
       await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+      await page.locator('#settingsLoading').waitFor({state:'hidden'});
+      assert.equal(await page.locator('#grid').getAttribute('aria-busy'),null);
+    }finally{await page.close();}
+  });
+  await check('country preparation keeps the old view and recovers after a failed guide request',async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{model.refresh_running=true;card.shadowRoot.querySelector('#settingCountry').value='it';});
+      await page.locator('#saveAppSettings').click();
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden'});
+      await page.locator('#settingsLoading').waitFor({state:'visible'});
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'de');
+      await page.evaluate(async()=>{failGuide=true;await card._app.loadGuide().catch(()=>{});});
+      assert.match(await page.locator('#settingsLoadingLabel').textContent(),/Verbindung unterbrochen/);
+      await page.evaluate(()=>{failGuide=false;model.refresh_running=false;model.channels.forEach(ch=>ch.programs=[]);});
+      // The existing automatic retry must finish even for an empty final feed.
+      await page.locator('#settingsLoading').waitFor({state:'hidden',timeout:10000});
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'it');
+      await page.evaluate(()=>{holdGuides=true;void card._app.loadGuide();});
+      await page.waitForFunction(()=>heldGuides.length===1);
+      assert.equal(await page.locator('#settingsLoading').isVisible(),false,'Ordinary background refreshes stay unobtrusive');
+      await page.evaluate(()=>heldGuides.shift()());
     }finally{await page.close();}
   });
   await check('rapid country and language commits survive out-of-order guide responses',async()=>{
@@ -230,8 +262,10 @@ const server=http.createServer((req,res)=>{
         await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
       }
       await page.waitForFunction(()=>heldGuides.length===4);
+      await page.locator('#settingsLoading').waitFor({state:'visible'});
       await page.evaluate(()=>heldGuides.pop()());
       await page.waitForFunction(()=>card._app.guide.country==='gb');
+      await page.locator('#settingsLoading').waitFor({state:'hidden'});
       await page.evaluate(()=>{for(const release of heldGuides.splice(0))release();});
       await page.waitForTimeout(100);
       assert.equal(await page.evaluate(()=>card._app.guide.country),'gb');
@@ -392,7 +426,7 @@ const server=http.createServer((req,res)=>{
         assert.equal(await page.evaluate(()=>settings.language),code);
       }
       const values=await page.evaluate(async()=>{
-        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-21');
+        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-22');
         return ['FR_ca','no_NO','nb-no','EN-us','unknown'].map(value=>normalizeLanguage(value));
       });
       assert.deepEqual(values,['fr','nb','nb','en','en']);
@@ -407,7 +441,7 @@ const server=http.createServer((req,res)=>{
       await page.locator('#settingLanguage').selectOption('es');await page.locator('#saveAppSettings').click();
       await page.waitForFunction(()=>card.shadowRoot.querySelector('.guide-root').lang==='es');
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-21');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-22');
         const locale=createI18n({},()=>({locale:{language:'es_MX'}}));
         return {language:locale.language,translated:locale.t('Einstellungen'),fallback:locale.t('Speichern')};
       });
@@ -436,7 +470,7 @@ const server=http.createServer((req,res)=>{
   await check('registered country language fallback works without country branches and respects HA profile',async()=>{
     const page=await mount('settings');try{
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-21');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-22');
         const profile={locale:{}};
         const locale=createI18n({},()=>profile);
         locale.configure({language:'auto',country:'zz',countries:[{code:'zz',language:'fr'}]});
