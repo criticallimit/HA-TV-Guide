@@ -75,7 +75,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=44' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=45' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_maintenance is not None
                 assert coordinator.backend.settings.persistent is False
@@ -200,7 +200,7 @@ async def main():
                     try:
                         assert await asyncio.to_thread(entered.wait, 2)
                         assert await asyncio.to_thread(catalogue_entered.wait, 2)
-                        for country, language in [('fr','fr'), ('de','nl'), ('gb','auto')]:
+                        for country, language in [('fr','fr'), ('es','es'), ('de','nl'), ('gb','auto')]:
                             result = await asyncio.wait_for(request('settings', 'POST',
                                 {**settings, 'columns_desktop':4, 'country':country, 'language':language}), 2)
                             assert result['ok']

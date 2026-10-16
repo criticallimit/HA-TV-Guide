@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "generation": 2,
-  "revision": "532c296edb6215e2",
+  "generation": 3,
+  "revision": "94c95db8437bd64d",
   "index": {
-    "size": 5236731,
-    "sha256": "fe4b3b0d3f9eb26814a89977c49da4315b13c730ea164ccace3449521c23005d"
+    "size": 5265294,
+    "sha256": "457923f9f5ff4889b33e6ebe693e66fe11f599c0f6c4718529e331a3fb2fa127"
   },
-  "base_url": "https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/b02c4adb314817368923a464dbeb08347c4da387/custom_components/tv_guide/logo_library/",
+  "base_url": "https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/263596bf071111d420b35a004c8b51dc8bcefdb8/custom_components/tv_guide/logo_library/",
   "archives": {
     "logos-000.zip": {
       "size": 4233432,
@@ -163,6 +163,10 @@
     "logos-038.zip": {
       "size": 2134056,
       "sha256": "595bd79b9b577db5061393d702c0f899cbb2a6926c518ad83c8eba0d5ac201be"
+    },
+    "logos-039.zip": {
+      "size": 668021,
+      "sha256": "14f162969b808e72ae55eaed6789ab265165dc37f865ae06b2d52f4873f65bdf"
     }
   }
 }

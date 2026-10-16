@@ -67,10 +67,10 @@ class RegistrationTests(unittest.TestCase):
         locale=json.loads((self.root/'locales/en.json').read_text())
         locale['messages']['Einstellungen']='Ajustes'
         locale['messages']['TV Guide – Erinnerung']='Recordatorio'
-        (self.root/'locales/es.json').write_text(json.dumps(locale,ensure_ascii=False))
-        self.edit('languages.json',lambda value:value.update({'es':{'name':'Español'}}))
+        (self.root/'locales/pt.json').write_text(json.dumps(locale,ensure_ascii=False))
+        self.edit('languages.json',lambda value:value.update({'pt':{'name':'Português'}}))
         country={'name':'New country','catalog':'channels_zz.json','timezone':'Pacific/Auckland',
-                 'language':'es','sources':['https://example.org/new.xml.gz']}
+                 'language':'pt','sources':['https://example.org/new.xml.gz']}
         self.edit('countries.json',lambda value:value.update({'zz':country}))
         (self.root/'catalogs/channels_zz.json').write_text(json.dumps({'channels':[
             {'id':'zz_station','order':1,'name':'New station','xmltv_ids':['Station.zz']}]}))
@@ -78,30 +78,30 @@ class RegistrationTests(unittest.TestCase):
         for path,data in builder.build(self.root).items():path.write_bytes(data)
         self.assertIn('export const languageRegistry', (self.root/'frontend/app/translations.js').read_text())
         self.assertIn('Ajustes',(self.root/'frontend/app/translations.js').read_text())
-        self.assertTrue((self.root/'translations/es.json').exists())
+        self.assertTrue((self.root/'translations/pt.json').exists())
         name='_tvguide_extended_locale_test';pkg=types.ModuleType(name);pkg.__path__=[str(self.root)]
         with patch.dict(sys.modules,{name:pkg}):
             runtime=importlib.import_module(name+'.guide_runtime').GuideRuntime
             languages=importlib.import_module(name+'.languages')
-            self.assertEqual(languages.normalize_language('es_MX'),'es')
+            self.assertEqual(languages.normalize_language('pt_BR'),'pt')
             payload=importlib.import_module(name+'.ui_payload')
-            self.assertEqual(payload.normalize_ui_settings({'language':'es'}),{'language':'es'})
+            self.assertEqual(payload.normalize_ui_settings({'language':'pt'}),{'language':'pt'})
             defaults=importlib.import_module(name+'.ha_defaults').installation_defaults
-            self.assertEqual(defaults(types.SimpleNamespace(language='es-MX',country='ZZ'))['country'],'zz')
+            self.assertEqual(defaults(types.SimpleNamespace(language='pt-BR',country='ZZ'))['country'],'zz')
             storage=self.root/'entry'
             for iteration in range(2):
-                backend=runtime(storage,{'country':'zz'},{'language':'es'},lambda:None)
+                backend=runtime(storage,{'country':'zz'},{'language':'pt'},lambda:None)
                 try:
                     backend.runtime.start_background=lambda *args,**kwargs:None
                     settings=backend.request('settings','GET')
                     if iteration==0:
-                        backend.request('settings','POST',{**settings,'language':'es'})
+                        backend.request('settings','POST',{**settings,'language':'pt'})
                         backend.request('personal-channels','POST',{'order':['zz:zz_station'],'countries':['zz']})
-                    self.assertEqual(backend.request('settings','GET')['language'],'es')
+                    self.assertEqual(backend.request('settings','GET')['language'],'pt')
                     self.assertEqual(backend.request('personal-channels','GET')['order'],['zz:zz_station'])
-                    self.assertEqual(backend.request('guide','GET')['ui']['language'],'es')
+                    self.assertEqual(backend.request('guide','GET')['ui']['language'],'pt')
                 finally:backend.close()
-            text=importlib.import_module(name+'.notification_text').reminder_text({'language':'es','channel':'TV','title':'Film'},'20:15')
+            text=importlib.import_module(name+'.notification_text').reminder_text({'language':'pt','channel':'TV','title':'Film'},'20:15')
             self.assertEqual(text['title'],'Recordatorio')
 
     def test_regional_codes_aliases_and_unknown_languages_use_shared_rules(self):

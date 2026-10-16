@@ -1461,5 +1461,20 @@
     "display_name_prefixes": [
       "IT - "
     ]
+  },
+  "es": {
+    "name": "Spanien",
+    "timezone": "Europe/Madrid",
+    "catalog": "channels_es.json",
+    "language": "es",
+    "sources": [
+      "https://iptv-epg.org/files/epg-es.xml.gz",
+      "https://www.open-epg.com/files/spain.xml.gz",
+      "https://www.tdtchannels.com/epg/TV.xml.gz",
+      "https://epgshare01.online/epgshare01/epg_ripper_ES1.xml.gz"
+    ],
+    "display_name_prefixes": [
+      "ES - "
+    ]
   }
 }

@@ -1,0 +1,774 @@
+{
+  "country": "es",
+  "source": "Verified original broadcaster artwork and pinned tv-logo/tv-logos sources. Transparent wrappers provide contrasting theme variants without background plates.",
+  "channels": {
+    "es_la1": {
+      "light": {
+        "file": "tve-1-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tve-1-es.png",
+        "sha256": "1dda823b033145fdacedc6bc07c603d227102ab159a78aaa11626364cad6d4c1",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tve-1-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tve-1-es.png",
+        "sha256": "1dda823b033145fdacedc6bc07c603d227102ab159a78aaa11626364cad6d4c1",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "es_la2": {
+      "light": {
+        "file": "tve-2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tve-2-es.png",
+        "sha256": "24469ea597246ec3d8a14f4f2744148042e2a939bd0b4515694b897c0924cf21",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "tve-2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tve-2-es.png",
+        "sha256": "24469ea597246ec3d8a14f4f2744148042e2a939bd0b4515694b897c0924cf21",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_antena3": {
+      "light": {
+        "file": "antena-3-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/antena-3-es.png",
+        "sha256": "9963d39b03718648d6d2b5c1be6313ab0e3c10bf3fc74b70dd4a95c8bf8a7e72",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "antena-3-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/antena-3-es.png",
+        "sha256": "9963d39b03718648d6d2b5c1be6313ab0e3c10bf3fc74b70dd4a95c8bf8a7e72",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_cuatro": {
+      "light": {
+        "file": "cuatro-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/cuatro-es.png",
+        "sha256": "bd638ac3e877d8a54b34b2bcb65788150fabb20ed3985f03d7c951ba282d8f3d",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "cuatro-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/cuatro-es.png",
+        "sha256": "bd638ac3e877d8a54b34b2bcb65788150fabb20ed3985f03d7c951ba282d8f3d",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_telecinco": {
+      "light": {
+        "file": "telecinco-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/telecinco-es.png",
+        "sha256": "979a9ee9ae1f1343faf24e9843f9056b9a7d792908b6e07f3e63c70d989ced55",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "telecinco-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/telecinco-es.png",
+        "sha256": "979a9ee9ae1f1343faf24e9843f9056b9a7d792908b6e07f3e63c70d989ced55",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "es_lasexta": {
+      "light": {
+        "file": "lasexta-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/lasexta-es.png",
+        "sha256": "dba3f3b7ac1f7ee522239f0680fb5672081c03dbcac8e08923088c6c9b2e64b8",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "lasexta-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/lasexta-es.png",
+        "sha256": "dba3f3b7ac1f7ee522239f0680fb5672081c03dbcac8e08923088c6c9b2e64b8",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_neox": {
+      "light": {
+        "file": "neox-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/neox-es.png",
+        "sha256": "910b513faac83763cda3a69bdd34dd935737646268ae6a2aa20c8a6c5da1a517",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "neox-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/neox-es.png",
+        "sha256": "910b513faac83763cda3a69bdd34dd935737646268ae6a2aa20c8a6c5da1a517",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_nova": {
+      "light": {
+        "file": "nova-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/nova-es.png",
+        "sha256": "563976cd899027a2dadaaf3d25c60cff4215f596f3c30e2287355f1cf31583dc",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "nova-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/nova-es.png",
+        "sha256": "563976cd899027a2dadaaf3d25c60cff4215f596f3c30e2287355f1cf31583dc",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_fdf": {
+      "light": {
+        "file": "fdf-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/fdf-es.png",
+        "sha256": "b3716ce35eb7bb27bb9e84109f313533afc2cfeb1b2590d1838398133cb70dac",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "fdf-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/fdf-es.png",
+        "sha256": "b3716ce35eb7bb27bb9e84109f313533afc2cfeb1b2590d1838398133cb70dac",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_energy": {
+      "light": {
+        "file": "energy-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/energy-es.png",
+        "sha256": "b9a9f3ad16071c2802c0f30856b3d50f1c6dc2fb3f404038e3b32a4c6256844f",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "energy-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/energy-es.png",
+        "sha256": "b9a9f3ad16071c2802c0f30856b3d50f1c6dc2fb3f404038e3b32a4c6256844f",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_divinity": {
+      "light": {
+        "file": "divinity-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/divinity-es.png",
+        "sha256": "fa225f955e231ee042c0c58e527088a42c606f8dba06042ee5c8871d86d963ea",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "divinity-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/divinity-es.png",
+        "sha256": "fa225f955e231ee042c0c58e527088a42c606f8dba06042ee5c8871d86d963ea",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_bemad": {
+      "light": {
+        "file": "be-mad-tv-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/be-mad-tv-es.png",
+        "sha256": "87af245be18c6bf9b2d005ae6e76dea379355be9edd081be5efe82b0e925f40f",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "be-mad-tv-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/be-mad-tv-es.png",
+        "sha256": "87af245be18c6bf9b2d005ae6e76dea379355be9edd081be5efe82b0e925f40f",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_dmax": {
+      "light": {
+        "file": "dmax-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/dmax-es.png",
+        "sha256": "1c67d753e1baf7a067bbdf84b9d20b18f9ae9a0524ea83ccc41a61fc82806cb1",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "dmax-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/dmax-es.png",
+        "sha256": "1c67d753e1baf7a067bbdf84b9d20b18f9ae9a0524ea83ccc41a61fc82806cb1",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_dkiss": {
+      "light": {
+        "file": "dkiss-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/dkiss-es.png",
+        "sha256": "1d283b77881eb4eaef5d2d52696180339812c490b89c2dbff8134f2528c2cf4a",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "dkiss-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/dkiss-es.png",
+        "sha256": "1d283b77881eb4eaef5d2d52696180339812c490b89c2dbff8134f2528c2cf4a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_ten": {
+      "light": {
+        "file": "ten-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/ten-es.png",
+        "sha256": "697e8db34ccf83f0c0c70fb1fa23cc06c9f864788c9ca933b332949480d80b4e",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "ten-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/ten-es.png",
+        "sha256": "697e8db34ccf83f0c0c70fb1fa23cc06c9f864788c9ca933b332949480d80b4e",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_atreseries": {
+      "light": {
+        "file": "atreseries-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/atreseries-es.png",
+        "sha256": "c023938f48555f6aee811150107fbf28795659d11a1a2feb8c799b3ec926937f",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "atreseries-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/atreseries-es.png",
+        "sha256": "c023938f48555f6aee811150107fbf28795659d11a1a2feb8c799b3ec926937f",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_mega": {
+      "light": {
+        "file": "mega-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/mega-es.png",
+        "sha256": "052b7eeb691219208a8a52b3ef9e7d106d5fda179a20cb7cafede1ae77dfd393",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "mega-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/mega-es.png",
+        "sha256": "052b7eeb691219208a8a52b3ef9e7d106d5fda179a20cb7cafede1ae77dfd393",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_clan": {
+      "light": {
+        "file": "clan-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/clan-es.png",
+        "sha256": "7719bbabeccb59a0532a384fb0acb0c42007d1a0f4f40243d92851ffa5c35747",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "clan-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/clan-es.png",
+        "sha256": "7719bbabeccb59a0532a384fb0acb0c42007d1a0f4f40243d92851ffa5c35747",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_boing": {
+      "light": {
+        "file": "boing-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/boing-es.png",
+        "sha256": "e594d15d6b02e1604a0f8e1bc53d366a546112a86202763b296123286fd7704a",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "boing-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/boing-es.png",
+        "sha256": "e594d15d6b02e1604a0f8e1bc53d366a546112a86202763b296123286fd7704a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_24h": {
+      "light": {
+        "file": "24h-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/24h-es.png",
+        "sha256": "e6d2f03b336204d96664003f41df321af508b368effbf1b14321ee87e6be6a4e",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "24h-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/24h-es.png",
+        "sha256": "e6d2f03b336204d96664003f41df321af508b368effbf1b14321ee87e6be6a4e",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_teledeporte": {
+      "light": {
+        "file": "tdp-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tdp-es.png",
+        "sha256": "9049a2cc7619914ed626fa115f04834529c80abdff5e9e3ae43600d810722a63",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "tdp-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tdp-es.png",
+        "sha256": "9049a2cc7619914ed626fa115f04834529c80abdff5e9e3ae43600d810722a63",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_trece": {
+      "light": {
+        "file": "trece-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/trece-es.png",
+        "sha256": "6c1ad22d1b7722f7d4ff854b44128e2ba6c7f9bf40320c69b368bcdf710731c4",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "trece-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/trece-es.png",
+        "sha256": "6c1ad22d1b7722f7d4ff854b44128e2ba6c7f9bf40320c69b368bcdf710731c4",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "es_realmadrid": {
+      "light": {
+        "file": "real-madrid-tv-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/real-madrid-tv-es.png",
+        "sha256": "514143c68d1366bfbf823a5dae1e8bb49676cecdad8c91ff221c77edb3549d8a",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "real-madrid-tv-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/real-madrid-tv-es.png",
+        "sha256": "514143c68d1366bfbf823a5dae1e8bb49676cecdad8c91ff221c77edb3549d8a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_squirrel": {
+      "light": {
+        "file": "squirrel.svg",
+        "url": "https://squirreltv.es/img/ico/logo-bom.svg",
+        "sha256": "fd9d9a27e44a5dae31f872e0f17d382ee900e9a6fd08d2b98af43e9d66c51ee9",
+        "mime": "image/svg+xml",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "squirrel.svg",
+        "url": "https://squirreltv.es/img/ico/logo-bom.svg",
+        "sha256": "fd9d9a27e44a5dae31f872e0f17d382ee900e9a6fd08d2b98af43e9d66c51ee9",
+        "mime": "image/svg+xml",
+        "variant": "original"
+      }
+    },
+    "es_squirrel2": {
+      "light": {
+        "file": "squirrel-dos-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/squirrel-dos-es.png",
+        "sha256": "bb85a61fe3bdecbeb0be0bc06249b8008183a676d320829f5594089387889984",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "squirrel-dos-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/squirrel-dos-es.png",
+        "sha256": "bb85a61fe3bdecbeb0be0bc06249b8008183a676d320829f5594089387889984",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_veo7": {
+      "light": {
+        "file": "veo7-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/veo7-es.png",
+        "sha256": "368da5731259763a265a87476ed0b93134315437574c9c3ef312ad99a53d8597",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "veo7-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/veo7-es.png",
+        "sha256": "368da5731259763a265a87476ed0b93134315437574c9c3ef312ad99a53d8597",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_tv3": {
+      "light": {
+        "file": "tv3.svg",
+        "url": "https://statics.3cat.cat/recursos/3cat/logos/web/tv3.svg",
+        "sha256": "246022ff545ea7175acbac1b382a112db03537500c52e21e0ec44bea773e7575",
+        "mime": "image/svg+xml",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tv3-dark.svg",
+        "url": "https://statics.3cat.cat/recursos/3cat/logos/web/tv3_W.svg",
+        "sha256": "139f931d55c51be7359b5f86324ff8a040f632711965febe725be08bfcd70431",
+        "mime": "image/svg+xml",
+        "variant": "original"
+      }
+    },
+    "es_3catinfo": {
+      "light": {
+        "file": "3catinfo.svg",
+        "url": "https://statics.3cat.cat/img/logos/3CatInfo_negre.svg",
+        "sha256": "cfa885c924f84df796c4ff1a93ecbf5a8c517c59645f15c981c2ee5f97970661",
+        "mime": "image/svg+xml",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "3catinfo-dark.svg",
+        "url": "https://statics.3cat.cat/recursos/3cat/logos/web/3catinfo_W.svg",
+        "sha256": "a846af774c590e0465f461ff12bdbd66b1d372a448e66d461759c90f27e557ae",
+        "mime": "image/svg+xml",
+        "variant": "original"
+      }
+    },
+    "es_esport3": {
+      "light": {
+        "file": "esport-3-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/esport-3-es.png",
+        "sha256": "4fad78a85fa88f0d12b9e55af255977e6404cb8f27ab7729d707e76e585358e7",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "esport-3-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/esport-3-es.png",
+        "sha256": "4fad78a85fa88f0d12b9e55af255977e6404cb8f27ab7729d707e76e585358e7",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_sx3": {
+      "light": {
+        "file": "sx3.svg",
+        "url": "https://statics.3cat.cat/recursos/3cat/logos/web/sx3_W.svg",
+        "sha256": "916373f1f121fbb7111ea1b28f5d0e6fa49bfa66ce46624915875a95bbe55d9a",
+        "mime": "image/svg+xml",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "sx3-dark.svg",
+        "url": "https://statics.3cat.cat/recursos/3cat/logos/web/sx3_W.svg",
+        "sha256": "916373f1f121fbb7111ea1b28f5d0e6fa49bfa66ce46624915875a95bbe55d9a",
+        "mime": "image/svg+xml",
+        "variant": "original"
+      }
+    },
+    "es_33": {
+      "light": {
+        "file": "el-33-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/el-33-es.png",
+        "sha256": "06b140034cb666dcc23913a211f9ebbec08ea17063694e19be6f2bd62d460820",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "el-33-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/el-33-es.png",
+        "sha256": "06b140034cb666dcc23913a211f9ebbec08ea17063694e19be6f2bd62d460820",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_canalsur": {
+      "light": {
+        "file": "canal-sur-1-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/canal-sur-1-es.png",
+        "sha256": "54b3611a922b4ecb0c424f73a0e6445be2495c6c81432765cdbbe8b43bfa339f",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "canal-sur-1-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/canal-sur-1-es.png",
+        "sha256": "54b3611a922b4ecb0c424f73a0e6445be2495c6c81432765cdbbe8b43bfa339f",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_andaluciatv": {
+      "light": {
+        "file": "canal-sur-2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/canal-sur-2-es.png",
+        "sha256": "78d4ec402eb8be7ca91c130b014d49b713bca4ac60be174d22a936f5767e2dee",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "canal-sur-2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/canal-sur-2-es.png",
+        "sha256": "78d4ec402eb8be7ca91c130b014d49b713bca4ac60be174d22a936f5767e2dee",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_telemadrid": {
+      "light": {
+        "file": "tele-madrid-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tele-madrid-es.png",
+        "sha256": "a361cf6e6b70f82eb4914e68a673f657b89189a0207598f7ad06164651d0dd71",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tele-madrid-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tele-madrid-es.png",
+        "sha256": "a361cf6e6b70f82eb4914e68a673f657b89189a0207598f7ad06164651d0dd71",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_laotra": {
+      "light": {
+        "file": "laotra-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/laotra-es.png",
+        "sha256": "6e457738dec5b2a3def148087978104471122975a7594c33ace86a39ca07a824",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "laotra-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/laotra-es.png",
+        "sha256": "6e457738dec5b2a3def148087978104471122975a7594c33ace86a39ca07a824",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_etb1": {
+      "light": {
+        "file": "etb1-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/etb1-es.png",
+        "sha256": "70f80b81002987adf17032c7fafc8707eaa978aaee747e56c33a6a3d0198c5a1",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "etb1-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/etb1-es.png",
+        "sha256": "70f80b81002987adf17032c7fafc8707eaa978aaee747e56c33a6a3d0198c5a1",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_etb2": {
+      "light": {
+        "file": "etb2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/etb2-es.png",
+        "sha256": "b54720bbdbbaea08a954751b89bfc35a99aeca73dc0988e166e320695a63062a",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "etb2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/etb2-es.png",
+        "sha256": "b54720bbdbbaea08a954751b89bfc35a99aeca73dc0988e166e320695a63062a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_tvg": {
+      "light": {
+        "file": "galicia-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/galicia-es.png",
+        "sha256": "83f3dba13d02f656a5bbaf8bd0c17359ce9d3445dab9c7f524272811d6125649",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "galicia-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/galicia-es.png",
+        "sha256": "83f3dba13d02f656a5bbaf8bd0c17359ce9d3445dab9c7f524272811d6125649",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_tvg2": {
+      "light": {
+        "file": "galicia-2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/galicia-2-es.png",
+        "sha256": "ea9b2d88459033de5d60437c143cf0cd2abe757dc962ece9f34bc42af9cd2b0c",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "galicia-2-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/galicia-2-es.png",
+        "sha256": "ea9b2d88459033de5d60437c143cf0cd2abe757dc962ece9f34bc42af9cd2b0c",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_apunt": {
+      "light": {
+        "file": "a-punt-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/a-punt-es.png",
+        "sha256": "4c1d6423361862e59cf1987e61e9bceed2e81902c4c89ad222547b287ab9057c",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "a-punt-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/a-punt-es.png",
+        "sha256": "4c1d6423361862e59cf1987e61e9bceed2e81902c4c89ad222547b287ab9057c",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_aragontv": {
+      "light": {
+        "file": "aragon-tv-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/aragon-tv-es.png",
+        "sha256": "6550512dde9974957958c8bb57c2b4f83206040622b02adae03ef923c0d6b0a0",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "aragon-tv-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/aragon-tv-es.png",
+        "sha256": "6550512dde9974957958c8bb57c2b4f83206040622b02adae03ef923c0d6b0a0",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_cmm": {
+      "light": {
+        "file": "castilla-de-mancha-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/castilla-de-mancha-es.png",
+        "sha256": "72ce32ea8eac46c5b16bc5bd504139eb966991a923d687f26748c91fdeeb0459",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "castilla-de-mancha-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/castilla-de-mancha-es.png",
+        "sha256": "72ce32ea8eac46c5b16bc5bd504139eb966991a923d687f26748c91fdeeb0459",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "es_ib3": {
+      "light": {
+        "file": "ib3-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/ib3-es.png",
+        "sha256": "754293d1094434936353f9295c347a06113884bc314f3b8dbdca804bbbf5f1f1",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "ib3-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/ib3-es.png",
+        "sha256": "754293d1094434936353f9295c347a06113884bc314f3b8dbdca804bbbf5f1f1",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_tpa": {
+      "light": {
+        "file": "tpa-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tpa-es.png",
+        "sha256": "f7f15d91fca756d327b8124b44db28ca928a355aa36d428ce3c6dd75a287955c",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tpa-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/tpa-es.png",
+        "sha256": "f7f15d91fca756d327b8124b44db28ca928a355aa36d428ce3c6dd75a287955c",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_canaria": {
+      "light": {
+        "file": "television-canaria-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/television-canaria-es.png",
+        "sha256": "c0daa0f123113ef695f99e4288540f1e211e20d45448f40041a2e3ba327c37c4",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "television-canaria-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/television-canaria-es.png",
+        "sha256": "c0daa0f123113ef695f99e4288540f1e211e20d45448f40041a2e3ba327c37c4",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_extremadura": {
+      "light": {
+        "file": "canal-extremadura-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/canal-extremadura-es.png",
+        "sha256": "2aedcae2726a3a5d4c9df1d9b83d90df6c70fb33832011f2ee1b7c6731a760aa",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "canal-extremadura-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/canal-extremadura-es.png",
+        "sha256": "2aedcae2726a3a5d4c9df1d9b83d90df6c70fb33832011f2ee1b7c6731a760aa",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "es_navarra": {
+      "light": {
+        "file": "navarra-television-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/navarra-television-es.png",
+        "sha256": "94d682c95085b38c3e7226e8d1b0fe9f8eb8f971d91736f25dde9e3147ba4e45",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "navarra-television-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/navarra-television-es.png",
+        "sha256": "94d682c95085b38c3e7226e8d1b0fe9f8eb8f971d91736f25dde9e3147ba4e45",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "es_la7murcia": {
+      "light": {
+        "file": "7-television-region-de-murcia-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/7-television-region-de-murcia-es.png",
+        "sha256": "2b3e298b6211b7c57ceeff597105a29a915248dbc54e8e13c35e0a93fcd1a50a",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "7-television-region-de-murcia-es.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/spain/7-television-region-de-murcia-es.png",
+        "sha256": "2b3e298b6211b7c57ceeff597105a29a915248dbc54e8e13c35e0a93fcd1a50a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    }
+  }
+}
