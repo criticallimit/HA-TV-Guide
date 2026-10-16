@@ -191,14 +191,14 @@ class GuideRequestHandler:
                     country_changed = country != self.runtime.STORE.country
                     if country_changed:
                         if country not in self.runtime.COUNTRY_STORES:
-                            self.runtime.COUNTRY_STORES[country] = self.runtime.EPGStore(country)
+                            self.runtime.COUNTRY_STORES[country] = self.runtime.EPGStore(country, load_cache=False)
                         self.runtime.STORE = self.runtime.COUNTRY_STORES[country]
                     self.runtime.STORE.options = self.runtime.load_options()
                     self.runtime.prune_country_stores()
                     refresh_needed = country_changed
                     if refresh_needed and not self.runtime.STORE.refresh_running:
                         self.runtime.STORE.refresh_running = True
-                        self.runtime.start_background(self.runtime.STORE.refresh, force=True)
+                        self.runtime.start_background(self.runtime.STORE.refresh)
 
                 self.runtime.wake_sensors()
                 return self._json({

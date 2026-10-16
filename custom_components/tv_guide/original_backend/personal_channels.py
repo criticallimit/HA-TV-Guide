@@ -16,12 +16,15 @@ class PersonalChannels:
 
     def country_store(self, country):
         with self.runtime.SETTINGS_LOCK:
-            if self.runtime.STORE.country == country:
-                return self.runtime.STORE
-            if country not in self.runtime.COUNTRY_STORES:
-                self.runtime.COUNTRY_STORES[country] = self.runtime.EPGStore(country)
+            existing = self.runtime.COUNTRY_STORES.get(country)
+            if existing is not None:
+                return existing
+        # Restoring a large cache must not block another card's settings commit.
+        candidate = self.runtime.EPGStore(country)
+        with self.runtime.SETTINGS_LOCK:
+            store = self.runtime.COUNTRY_STORES.setdefault(country, candidate)
             self.runtime.prune_country_stores(keep={country})
-            return self.runtime.COUNTRY_STORES[country]
+            return store
 
     def load(self, store):
         with self.lock:

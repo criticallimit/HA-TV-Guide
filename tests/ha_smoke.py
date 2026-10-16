@@ -150,7 +150,7 @@ async def main():
                     blocking=True,return_response=True)
                 assert calendar_result[calendar_id]['events'][0]['summary']=='TV Guide test programme'
                 picker = await request('personal-channels')
-                assert len(picker['supported_countries']) == 10
+                assert {item['code'] for item in picker['supported_countries']} == set(coordinator.backend.runtime.COUNTRIES)
                 keys = [next(ch['id'] for ch in picker['channels'] if ch['id'].startswith(code+':')) for code in ('de','at')]
                 await request('personal-channels','POST',{'order':keys,'countries':['de','at']})
                 assert (await request('personal-channels'))['order'] == keys
@@ -172,16 +172,29 @@ async def main():
                         if not release.wait(10):
                             raise TimeoutError('Country snapshot test was not released')
                     return captured
+                catalogue_entered, catalogue_release = threading.Event(), threading.Event()
+                original_catalogue = coordinator.backend.runtime.PERSONAL_CHANNELS.settings
+                def delayed_catalogue(store):
+                    catalogue_entered.set()
+                    if not catalogue_release.wait(10):
+                        raise TimeoutError('Country catalogue test was not released')
+                    return original_catalogue(store)
                 with patch.object(coordinator.backend, 'state_snapshot', delayed_snapshot), \
+                        patch.object(coordinator.backend.runtime.PERSONAL_CHANNELS, 'settings', delayed_catalogue), \
+                        patch.object(coordinator.backend.runtime.EPGStore, '_load_parsed_cache', side_effect=AssertionError('Settings must not read full programme caches')), \
                         patch.object(hass.config_entries, 'async_reload', side_effect=AssertionError('Settings must not reload the integration')) as reload_entry:
                     old_snapshot = asyncio.create_task(coordinator._snapshot())
+                    old_catalogue = asyncio.create_task(request("personal-channels"))
                     try:
                         assert await asyncio.to_thread(entered.wait, 2)
+                        assert await asyncio.to_thread(catalogue_entered.wait, 2)
                         for country, language in [('fr','fr'), ('de','nl'), ('gb','auto')]:
                             result = await asyncio.wait_for(request('settings', 'POST',
                                 {**settings, 'columns_desktop':4, 'country':country, 'language':language}), 2)
                             assert result['ok']
                         release.set()
+                        catalogue_release.set()
+                        await old_catalogue
                         await old_snapshot
                         await hass.async_block_till_done()
                         assert coordinator.country == 'gb'
@@ -193,6 +206,8 @@ async def main():
                         reload_entry.assert_not_called()
                     finally:
                         release.set()
+                        catalogue_release.set()
+                        await old_catalogue
                         await old_snapshot
                 await request('settings', 'POST', {**settings, 'columns_desktop':4})
                 await hass.async_block_till_done()

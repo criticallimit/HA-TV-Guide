@@ -58,6 +58,7 @@ class GuideRuntime:
         self._lock = threading.RLock()
         self._request_lock = threading.RLock()
         self._settings_request_lock = threading.RLock()
+        self._personal_request_lock = threading.RLock()
         self._snapshot_lock = threading.Lock()
         self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
@@ -302,7 +303,9 @@ class GuideRuntime:
             raise ValueError("Request is too large")
         # Large guide rendering must not monopolize settings reads/writes or
         # worker notifications. Only cache bookkeeping uses the shared lock.
-        request_lock = self._settings_request_lock if endpoint in {"settings", "personal-channels"} else self._request_lock
+        request_lock = (self._settings_request_lock if endpoint == "settings"
+                        else self._personal_request_lock if endpoint == "personal-channels"
+                        else self._request_lock)
         with request_lock:
             preview = method == "GET" and endpoint == "guide" and isinstance(body, dict) and body.get("preview") is True
             with self._lock:
@@ -394,7 +397,7 @@ class GuideRuntime:
         with self._lock:
             self.closed = True
         # Retain ownership of active requests after marking the runtime closed.
-        with self._request_lock, self._settings_request_lock, self._snapshot_lock:
+        with self._request_lock, self._settings_request_lock, self._personal_request_lock, self._snapshot_lock:
             pass
         self._pool.shutdown(wait=True, cancel_futures=True)
         sys.modules.pop(self._module_name, None)
