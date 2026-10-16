@@ -71,6 +71,6 @@ class PolandTests(unittest.TestCase):
     def test_reproducible_artwork_and_published_country(self):
         result=subprocess.run([sys.executable,str(ROOT/'tools/build_logo_artwork.py'),str(COMPONENT/'catalogs/poland_logo_sources.json'),'--check'],capture_output=True,text=True)
         self.assertEqual(result.returncode,0,result.stderr)
-        for path in [ROOT/'README.md',ROOT/'info.md']:self.assertIn('flags/pl.svg',path.read_text())
+        for path in [ROOT/'README.md',ROOT/'info.md']:self.assertIn('🇵🇱 Poland',path.read_text())
         for path in [*(ROOT/'docs').glob('*.html'),*(ROOT/'docs/manuals').glob('*.html')]:
             if path.name not in ('404.html','screenshots.html'):self.assertIn('data-country="pl"',path.read_text(),str(path))

@@ -1,29 +1,38 @@
 # TV Guide
 
-TV schedules, personal channel lists, saved programmes and reminders directly in Home Assistant. Includes thirteen TV countries, a multilingual interface, light and dark themes, automatic sensors and a programme calendar.
+**Your TV evening. At a glance.**
 
-## Install with HACS
+See what is on now, plan your evening and get reminders for programmes you want to watch — directly in Home Assistant.
 
-Until TV Guide is included in the default HACS catalogue, [open this repository in HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=criticallimit&repository=HA-TV-Guide&category=integration), or add `https://github.com/criticallimit/HA-TV-Guide` under **HACS → Custom repositories**, category **Integration**.
+[![TV Guide programme overview in Home Assistant](https://criticallimit.github.io/HA-TV-Guide/screenshots/program-overview.webp)](https://criticallimit.github.io/HA-TV-Guide/screenshots.html)
 
-Download **TV Guide**, restart Home Assistant, then open **Settings → Devices & services → Add integration → TV Guide**. Home Assistant 2026.10.1 or newer is required; this is the minimum version verified by the project.
+[Explore the website](https://criticallimit.github.io/HA-TV-Guide/en.html) · [More screenshots](https://criticallimit.github.io/HA-TV-Guide/screenshots.html) · [User guide](https://criticallimit.github.io/HA-TV-Guide/manuals/en.html)
 
-The integration adopts your Home Assistant country and language and prepares everything automatically. Open **TV Guide** in the sidebar. Initial programme and logo downloads show their progress and may take a few minutes.
+## Make it yours
 
-No feed URL, YAML, dashboard resource or manual card setup is required. An optional TV Guide card is available in the visual dashboard card picker, including a theme selector.
+- See what is on now, tonight or at another time.
+- Choose your favourite channels and put them in your own order. You can mix channels from different countries.
+- Save programmes and get a reminder before they start.
+- Use it on your phone, tablet or computer, with a light or dark theme.
 
-## Countries
+## Available countries
 
-<img src="https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/main/docs/flags/pl.svg" width="20" height="14" alt="Poland flag"> **Poland is included**, with 50 main channels, additional regional and subscription channels and a Polish interface.
+🇦🇹 Austria · 🇧🇪 Belgium · 🇩🇰 Denmark · 🇫🇷 France · 🇩🇪 Germany · 🇮🇹 Italy · 🇳🇱 Netherlands · 🇳🇴 Norway · 🇵🇱 Poland · 🇪🇸 Spain · 🇸🇪 Sweden · 🇨🇭 Switzerland · 🇬🇧 United Kingdom
 
-<img src="https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/main/docs/flags/es.svg" width="20" height="14" alt="Spain flag"> **Spain is now included**, with 48 national and regional main channels, additional available feed channels and a Spanish interface.
+The interface is available in ten languages. Programme availability depends on the channel and its data source.
 
-<img src="https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/main/docs/flags/it.svg" width="20" height="14" alt="Italy flag"> **Italy is now included**, with 45 main channels and additional available feed channels.
+## Get started
 
-Austria, Belgium, Denmark, France, Germany, Italy, the Netherlands, Norway, Poland, Spain, Sweden, Switzerland and the United Kingdom. Programme availability depends on the channel and public data source.
+Requires **Home Assistant 2026.10.1 or newer**.
 
-## Updates and existing installations
+1. Download **TV Guide** in HACS and restart Home Assistant.
+2. Open **Settings → Devices & services → Add integration → TV Guide**.
+3. Open **TV Guide** in the sidebar.
 
-Install updates through HACS and restart Home Assistant when prompted. If you already installed TV Guide manually, let HACS manage the same repository and integration directory. Keep your existing TV Guide integration entry; do not remove and recreate it. Settings and saved programmes are stored separately in Home Assistant storage.
+Your country and language are selected automatically. The first programme and logo downloads may take a few minutes; a progress window shows what is happening.
 
-[User manuals](https://criticallimit.github.io/HA-TV-Guide/) · [Report a problem](https://github.com/criticallimit/HA-TV-Guide/issues) · [Third-party notices](https://github.com/criticallimit/HA-TV-Guide/blob/main/THIRD_PARTY_NOTICES.md)
+## Updates
+
+Install updates through HACS and restart Home Assistant when prompted. Keep your existing TV Guide integration — your settings, channel lists and saved programmes stay in place.
+
+[Help & feedback](https://github.com/criticallimit/HA-TV-Guide/issues) · [Third-party notices](https://github.com/criticallimit/HA-TV-Guide/blob/main/THIRD_PARTY_NOTICES.md)
