@@ -177,6 +177,28 @@ class GuideRuntimeTests(unittest.TestCase):
         finally:
             replacement.close()
 
+    def test_guide_built_during_personal_commit_is_invalidated_after_save(self):
+        initial = self.backend.request('personal-channels', 'GET')['order']
+        changed = list(reversed(initial[:2]))
+        entered, release = threading.Event(), threading.Event()
+        original = self.runtime.PERSONAL_CHANNELS.save
+        def blocked(*args):
+            entered.set()
+            release.wait(5)
+            return original(*args)
+        with patch.object(self.runtime.PERSONAL_CHANNELS, 'save', blocked), ThreadPoolExecutor(max_workers=2) as pool:
+            save = pool.submit(self.backend.request, 'personal-channels', 'POST', {'order': changed, 'countries': ['de']})
+            self.assertTrue(entered.wait(2))
+            try:
+                during = self.backend.request('guide', 'GET')
+                self.assertEqual(during['custom_channel_ids'], initial)
+            finally:
+                release.set()
+                self.assertTrue(save.result(timeout=5)['ok'])
+        result = self.backend.request('guide', 'GET', {'known_revision': during['revision']})
+        self.assertNotIn('unchanged', result, 'A pre-commit guide must not mask the committed selection')
+        self.assertEqual(result['custom_channel_ids'], changed)
+
     def test_personal_save_does_not_wait_for_guide_build(self):
         picker = self.backend.request('personal-channels', 'GET')
         keys = [ch['id'] for ch in picker['channels'][:2]][::-1]

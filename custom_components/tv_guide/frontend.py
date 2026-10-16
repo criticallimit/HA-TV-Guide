@@ -9,7 +9,7 @@ from .const import DOMAIN
 from .logo_view import TVGuideLogoView
 
 CARD_URL = "/tv_guide/frontend/tv-guide-card.js"
-MODULE_URL = CARD_URL + "?v=31"
+MODULE_URL = CARD_URL + "?v=32"
 PANEL_PATH = "tv-guide"
 
 
@@ -30,7 +30,7 @@ async def async_register_frontend(hass):
             frontend.async_register_built_in_panel(hass, "custom", sidebar_title="TV Guide",
                 sidebar_icon="mdi:television-guide", frontend_url_path=PANEL_PATH,
                 config={"_panel_custom":{"name":"tv-guide-panel",
-                    "module_url":"/tv_guide/frontend/tv-guide-panel.js?v=31",
+                    "module_url":"/tv_guide/frontend/tv-guide-panel.js?v=32",
                     "embed_iframe":False,"trust_external":False}})
             hass.data[DOMAIN + "_panel_registered"] = True
         frontend.add_extra_js_url(hass, MODULE_URL)

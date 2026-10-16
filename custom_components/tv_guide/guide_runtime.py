@@ -260,7 +260,16 @@ class GuideRuntime:
             if method == "GET":
                 handler.do_GET()
             else:
-                handler.do_POST()
+                try:
+                    handler.do_POST()
+                finally:
+                    # A concurrent guide can start after the pre-write
+                    # invalidation but still read the old persisted values.
+                    # Never let that snapshot survive completion of a write.
+                    with self._lock:
+                        self._guide_cache = None
+                        self._guide_generation += 1
+                        self._snapshot_cache = None
             if endpoint == "guide":
                 for channel in result.get("channels", []):
                     channel_id = channel.get("source_channel_id") or channel["id"]

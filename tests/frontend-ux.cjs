@@ -41,7 +41,7 @@ const server=http.createServer((req,res)=>{
         if(message.service!=='guide_request')throw Error('Unexpected UX service');
         const {endpoint,method,body}=message.service_data;
         if(endpoint==='settings'){
-          if(method==='POST'){Object.assign(settings,body);model.ui={...settings};settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
+          if(method==='POST'){if(scenario==='held-settings')await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');Object.assign(settings,body);model.ui={...settings};settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
           return {response:structuredClone(settings)};
         }
         if(endpoint==='personal-channels'){
@@ -52,7 +52,7 @@ const server=http.createServer((req,res)=>{
             }
             return {response:{channels:structuredClone(channels),order:[...order],countries:[...countries],supported_countries:[{code:'de',name:'Deutschland'},{code:'at',name:'Österreich'}]}};
           }
-          if(method==='POST'){order=['a'];resetSaved=true;delayGuide=true;return {response:{ok:true,order,countries:['de']}};}
+          if(method==='POST'){if(scenario==='held-channels')await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');order=['a'];resetSaved=true;delayGuide=true;return {response:{ok:true,order,countries:['de']}};}
           return {response:{channels:structuredClone(channels),order:[...order],countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]}};
         }
         if(endpoint!=='guide')throw Error('Unexpected UX endpoint');
@@ -151,6 +151,62 @@ const server=http.createServer((req,res)=>{
       await page.locator('#channelSettingsDialog').waitFor({state:'hidden'});
       await page.waitForFunction(()=>card.shadowRoot.querySelectorAll('.channel-card').length===2);
       assert.deepEqual(await page.locator('.channel-card').evaluateAll(rows=>rows.map(row=>row.dataset.channelId)),['de:b','at:a']);
+    }finally{await page.close();}
+  });
+  await check('settings cannot accept unsaved edits during a pending commit',async()=>{
+    const page=await mount('held-settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();
+      await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.locator('#saveAppSettings').click();
+      await page.waitForFunction(()=>typeof releaseSave==='function');
+      assert.equal(await page.locator('#settingCountry').isDisabled(),true);
+      assert.equal(await page.locator('#settingLanguage').isDisabled(),true);
+      await page.evaluate(()=>releaseSave());
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden'});
+      await page.locator('#showAppSettings').click();
+      await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingCountry').isEnabled(),true);
+    }finally{await page.close();}
+  });
+  await check('channel selection cannot accept unsaved edits during a pending commit',async()=>{
+    const page=await mount('held-channels');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showChannelSettings').click();
+      await page.locator('#saveChannelSettings:not([disabled])').waitFor();
+      await page.locator('#saveChannelSettings').click();
+      await page.waitForFunction(()=>typeof releaseSave==='function');
+      assert.equal(await page.evaluate(()=>{
+        const root=card.shadowRoot;
+        return root.querySelector('#channelSearch').disabled &&
+          ['channelCountryFilters','availableChannelsList','channelSettingsList'].every(id=>root.querySelector('#'+id).inert);
+      }),true);
+      await page.evaluate(()=>releaseSave());
+      await page.locator('#channelSettingsDialog').waitFor({state:'hidden'});
+      await page.locator('#showChannelSettings').click();
+      await page.locator('#saveChannelSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#channelSearch').isEnabled(),true);
+      assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('#channelSettingsList').inert),false);
+    }finally{await page.close();}
+  });
+  for(const kind of ['settings','channels'])await check(kind+' editing recovers after a failed commit',async()=>{
+    const page=await mount(kind==='settings'?'held-settings':'held-channels');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      const settings=kind==='settings';
+      const open=settings?'#showAppSettings':'#showChannelSettings';
+      const save=settings?'#saveAppSettings':'#saveChannelSettings';
+      const dialog=settings?'#appSettingsDialog':'#channelSettingsDialog';
+      await page.locator(open).click();await page.locator(save+':not([disabled])').waitFor();
+      await page.evaluate(()=>window.failSave=true);
+      await page.locator(save).click();await page.waitForFunction(()=>typeof releaseSave==='function');
+      await page.evaluate(()=>releaseSave());
+      await page.locator(save+':not([disabled])').waitFor();
+      assert.equal(await page.locator(settings?'#settingCountry':'#channelSearch').isEnabled(),true);
+      if(!settings)assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('#channelSettingsList').inert),false);
+      await page.evaluate(()=>{failSave=false;window.releaseSave=null;});
+      await page.locator(save).click();await page.waitForFunction(()=>typeof releaseSave==='function');
+      await page.evaluate(()=>releaseSave());
+      await page.locator(dialog).waitFor({state:'hidden'});
     }finally{await page.close();}
   });
   await browser.close();server.close();assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
