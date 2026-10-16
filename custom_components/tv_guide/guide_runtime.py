@@ -35,6 +35,10 @@ class GuideRuntime:
         assets = storage / "reference"
         with zipfile.ZipFile(Path(__file__).parent / "original_backend" / "reference-data.zip") as archive:
             for name in archive.namelist():
+                # Notification catalogues are read lazily from the archive;
+                # the native UI ships its own translations.
+                if name.startswith("www/"):
+                    continue
                 target = (assets / name).resolve()
                 if assets.resolve() not in target.parents:
                     raise ValueError("Invalid bundled reference path")
@@ -93,12 +97,16 @@ class GuideRuntime:
         runtime.start_background = self.start_background
         runtime.normalized_logo_urls = self.logo_urls
 
-    def _backend_changed(self):
-        # Called by provider workers when new programme data become available.
+    def _invalidate_caches(self, *, programmes=True):
         with self._lock:
             self._guide_cache = None
             self._guide_generation += 1
-            self._snapshot_cache = None
+            if programmes:
+                self._snapshot_cache = None
+
+    def _backend_changed(self):
+        # Called by provider workers when new programme data become available.
+        self._invalidate_caches()
         self._wake()
 
     def logo_urls(self, channel):
@@ -161,7 +169,10 @@ class GuideRuntime:
                         completed.result()
                     except Exception:
                         _LOGGER.exception("TV Guide provider worker failed")
-                self._backend_changed()
+                # Logo verification/downloads do not change programme data.
+                # Keep guide revisions and the large HA snapshot reusable.
+                if function != self._download_logos:
+                    self._backend_changed()
             future.add_done_callback(finished)
             return future
 
@@ -240,9 +251,7 @@ class GuideRuntime:
                     return {"unchanged": True, "revision": f"{self._guide_revision}:{self._guide_generation}"}
                 cached = self._guide_cache if monotonic() - self._guide_cached_at < 10 else None
                 if method == "POST":
-                    self._guide_cache = None
-                    self._guide_generation += 1
-                    self._snapshot_cache = None
+                    self._invalidate_caches(programmes=endpoint != "personal-channels")
                 generation = self._guide_generation
             if method == "GET" and endpoint == "guide" and cached is not None:
                 return guide_preview(cached, body) if preview else cached
@@ -266,10 +275,7 @@ class GuideRuntime:
                     # A concurrent guide can start after the pre-write
                     # invalidation but still read the old persisted values.
                     # Never let that snapshot survive completion of a write.
-                    with self._lock:
-                        self._guide_cache = None
-                        self._guide_generation += 1
-                        self._snapshot_cache = None
+                    self._invalidate_caches(programmes=endpoint != "personal-channels")
             if endpoint == "guide":
                 for channel in result.get("channels", []):
                     channel_id = channel.get("source_channel_id") or channel["id"]

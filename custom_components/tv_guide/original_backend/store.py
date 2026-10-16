@@ -584,7 +584,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             "refresh_minutes": self.options["refresh_minutes"],
             "ui": {
                 "language": self.runtime.load_options().get("language", "auto"),
-                "home_assistant": self.runtime.home_assistant_locale(wait=False),
+                "home_assistant": self.runtime.home_assistant_locale(),
                 "default_view": ui.get("default_view", "now"),
                 "columns_desktop": ui.get("columns_desktop", 5),
                 "max_channels": ui.get("max_channels", 0),

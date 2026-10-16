@@ -37,6 +37,39 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.coordinator=module.TVGuideCoordinator(self.hass,entry,{'country':'de'})
         self.coordinator.backend=types.SimpleNamespace()
 
+    async def test_read_actions_do_not_schedule_epg_snapshots(self):
+        calls = []
+        self.coordinator.backend.request = lambda *args: calls.append(args) or {'ok':True}
+        for endpoint in ('guide', 'settings', 'personal-channels', 'channel-settings', 'channels', 'status'):
+            with self.subTest(endpoint=endpoint):
+                self.assertEqual(await self.coordinator.async_guide_request(endpoint), {'ok':True})
+        self.assertEqual(len(calls), 6)
+        self.assertEqual(self.tasks, [])
+
+    async def test_explicit_refresh_returns_before_snapshot_and_still_updates_entities(self):
+        c = self.coordinator
+        c.backend.request = lambda *args: {'ok':True}
+        async def snapshot():
+            return ['refreshed']
+        c._snapshot = snapshot
+        await c._sync_lock.acquire()
+        try:
+            result = await asyncio.wait_for(c.async_guide_request('refresh'), timeout=1)
+            self.assertTrue(result['ok'])
+        finally:
+            c._sync_lock.release()
+        await asyncio.gather(*self.tasks)
+        self.assertEqual(c.data, ['refreshed'])
+
+    async def test_unloaded_coordinator_rejects_actions_without_backend_work(self):
+        self.coordinator._closed = True
+        def request(*args):
+            self.fail('Unloaded coordinator called the backend')
+        self.coordinator.backend.request = request
+        with self.assertRaisesRegex(RuntimeError, 'unloading'):
+            await self.coordinator.async_guide_request('guide')
+        self.assertEqual(self.tasks, [])
+
     async def test_country_switch_clears_previous_success_and_captures_active_status(self):
         c=self.coordinator
         status={'country':'de','last_loaded':'2026-10-14T11:00:00+00:00','refresh_running':False,'source_attempts':[],'refresh_minutes':180}
@@ -100,6 +133,22 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(country_before_snapshot, 'at')
         self.assertEqual(c.update_interval.total_seconds(), 360*60)
 
+    async def test_personal_commit_does_not_wait_for_busy_epg_snapshot(self):
+        c = self.coordinator
+        c.backend.request = lambda *args: {'ok':True, 'order':['de:ard'], 'countries':['de']}
+        c.backend.state_snapshot = lambda: ([], [], [], {'country':'de', 'last_loaded':None,
+            'refresh_running':False, 'source_attempts':[], 'refresh_minutes':180})
+        await c._sync_lock.acquire()
+        request = asyncio.create_task(c.async_guide_request('personal-channels', 'POST', {'order':['de:ard']}))
+        for _ in range(10):
+            await asyncio.sleep(0)
+        returned_before_snapshot = request.done()
+        c._sync_lock.release()
+        await request
+        await asyncio.gather(*self.tasks)
+        self.assertTrue(returned_before_snapshot, 'A committed personal selection must not await programme synchronization')
+        self.assertEqual(self.tasks, [], 'Selection changes must not rebuild the unchanged shared EPG')
+
     async def test_malformed_cached_success_timestamp_does_not_break_setup(self):
         for value in ('invalid','2026-10-14T11:00:00','9999-12-31T23:30:00-01:00',None):
             self.coordinator.backend.state_snapshot=lambda:([],[],[],{'country':'de','last_loaded':value,'refresh_running':False,'source_attempts':[],'refresh_minutes':180})
@@ -122,16 +171,16 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(stopped)
         self.assertEqual(closed,[True])
 
-    async def test_unload_cancels_preload_timer_before_closing_workers(self):
+    async def test_unload_cancels_maintenance_timer_before_closing_workers(self):
         calls=[]
         c=self.coordinator
-        c._cancel_preload=lambda:calls.append('cancel')
+        c._cancel_maintenance=lambda:calls.append('cancel')
         c.backend.close=lambda:calls.append('close')
         await c.async_stop()
         await c.async_stop()
-        await c._async_preload(None)
+        await c._async_maintenance(None)
         self.assertEqual(calls,['cancel','close'])
-        self.assertIsNone(c._cancel_preload)
+        self.assertIsNone(c._cancel_maintenance)
 
     async def test_concurrent_shutdown_waits_for_single_cleanup(self):
         entered = asyncio.Event()
@@ -177,9 +226,9 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
     async def test_maintenance_timer_checks_freshness_independently_of_snapshots(self):
         calls=[]
         self.coordinator.backend.maintain_caches=lambda:calls.append('check')
-        await self.coordinator._async_preload(None)
+        await self.coordinator._async_maintenance(None)
         self.coordinator.async_set_updated_data([])
-        await self.coordinator._async_preload(None)
+        await self.coordinator._async_maintenance(None)
         self.assertEqual(calls,['check','check'])
 
     async def test_cancelled_setup_closes_backend_created_after_cancellation(self):
@@ -217,7 +266,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
             await stop
         self.assertIs(self.coordinator.backend, backend)
         self.assertEqual(calls, ['closed'])
-        self.assertIsNone(self.coordinator._cancel_preload)
+        self.assertIsNone(self.coordinator._cancel_maintenance)
 
     async def test_failed_constructor_does_not_hide_original_setup_error(self):
         self.coordinator.backend = None

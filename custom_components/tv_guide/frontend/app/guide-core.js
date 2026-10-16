@@ -21,10 +21,6 @@ export function createGuideCore(i18n) {
     return local.toISOString().slice(0,10);
   }
 
-  function sameDay(a,b) {
-    return dateKey(a) === dateKey(b);
-  }
-
   function targetForMode(mode, selectedDate, customTarget) {
     if (mode === "now") return new Date();
     if (mode === "other" && customTarget) return customTarget;
@@ -138,16 +134,9 @@ export function createGuideCore(i18n) {
     }).join("");
   }
 
-  function renderChannelCard(channel, mode, selectedDate, customTarget, logoPrefix="", showProgressValue = true) {
-    return '<section class="channel-card" data-channel-id="' + escapeHtml(channel.id) + '">' +
-      '<div class="channel-brand">' + channelHeader(channel, logoPrefix) + '</div>' +
-      '<div class="programs">' + renderPrograms(channel, mode, selectedDate, customTarget, showProgressValue) + '</div>' +
-      '</section>';
-  }
-
   return {
-    fmt, dateFmt, startOfDay, dateKey, sameDay, targetForMode, modeIndex,
+    fmt, dateFmt, startOfDay, dateKey, targetForMode, modeIndex,
     pct, escapeHtml,
-    channelHeader, renderPrograms, renderChannelCard
+    channelHeader, renderPrograms
   };
 }

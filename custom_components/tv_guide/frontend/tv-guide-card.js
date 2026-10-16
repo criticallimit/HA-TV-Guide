@@ -1,4 +1,4 @@
-import {createGuideApp} from './app/app.js?v=native-12';
+import {createGuideApp} from './app/app.js?v=native-13';
 import {viewMarkup, viewStyles} from './app/view-template.js?v=native-11';
 
 let fontsRegistered = false;
@@ -101,6 +101,7 @@ class TVGuideCard extends HTMLElement {
     this._app = null;
     this._pending = new Set();
     this._savedWrites = Promise.resolve();
+    this._savedRead = null;
     this._queuedSavedWrites = new Set();
     this._generation = 0;
     this._themeProperties = new Set();
@@ -277,6 +278,7 @@ class TVGuideCard extends HTMLElement {
     this._themeSyncFrame = null;
     this._app?.suspend();
     ++this._generation;
+    this._savedRead = null;
     for (const pending of this._pending) {
       window.clearTimeout(pending.timer);
       pending.reject(new Error("Card closed"));
@@ -338,10 +340,14 @@ class TVGuideCard extends HTMLElement {
     const generation=this._generation;
     return new Promise((resolve,reject)=>{
       const pending={reject,timer:window.setTimeout(()=>{
-        this._pending.delete(pending); reject(new Error("Home Assistant request timed out"));
+        this._pending.delete(pending);
+        if (pending.savedRead && this._savedRead === pending.savedRead) this._savedRead = null;
+        reject(new Error("Home Assistant request timed out"));
       },15000)};
       this._pending.add(pending);
-      (transport || this._dispatchGuideRequest(request)).then(response=>{
+      const operation = transport || this._dispatchGuideRequest(request);
+      if (request.method === "GET" && ["bookmarks", "reminders"].includes(request.endpoint)) pending.savedRead = this._savedRead;
+      operation.then(response=>{
         if (!this.isConnected || generation!==this._generation) throw new Error("Card closed");
         resolve(response);
       }).catch(reject).finally(()=>{
@@ -354,6 +360,15 @@ class TVGuideCard extends HTMLElement {
     const result = await this._hass.callWS({type:"call_service",domain:"tv_guide",service,service_data,return_response:true});
     if (!result?.response) throw new Error("TV Guide response unavailable");
     return result.response;
+  }
+  _readSavedProgrammes() {
+    if (!this._savedRead) {
+      const pending = this._response("get_saved_programmes").finally(() => {
+        if (this._savedRead === pending) this._savedRead = null;
+      });
+      this._savedRead = pending;
+    }
+    return this._savedRead;
   }
   async _dispatchGuideRequest(request) {
       const endpoint = request.endpoint;
@@ -385,8 +400,11 @@ class TVGuideCard extends HTMLElement {
             }
             await this._hass.callService("tv_guide",endpoint === "bookmarks" ? "save_bookmark" : "save_reminder",payload);
           } else throw new Error("Invalid saved-programme operation");
+          // Later refreshes must not join a read started before this commit.
+          this._savedRead = null;
         }
-        response = {ok:true,...await this._response("get_saved_programmes")};
+        // Writes must read their committed state, never join a pre-write read.
+        response = {ok:true,...await (method === "GET" ? this._readSavedProgrammes() : this._response("get_saved_programmes"))};
       } else if (method === "GET" && endpoint === "notification-services") {
         const mobile = Object.keys(this._hass.services?.notify || {}).filter(name => name.startsWith("mobile_app_")).map(name => {
           const device = name.slice(11).replaceAll("_"," ");

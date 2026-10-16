@@ -12,8 +12,8 @@
   },
   "bundled_sha256": {
     "styles.css": "db26363d711e1ed5cb166196f03d1545561bb90f86b6285983dbc7a52f92d0d1",
-    "guide-core.js": "a26d5d97336636082bc3bbbdd3ec7bbbd64f2237f911a9a4b09380fd9373db26",
-    "channel-picker.js": "484dedf5c81c71a481a34b4f4b9c3c8d4c65651e3cd8846717c4201d7b5d288a",
+    "guide-core.js": "e41eb278c07ad228c1c9c2dd8a22c6ba69de9a4cae796f553512194400b310a0",
+    "channel-picker.js": "a84aa721e4435074dd4ee9bed4793f08dda2d60843db6a20e551f32757c9ed43",
     "translations.js": "54d70c2dc0143987515e99117a7451d121ee0d1d630c14b89b10c675557e160e",
     "i18n.js": "fdc9c904818305d24c6a2222e073f7881b0cdec4bbf73027972ab538b493fea4"
   },
