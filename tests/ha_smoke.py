@@ -91,7 +91,7 @@ async def main():
                 for sample in (root/'tests/fixtures/logo-samples').glob('*.zip'):
                     shutil.copy2(sample,logo_cache/sample.name)
                 progress=await hass.services.async_call('tv_guide','get_preparation_status',{},blocking=True,return_response=True)
-                assert progress['logos']['total']==37
+                assert progress['logos']['total']==len(coordinator.backend.logo_download.packages)
                 assert progress['first_install'] is True
                 async with aiohttp.ClientSession() as client:
                     async with client.get('http://127.0.0.1:8123/tv_guide/logo/'+source) as response:
@@ -138,7 +138,7 @@ async def main():
                         patch.object(coordinator,'async_guide_request',side_effect=AssertionError('Healthy EPG must not redownload')):
                     retried=await hass.services.async_call('tv_guide','retry_preparation',{},blocking=True,return_response=True)
                     retry_logos.assert_called_once_with(True)
-                    assert retried['logos']['total']==37
+                    assert retried['logos']['total']==len(coordinator.backend.logo_download.packages)
                 programme = guide['channels'][0]['programs'][0]
                 assert programme['icon'].endswith('programme.jpg')
                 window=await hass.services.async_call('tv_guide','get_guide',

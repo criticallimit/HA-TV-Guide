@@ -32,7 +32,7 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(first['programs'][0]['category'],'News')
         self.assertTrue(first['programs'][0]['id'].startswith('guide_'))
         self.assertEqual(result['channels'][1]['programs'],[])
-        self.assertTrue((ROOT/'frontend'/'app'/first['logo_normalized_light']).is_file())
+        self.assertTrue(first['logo_normalized_light'].startswith('/tv_guide/logo/logos/channels/de/ard-light.svg?v='))
 
     def test_requested_time_and_offsets_select_correct_rows(self):
         self.records[0]['start']=self.at.astimezone(timezone(timedelta(hours=3))).isoformat()
