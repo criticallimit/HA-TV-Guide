@@ -28,7 +28,7 @@ def normalize_ui_settings(values):
             if values[key] not in choices:
                 raise ValueError('Invalid '+key)
             result[key]=values[key]
-    for key,minimum,maximum in [('columns_desktop',3,6),('max_channels',0,MAX_DISPLAY_CHANNELS)]:
+    for key,minimum,maximum in [('columns_desktop',3,6),('max_channels',0,500)]:
         if key in values:
             value=values[key]
             if type(value) is not int or not minimum<=value<=maximum:

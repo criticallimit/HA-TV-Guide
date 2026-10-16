@@ -220,6 +220,46 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.entry.data,{'country':'at'})
         self.assertEqual(self.entry.options,{'language':'en','columns_desktop':4})
 
+    async def test_xmltv_interval_change_reuses_downloaded_feed(self):
+        self.entry.data = {'feed_url':'https://example.org/feed.xml', 'country':'de'}
+        await self.module.async_setup_entry(self.hass, self.entry)
+        coordinator = self.hass.data['tv_guide']['entry']
+        self.entry.options = {'refresh_minutes':720}
+        await self.module.async_update_options(self.hass, self.entry)
+        self.assertEqual(self.hass.config_entries.reloaded, [], 'An interval change must not restart the feed download')
+        self.assertEqual(coordinator.update_interval.total_seconds(), 720*60)
+
+    async def test_xmltv_country_mapping_keeps_latest_options_without_reload(self):
+        self.entry.data = {'feed_url':'https://example.org/feed.xml', 'country':'de'}
+        await self.module.async_setup_entry(self.hass, self.entry)
+        coordinator = self.hass.data['tv_guide']['entry']
+        coordinator.channels = [{'id':'station', 'name':'Station'}]
+        coordinator.canonical_channels = [{'id':'de'}]
+        entered, release = asyncio.Event(), asyncio.Event()
+        async def executor(fn, *args):
+            result = fn(*args)
+            if args[0] == 'at':
+                entered.set()
+                await release.wait()
+            return result
+        self.hass.async_add_executor_job = executor
+        with patch.object(self.module, 'resolve_catalogue_channels', side_effect=lambda country, channels:[{'id':country}]):
+            self.entry.options = {'country':'at', 'refresh_minutes':360}
+            older = asyncio.create_task(self.module.async_update_options(self.hass, self.entry))
+            try:
+                await asyncio.wait_for(entered.wait(), 1)
+                self.entry.options = {'country':'gb', 'refresh_minutes':720}
+                await self.module.async_update_options(self.hass, self.entry)
+                release.set()
+                await older
+                self.assertEqual(coordinator.country, 'gb')
+                self.assertEqual(coordinator.canonical_channels, [{'id':'gb'}])
+                self.assertEqual(coordinator.update_interval.total_seconds(), 720*60)
+                self.assertEqual(self.hass.config_entries.reloaded, [])
+            finally:
+                release.set()
+                await older
+
     async def test_sender_options_notify_calendar_without_feed_reload(self):
         self.entry.data = {'feed_url':'https://example.org/feed.xml','country':'de'}
         await self.module.async_setup_entry(self.hass,self.entry)

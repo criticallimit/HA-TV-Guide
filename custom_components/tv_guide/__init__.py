@@ -14,6 +14,7 @@ from .ui_services import async_register_ui_services, async_remove_ui_services
 from .coordinator import TVGuideEPGCoordinator
 from .epg_query import async_register_epg_query, async_remove_epg_query
 from .country_sources import effective_feed, feed_candidates
+from .catalogs import resolve_catalogue_channels
 from .reminder_scheduler import TVGuideReminderScheduler
 from .saved_programmes import TVGuideSavedProgrammes
 from .saved_services import async_register_saved_services, async_remove_saved_services
@@ -119,7 +120,25 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
             return
         await hass.config_entries.async_reload(entry.entry_id)
         return
-    if coordinator is not None and coordinator.url == expected_url and coordinator.source_urls == feed_candidates(options) and coordinator.country == options.get("country", "") and coordinator.update_interval == timedelta(minutes=options.get("refresh_minutes",180)):
+    if coordinator is not None and coordinator.url == expected_url and coordinator.source_urls == feed_candidates(options):
+        country = options.get("country", "")
+        if coordinator.country != country:
+            while True:
+                channels = coordinator.channels
+                catalogue = await hass.async_add_executor_job(resolve_catalogue_channels, country, channels)
+                latest = {**entry.data, **entry.options}
+                if (hass.data.get(DOMAIN, {}).get(entry.entry_id) is not coordinator
+                        or effective_feed(latest) != expected_url
+                        or feed_candidates(latest) != coordinator.source_urls
+                        or latest.get("country", "") != country):
+                    return
+                if coordinator.channels is not channels:
+                    continue
+                coordinator.country = country
+                coordinator.canonical_channels = catalogue
+                options = latest
+                break
+        coordinator.update_interval = timedelta(minutes=options.get("refresh_minutes",180))
         coordinator.async_update_listeners()
         scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
         if scheduler is not None:

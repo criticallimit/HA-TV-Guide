@@ -32,17 +32,20 @@ const server=http.createServer((req,res)=>{
         model.main_channel_ids=['de:a','de:b'];model.custom_channel_ids=['de:a'];
       }
       window.savedReads=0;window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
-      window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];window.heldGuides=[];window.holdGuides=false;window.holdSettings=false;
+      window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];window.heldGuides=[];window.holdGuides=false;window.holdSettings=false;window.settingsPosts=0;window.notifications=[];window.holdNotification=false;window.holdSettingsReads=false;
       if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
       window.preparation=scenario==='preparation'?{installation_id:'ux-first',first_install:true,complete:false,logos:{completed:1,total:2,running:true,ready:false,error:false},programmes:{ready:true,running:false,sources_completed:1,error:false}}:{complete:true};
-      window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
+      window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}},notify:{mobile_app_test:{}}},async callService(domain,service,payload){notifications.push({domain,service,payload});if(holdNotification)await new Promise(resolve=>window.releaseNotification=resolve);},async callWS(message){
+        if(message.service==='get_ui_settings')return {response:structuredClone(settings)};
         if(message.service==='get_saved_programmes'){savedReads++;if(scenario==='saved-read')await new Promise(resolve=>window.releaseSaved=resolve);return {response:{bookmarks:[],reminders:[]}};}
         if(message.service==='get_preparation_status')return {response:structuredClone(preparation)};
         if(message.service!=='guide_request')throw Error('Unexpected UX service');
         const {endpoint,method,body}=message.service_data;
         if(endpoint==='settings'){
-          if(method==='POST'){if(scenario==='held-settings'||holdSettings)await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');Object.assign(settings,body);model.ui={...settings};if(scenario==='switching'){model.country=settings.country;model.channels.forEach(ch=>ch.name=settings.country+' station '+ch.id);}settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
-          return {response:structuredClone(settings)};
+          if(method==='POST'){settingsPosts++;if(scenario==='held-settings'||holdSettings)await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');Object.assign(settings,body);model.ui={...settings};if(scenario==='switching'){model.country=settings.country;model.channels.forEach(ch=>ch.name=settings.country+' station '+ch.id);}settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
+          if(holdSettingsReads)await new Promise(resolve=>window.releaseSettingsRead=resolve);
+          if(window.failSettingsRead)throw Error('Settings unavailable');
+          return {response:{...structuredClone(settings),...(scenario==='xmltv-menu'?{}:{countries:[{code:'de',name:'Deutschland'}]})}};
         }
         if(endpoint==='personal-channels'){
           if(scenario==='personal'){
@@ -109,6 +112,24 @@ const server=http.createServer((req,res)=>{
       await page.waitForFunction(before=>guideRequests.length>before,before,{timeout:1500});
       await page.evaluate(()=>{delayGuide=false;releaseGuide();});
       await page.waitForFunction(()=>card._app.lastGuideLoadedAt>0);
+    }finally{await page.close();}
+  });
+  await check('fresh settings replace a stale cached default view',async()=>{
+    const page=await mount('cache-contiguous');try{
+      await page.waitForFunction(()=>typeof releaseGuide==='function');
+      assert.equal(await page.evaluate(()=>card._app.mode),'now');
+      await page.evaluate(()=>{model.ui.default_view='2015';delayGuide=false;releaseGuide();});
+      await page.waitForFunction(()=>card._app.lastGuideLoadedAt>0);
+      assert.equal(await page.evaluate(()=>card._app.mode),'2015','The saved default must win over an older first-paint cache');
+    }finally{await page.close();}
+  });
+  await check('fresh default settings do not override an explicit time choice',async()=>{
+    const page=await mount('cache-contiguous');try{
+      await page.waitForFunction(()=>typeof releaseGuide==='function');
+      await page.locator('.tab[data-mode="2200"]').click();
+      await page.evaluate(()=>{model.ui.default_view='2015';delayGuide=false;releaseGuide();});
+      await page.waitForFunction(()=>card._app.lastGuideLoadedAt>0);
+      assert.equal(await page.evaluate(()=>card._app.mode),'2200');
     }finally{await page.close();}
   });
   await check('saved display settings apply before delayed guide',async()=>{
@@ -192,6 +213,105 @@ const server=http.createServer((req,res)=>{
       await page.evaluate(()=>releaseAcknowledgement());await page.waitForTimeout(100);
       assert.equal(await page.evaluate(()=>card._app.guide.country),'fr');
       assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').lang),'fr');
+    }finally{await page.close();}
+  });
+  for(const [name,id,key,value] of [
+    ['language','settingLanguage','language','en'],['columns','settingColumns','columns_desktop',3],
+    ['theme','settingTheme','theme_mode','light'],['station limit','settingMaxChannels','max_channels',1],
+    ['all stations','settingMaxChannels','max_channels',0],['default view','settingDefaultView','default_view','2015'],
+    ['refresh interval','settingRefresh','refresh_minutes',720],['notification recipient','settingNotificationService','notification_service','notify.mobile_app_test']
+  ])await check('settings round trip: '+name,async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(({id,value})=>{card.shadowRoot.querySelector('#'+id).value=String(value);},{id,value});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved&&typeof releaseGuide==='function');
+      assert.equal(await page.evaluate(key=>settings[key],key),value);
+      if(key==='language')assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').lang),value);
+      if(key==='columns_desktop')assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').style.getPropertyValue('--desktop-columns')),String(value));
+      if(key==='theme_mode')assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').dataset.haTheme),value);
+      if(key==='max_channels')assert.equal(await page.locator('.channel-card').count(),value||2,'Apply the station limit before a slow guide response');
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#'+id).inputValue(),String(value));
+      await page.locator('#cancelAppSettings').click();
+      await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+      if(key==='default_view'){
+        await page.evaluate(()=>{card.remove();card=document.createElement('tv-guide-card');card.hass=hass;document.body.append(card);});
+        await page.waitForFunction(()=>card._app?.mode==='2015');
+      }
+    }finally{await page.close();}
+  });
+  await check('notification test uses draft recipient and language without saving',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{const root=card.shadowRoot;root.querySelector('#settingNotificationService').value='notify.mobile_app_test';root.querySelector('#settingLanguage').value='fr';root.querySelectorAll('#appSettingsDialog details')[2].open=true;});
+      await page.locator('#testNotification').click();await page.waitForFunction(()=>notifications.length===1);
+      const sent=await page.evaluate(()=>notifications[0]);
+      assert.equal(sent.domain,'notify');assert.equal(sent.service,'mobile_app_test');
+      assert.match(sent.payload.title,/rappel/i);
+      assert.equal(await page.evaluate(()=>settingsPosts),0,'Testing must not save other draft settings');
+      assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').lang),'de','Testing a draft language must not change the saved UI language');
+    }finally{await page.close();}
+  });
+  await check('notification test cannot run while settings are loading',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{holdSettingsReads=true;});
+      await page.locator('#showAppSettings').click();await page.waitForFunction(()=>typeof releaseSettingsRead==='function');
+      assert.equal(await page.locator('#testNotification').isEnabled(),false);
+      await page.evaluate(()=>releaseSettingsRead());await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#testNotification').isEnabled(),true);
+    }finally{await page.close();}
+  });
+  await check('late notification result cannot overwrite a reopened settings dialogue',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{holdNotification=true;card.shadowRoot.querySelectorAll('#appSettingsDialog details')[2].open=true;});
+      await page.locator('#testNotification').click();await page.waitForFunction(()=>typeof releaseNotification==='function');
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingColumns').value='4';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved&&card.shadowRoot.querySelector('.guide-root').style.getPropertyValue('--desktop-columns')==='4');
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingColumns').inputValue(),'4');
+      assert.equal(await page.locator('#testNotificationStatus').textContent(),'');
+      assert.equal(await page.locator('#testNotification').isEnabled(),false);
+      await page.evaluate(()=>releaseNotification());await page.waitForFunction(()=>!card.shadowRoot.querySelector('#testNotification').disabled);
+      assert.equal(await page.locator('#testNotificationStatus').textContent(),'');
+    }finally{await page.close();}
+  });
+  await check('failed settings load recovers on reopening without a write',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{failSettingsRead=true;});
+      await page.locator('#showAppSettings').click();await page.waitForFunction(()=>card.shadowRoot.querySelector('#appSettingsStatus').textContent==='Settings unavailable');
+      assert.equal(await page.locator('#saveAppSettings').isEnabled(),false);
+      await page.locator('#cancelAppSettings').click();await page.evaluate(()=>{failSettingsRead=false;});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.evaluate(()=>settingsPosts),0);
+    }finally{await page.close();}
+  });
+  await check('cancelling draft settings leaves display and saved values unchanged',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{const root=card.shadowRoot;root.querySelector('#settingLanguage').value='fr';root.querySelector('#settingColumns').value='3';root.querySelector('#settingTheme').value='light';});
+      await page.locator('#cancelAppSettings').click();
+      assert.equal(await page.evaluate(()=>settingsPosts),0);
+      assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').lang),'de');
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingLanguage').inputValue(),'de');
+      assert.equal(await page.locator('#settingColumns').inputValue(),'5');
+      assert.equal(await page.locator('#settingTheme').inputValue(),'auto');
+    }finally{await page.close();}
+  });
+  for(const [scenario,disabled] of [['settings',true],['xmltv-menu',false]])await check('XMLTV country option capability: '+scenario,async()=>{
+    const page=await mount(scenario);try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingCountry option[value=""]').evaluate(option=>option.disabled),disabled);
     }finally{await page.close();}
   });
   await check('reset controls recover before delayed guide',async()=>{

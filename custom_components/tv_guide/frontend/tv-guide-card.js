@@ -1,4 +1,4 @@
-import {createGuideApp} from './app/app.js?v=native-16';
+import {createGuideApp} from './app/app.js?v=native-17';
 import {viewMarkup, viewStyles} from './app/view-template.js?v=native-11';
 
 let fontsRegistered = false;
@@ -412,13 +412,15 @@ class TVGuideCard extends HTMLElement {
         }).sort((a,b) => a.label.localeCompare(b.label));
         response = {services:[{service:"persistent_notification.create",label:"Home Assistant",type:"home_assistant"},...mobile]};
       } else if (method === "POST" && endpoint === "test-notification" && body.test === true) {
-        const settings = await this._response("get_ui_settings");
-        const [domain, service] = settings.notification_service.split(".");
-        if (!(domain === "notify" || (domain === "persistent_notification" && service === "create"))) throw new Error("Invalid notification destination");
-        const t = this._app?.i18n.t || (message => message);
-        const time = new Intl.DateTimeFormat(body.language || "en",{hour:"2-digit",minute:"2-digit",hour12:false,...(this._hass.config?.time_zone ? {timeZone:this._hass.config.time_zone} : {})}).format(new Date(Date.now()+60000));
+        const destination = Object.hasOwn(body,"notification_service") ? body.notification_service
+          : (await this._response("get_ui_settings")).notification_service;
+        if (typeof destination !== "string" || !/^(?:persistent_notification\.create|notify\.[a-z0-9_]+)$/.test(destination)) throw new Error("Invalid notification destination");
+        const [domain, service] = destination.split(".");
+        const language = this._app?.i18n.resolve({language:body.language}) || "en";
+        const t = (message, values) => this._app?.i18n.t(message, values, language) || message;
+        const time = new Intl.DateTimeFormat(language,{hour:"2-digit",minute:"2-digit",hour12:false,...(this._hass.config?.time_zone ? {timeZone:this._hass.config.time_zone} : {})}).format(new Date(Date.now()+60000));
         await this._hass.callService(domain,service,{title:t("TV Guide – Erinnerung"),message:t("{channel}: „{title}“ beginnt um {time} Uhr.",{channel:"TV Guide",title:t("Testbenachrichtigung"),time})});
-        response = {ok:true,service:settings.notification_service};
+        response = {ok:true,service:destination};
       } else throw new Error("Unsupported TV Guide operation");
       return response;
   }

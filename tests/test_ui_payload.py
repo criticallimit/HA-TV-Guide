@@ -99,6 +99,12 @@ class UIPayloadTests(unittest.TestCase):
         result=ui.normalize_ui_settings({'country':'de','columns_desktop':5,'refresh_minutes':60,'notification_service':'notify.mobile_app_test'})
         self.assertEqual(result['notification_service'],'notify.mobile_app_test')
 
+    def test_visible_xmltv_limit_accepts_the_same_range_as_the_settings_menu(self):
+        for value in (0, 1, 200, 300, 500):
+            self.assertEqual(ui.normalize_ui_settings({'max_channels':value})['max_channels'], value)
+        with self.assertRaises(ValueError):
+            ui.normalize_ui_settings({'max_channels':501})
+
     def test_scoped_modules_and_pinned_reference_provenance(self):
         app=ROOT/'frontend'/'app'
         provenance=json.loads((app/'REFERENCE.json').read_text(encoding='utf-8'))

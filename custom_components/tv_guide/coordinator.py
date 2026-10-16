@@ -63,9 +63,13 @@ class TVGuideEPGCoordinator(DataUpdateCoordinator[list[dict]]):
                     if not any(datetime.fromisoformat(item["stop"]) > now for item in programmes):
                         raise ValueError("Feed contains no current or future programmes")
                     channels = await self.hass.async_add_executor_job(parse_channel_catalog, decoded)
-                    canonical_channels = await self.hass.async_add_executor_job(
-                        resolve_catalogue_channels, self.country, channels
-                    )
+                    while True:
+                        country = self.country
+                        canonical_channels = await self.hass.async_add_executor_job(
+                            resolve_catalogue_channels, country, channels
+                        )
+                        if country == self.country:
+                            break
                 except Exception as exc:
                     last_error = exc
                     self.source_attempts.append({"source": url, "result": type(exc).__name__})

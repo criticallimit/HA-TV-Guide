@@ -32,8 +32,9 @@ export function createI18n(root, getHass) {
     // A country cannot identify the user's language in multilingual regions.
     return supportedLanguage(navigator.language || 'en');
   }
-  function t(message, values = {}) {
-    const translated = translations?.[language]?.[message] ||
+  function t(message, values = {}, targetLanguage = language) {
+    const selectedLanguage = targetLanguage === language ? language : supportedLanguage(targetLanguage);
+    const translated = translations?.[selectedLanguage]?.[message] ||
       translations?.en?.[message] || String(message || '');
     return translated.replace(/\{(\w+)\}/g, (token, key) => Object.hasOwn(values, key) ? String(values[key]) : token);
   }

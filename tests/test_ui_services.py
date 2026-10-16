@@ -43,6 +43,16 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         choices=await self.call('get_personal_channels')
         self.assertEqual(choices['order'][0],'ard')
 
+    async def test_first_guide_after_xmltv_country_save_uses_the_new_catalogue(self):
+        self.entry.options = {'country':'at'}
+        self.hass.data['tv_guide'] = {'entry':types.SimpleNamespace(
+            country='de', data=[], canonical_channels=[{'id':'ard','name':'Das Erste','xmltv_id':'ard'}],
+            channels=[], refresh_running=False)}
+        result = await self.call('get_guide')
+        self.assertEqual(result['country'], 'at')
+        self.assertTrue(result['main_channel_ids'][0].startswith('at_'))
+        self.assertNotIn('ard', result['main_channel_ids'])
+
     async def test_validated_display_settings_persist_without_replacing_other_options(self):
         self.entry.options={'channels':['ard'],'feed_url':'https://example.org/feed.xml'}
         result=await self.call('set_ui_settings',{'options':{'columns_desktop':4,'language':'en','notification_service':'notify.mobile_app_test'}})
