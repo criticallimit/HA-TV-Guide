@@ -27,9 +27,10 @@ validate_feed_url = _module.validate_feed_url
 class CountrySourceTests(unittest.TestCase):
     def test_country_fallbacks_and_explicit_override(self):
         sources = load_module("country_sources")
-        for country in ("de", "gb"):
+        countries = json.loads((Path(__file__).resolve().parents[1] / "custom_components/tv_guide/countries.json").read_text())
+        for country, config in countries.items():
             candidates = sources.feed_candidates({"country": country})
-            self.assertEqual(len(candidates), 2)
+            self.assertEqual(candidates, tuple(config['sources']))
             self.assertEqual(candidates[0], COUNTRY_FEEDS[country])
             for url in candidates:
                 self.assertEqual(validate_feed_url(url), url)
