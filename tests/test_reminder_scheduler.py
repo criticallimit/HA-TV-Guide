@@ -5,6 +5,7 @@ import importlib.util
 import sys
 import types
 import unittest
+from functools import wraps
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -31,7 +32,12 @@ event = types.ModuleType("homeassistant.helpers.event")
 timers = []
 
 def schedule(hass, callback, when):
-    entry = {"callback": callback, "when": when, "cancelled": False}
+    entry = {"when": when, "cancelled": False, "fired": False}
+    @wraps(callback)
+    def fire(now):
+        entry["fired"] = True
+        return callback(now)
+    entry["callback"] = fire
     timers.append(entry)
     def cancel():
         entry["cancelled"] = True
@@ -101,7 +107,7 @@ class SchedulerTests(unittest.TestCase):
             scheduler.reschedule()
             due = timers[0]["callback"]
             await hass.bus.shutdown()
-            self.assertTrue(all(timer["cancelled"] for timer in timers))
+            self.assertTrue(all(timer["cancelled"] or timer["fired"] for timer in timers))
             due(datetime.now(timezone.utc))
             await asyncio.sleep(0)
             self.assertEqual(hass.services.calls, [])
@@ -201,7 +207,7 @@ class SchedulerTests(unittest.TestCase):
             await stop
             self.assertTrue(saved.reminders[0]["sent"])
             self.assertEqual(saved.saves, 1)
-            self.assertTrue(all(timer["cancelled"] for timer in timers))
+            self.assertTrue(all(timer["cancelled"] or timer["fired"] for timer in timers))
         asyncio.run(run())
 
     def test_notification_ids_do_not_collide_after_sanitizing(self):
@@ -314,6 +320,21 @@ class SchedulerTests(unittest.TestCase):
         scheduler.stop()
         callback(datetime.now(timezone.utc))
         self.assertEqual(queued, [])
+
+    def test_failed_cleanup_retries_do_not_retain_fired_timers(self):
+        async def run():
+            scheduler,saved,hass=self._make()
+            saved.reminders=[]
+            async def fail():
+                raise OSError('storage unavailable')
+            saved.async_save=fail
+            scheduler._schedule_cleanup(datetime.now(timezone.utc))
+            for _ in range(5):
+                timers[-1]['callback'](datetime.now(timezone.utc))
+                await asyncio.gather(*tuple(scheduler._tasks))
+            self.assertEqual(len(scheduler._cancellations),1,'Only the next retry timer may remain owned')
+            await scheduler.async_stop()
+        asyncio.run(run())
 
     def test_failure_does_not_mark_sent(self):
         async def run():

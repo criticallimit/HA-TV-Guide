@@ -184,7 +184,7 @@ const server=http.createServer((req,res)=>{
       if(message.service==='get_preparation_status')return {response:{complete:true}};
       if(message.service!=='get_guide')throw Error('Unexpected feed service');
       const at=message.service_data.at||new Date().toISOString();feedCalls.push(at);
-      return {response:{_windowed:true,country:'de',ui:model.ui,feed_latest_end:programmes.at(-1).end,main_channel_ids:['feed'],custom_channel_ids:['feed'],channels:[{id:'feed',name:'Custom XMLTV',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:programmes.filter(p=>Date.parse(p.end)>Date.parse(at)).slice(0,7)}]}};
+      return {response:{_windowed:true,country:'de',ui:model.ui,feed_latest_end:programmes.at(-1).end,main_channel_ids:['feed'],custom_channel_ids:['feed'],channels:[{id:'feed',name:'Custom XMLTV',logo_normalized_light:'logos/de-ard-light.svg',logo_normalized_dark:'logos/de-ard-dark.svg',programs:programmes.filter(p=>Date.parse(p.end)>Date.parse(at)).slice(0,7)}]}};
     }};
     window.card=document.createElement('tv-guide-card');card.hass=feedHass;document.body.append(card);
   });
@@ -198,6 +198,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('[data-mode="now"]').click();
   await page.waitForFunction(()=>feedCalls.length===3);
   assert.equal(await page.locator('.program-link strong').first().textContent(),'Feed 0');
+  assert.equal(await page.locator('.channel-logo-dark').first().getAttribute('src'),'/tv_guide/frontend/app/logos/de-ard-dark.svg','Relative XMLTV logos must resolve against bundled assets');
   await page.evaluate(()=>card.remove());
   // A brief tab switch must not discard a pending reconnect retry.
   await page.evaluate(()=>{window.preparation={complete:true};window.card=mount();});
@@ -285,10 +286,13 @@ const server=http.createServer((req,res)=>{
   });
   await page.waitForFunction(()=>typeof releaseSavedResponse==='function');
   const closedWrites=await page.evaluate(async()=>{
-    card.remove();document.body.append(card);releaseSavedResponse();
-    return {statuses:(await closedWrites).map(result=>result.status),writes:savedWrites};
+    card.remove();document.body.append(card);
+    let settled=false;closedWrites.then(()=>settled=true);
+    await new Promise(resolve=>setTimeout(resolve,50));
+    const settledBeforeRelease=settled;releaseSavedResponse();
+    return {statuses:(await closedWrites).map(result=>result.status),writes:savedWrites,settledBeforeRelease};
   });
-  assert.deepEqual(closedWrites,{statuses:['rejected','rejected'],writes:1},'Closing and reopening must invalidate queued writes');
+  assert.deepEqual(closedWrites,{statuses:['rejected','rejected'],writes:1,settledBeforeRelease:true},'Closing and reopening must invalidate queued writes');
   await page.evaluate(()=>card.remove());
   console.log('PASS',engineName,'ordered saved writes, delayed responses, failure recovery and closing queued actions');
   // A UI timeout must not release write serialization while HA is still writing.
