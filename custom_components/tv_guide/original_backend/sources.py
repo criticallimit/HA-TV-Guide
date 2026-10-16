@@ -1243,6 +1243,8 @@ class ProgrammeSources:
 
         try:
             for channel_id in self.runtime.base_channel_ids(self):
+                if self.runtime.worker_stopped():
+                    break
                 channel = by_id.get(channel_id)
                 provider = self.provider_audit.get(channel_id)
                 if not channel:

@@ -311,15 +311,19 @@ class EPGStore(GuideStore):
     runtime = sys.modules[__name__]
 STORE = EPGStore()
 COUNTRY_STORES = {STORE.country: STORE}
+REQUIRED_COUNTRIES = frozenset({STORE.country})
 SETTINGS_LOCK = threading.Lock()
 PERSONAL_CHANNELS = PersonalChannels(sys.modules[__name__])
 
 
 def prune_country_stores(keep=()):
     """Called under SETTINGS_LOCK; retain used countries and in-flight refreshes."""
+    global REQUIRED_COUNTRIES
     selected = PERSONAL_CHANNELS.load(STORE)["order"]
-    required = {STORE.country, *keep}
+    required = {STORE.country}
     required.update(key.partition(":")[0] for key in selected)
+    REQUIRED_COUNTRIES = frozenset(required)
+    required.update(keep)  # A reader may retain an old cache without restarting its IO.
     for country, store in list(COUNTRY_STORES.items()):
         if country not in required and not store.refresh_running:
             del COUNTRY_STORES[country]

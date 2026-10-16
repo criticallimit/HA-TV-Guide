@@ -32,7 +32,7 @@ const server=http.createServer((req,res)=>{
         model.main_channel_ids=['de:a','de:b'];model.custom_channel_ids=['de:a'];
       }
       window.savedReads=0;window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
-      window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];
+      window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];window.heldGuides=[];window.holdGuides=false;window.holdSettings=false;
       if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
       window.preparation=scenario==='preparation'?{installation_id:'ux-first',first_install:true,complete:false,logos:{completed:1,total:2,running:true,ready:false,error:false},programmes:{ready:true,running:false,sources_completed:1,error:false}}:{complete:true};
       window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
@@ -41,7 +41,7 @@ const server=http.createServer((req,res)=>{
         if(message.service!=='guide_request')throw Error('Unexpected UX service');
         const {endpoint,method,body}=message.service_data;
         if(endpoint==='settings'){
-          if(method==='POST'){if(scenario==='held-settings')await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');Object.assign(settings,body);model.ui={...settings};settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
+          if(method==='POST'){if(scenario==='held-settings'||holdSettings)await new Promise(resolve=>window.releaseSave=resolve);if(window.failSave)throw Error('Save failed');Object.assign(settings,body);model.ui={...settings};if(scenario==='switching'){model.country=settings.country;model.channels.forEach(ch=>ch.name=settings.country+' station '+ch.id);}settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
           return {response:structuredClone(settings)};
         }
         if(endpoint==='personal-channels'){
@@ -57,6 +57,11 @@ const server=http.createServer((req,res)=>{
         }
         if(endpoint!=='guide')throw Error('Unexpected UX endpoint');
         guideRequests.push(message.service_data);
+        if(scenario==='switching'){
+          const response=structuredClone(model);
+          if(holdGuides)return new Promise(resolve=>heldGuides.push(()=>resolve({response})));
+          return {response};
+        }
         if(delayGuide)await new Promise(resolve=>window.releaseGuide=resolve);
         return {response:structuredClone(model)};
       }};
@@ -116,6 +121,77 @@ const server=http.createServer((req,res)=>{
       assert.deepEqual(state,{language:'en',columns:'4',saveDisabled:true},'Persisted settings must apply immediately and prevent duplicate saves');
       await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
       await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+    }finally{await page.close();}
+  });
+  await check('rapid country and language commits survive out-of-order guide responses',async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{holdGuides=true;void card._app.loadGuide();});
+      await page.waitForFunction(()=>heldGuides.length===1);
+      for(const [country,language,resolved] of [['at','en','en'],['fr','fr','fr'],['gb','auto','de']]){
+        await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+        await page.evaluate(({country,language})=>{const root=card.shadowRoot;root.querySelector('#settingCountry').value=country;root.querySelector('#settingLanguage').value=language;},{country,language});
+        await page.locator('#saveAppSettings').click();
+        await page.waitForFunction(country=>settings.country===country,country);
+        await page.waitForFunction(resolved=>card.shadowRoot.querySelector('.guide-root').lang===resolved,resolved,{timeout:1500});
+        await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+      }
+      await page.waitForFunction(()=>heldGuides.length===4);
+      await page.evaluate(()=>heldGuides.pop()());
+      await page.waitForFunction(()=>card._app.guide.country==='gb');
+      await page.evaluate(()=>{for(const release of heldGuides.splice(0))release();});
+      await page.waitForTimeout(100);
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'gb');
+      assert.match(await page.locator('.channel-card').first().textContent(),/gb station/);
+      assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').lang),'de');
+      await page.evaluate(()=>{card.hass={...hass,locale:{language:'nb-NO'}};});
+      await page.waitForFunction(()=>card.shadowRoot.querySelector('.guide-root').lang==='nb');
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingCountry').inputValue(),'gb');
+      assert.equal(await page.locator('#settingLanguage').inputValue(),'auto');
+    }finally{await page.close();}
+  });
+  await check('a guide from the previous country cannot apply during a newer save',async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{holdGuides=true;});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingCountry').value='at';card.shadowRoot.querySelector('#settingLanguage').value='en';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>heldGuides.length===1);
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden'});
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{holdSettings=true;card.shadowRoot.querySelector('#settingCountry').value='fr';card.shadowRoot.querySelector('#settingLanguage').value='fr';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>typeof releaseSave==='function');
+      await page.evaluate(()=>heldGuides.shift()());await page.waitForTimeout(100);
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'de','An older response must not replace the visible guide during a newer settings transaction');
+      await page.evaluate(()=>{holdGuides=false;holdSettings=false;releaseSave();});
+      await page.waitForFunction(()=>card._app.guide.country==='fr'&&card.shadowRoot.querySelector('.guide-root').lang==='fr');
+    }finally{await page.close();}
+  });
+  await check('late settings acknowledgements cannot undo a newer country and language',async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.evaluate(()=>{
+        const original=hass.callWS;
+        hass.callWS=async message=>{
+          const result=await original(message);
+          if(message.service_data?.endpoint==='settings'&&message.service_data.method==='POST'&&message.service_data.body.country==='at'){
+            await new Promise(resolve=>window.releaseAcknowledgement=resolve);
+          }
+          return result;
+        };
+      });
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingCountry').value='at';card.shadowRoot.querySelector('#settingLanguage').value='en';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>typeof releaseAcknowledgement==='function');
+      await page.locator('#cancelAppSettings').click();
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingCountry').value='fr';card.shadowRoot.querySelector('#settingLanguage').value='fr';});
+      await page.locator('#saveAppSettings').click();
+      await page.waitForFunction(()=>card._app.guide.country==='fr'&&card.shadowRoot.querySelector('.guide-root').lang==='fr');
+      await page.evaluate(()=>releaseAcknowledgement());await page.waitForTimeout(100);
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'fr');
+      assert.equal(await page.evaluate(()=>card.shadowRoot.querySelector('.guide-root').lang),'fr');
     }finally{await page.close();}
   });
   await check('reset controls recover before delayed guide',async()=>{

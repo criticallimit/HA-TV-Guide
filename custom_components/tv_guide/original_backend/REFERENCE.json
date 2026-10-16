@@ -32,6 +32,7 @@
     "Validate inactive-country catalogue metadata and discard embedded programme timelines",
     "Removed unused standalone backend translations; native UI and HA notifications retain their own lazy translations",
     "Use current curated main-channel metadata when restoring programme caches",
-    "Bound timeline merge comparisons to nearby UTC start buckets and tolerate malformed cached priorities"
+    "Bound timeline merge comparisons to nearby UTC start buckets and tolerate malformed cached priorities",
+    "Cooperatively stop obsolete country workers while retaining personal-list countries and restarting reselected countries"
   ]
 }
