@@ -1,4 +1,4 @@
-import {createI18n} from './i18n.js?v=native-21';
+import {createI18n} from './i18n.js?v=native-22';
 import {createGuideCore} from './guide-core.js?v=native-13';
 import {TVGuideChannelPicker} from './channel-picker.js?v=native-14';
 import {createPreparation} from './preparation.js?v=native-11';
@@ -13,6 +13,20 @@ const i18n = createI18n(root, getHass);
 const TVGuideCore = createGuideCore(i18n);
 const t = (message, values) => i18n?.t(message, values) || message;
 const grid = root.querySelector("#grid");
+const settingsLoading = root.querySelector("#settingsLoading");
+const settingsLoadingLabel = root.querySelector("#settingsLoadingLabel");
+let settingsViewPending = null;
+function showSettingsLoading(message = "Ansicht wird aktualisiert …") {
+  settingsLoadingLabel.dataset.i18n = message;
+  settingsLoadingLabel.textContent = t(message);
+  settingsLoading.hidden = false;
+  grid.setAttribute("aria-busy", "true");
+}
+function finishSettingsLoading() {
+  settingsViewPending = null;
+  settingsLoading.hidden = true;
+  grid.removeAttribute("aria-busy");
+}
 const guideHeader = root.querySelector(".guide-header");
 function updateScrollEndSpace() {
   const cards = Array.from(grid.querySelectorAll(".channel-card"));
@@ -584,7 +598,10 @@ async function persistAppSettings() {
     if (!payload.ok || write !== settingsWrite) return;
     lateConfirmed ||= late;
     const preserveDraft = late && isCurrent() && JSON.stringify(appSettingsValues()) !== JSON.stringify(changes);
-    applyCommittedAppSettings(payload.settings || changes);
+    const committed = payload.settings || changes;
+    settingsViewPending = {country:committed.country, waitForRefresh:committed.country !== guide?.country};
+    applyCommittedAppSettings(committed);
+    showSettingsLoading();
     if (isCurrent()) {
       if (preserveDraft) appSettingsStatus.textContent = "";
       else {
@@ -799,7 +816,7 @@ function scheduleGuideReload(failed = false) {
   clearTimeout(startupReloadTimer);
   startupReloadTimer = null;
   if (document.hidden || guidePageSuspended) return;
-  const delay = failed ? guideRetryDelay : guide?.refresh_running ? 1500 : 0;
+  const delay = failed ? guideRetryDelay : (guide?.refresh_running || settingsViewPending) ? 1500 : 0;
   if (failed) guideRetryDelay = Math.min(30000, guideRetryDelay * 2);
   else guideRetryDelay = 1500;
   if (delay) startupReloadTimer = setTimeout(() => loadGuide().catch(() => {}), delay);
@@ -815,6 +832,7 @@ async function loadGuide(preview=false) {
     // Ignore stale failures; current requests retry until HA is reachable again.
     if (request === guideRequest) {
       guideReloadFailed = true;
+      if (settingsViewPending) showSettingsLoading("Verbindung unterbrochen. Erneuter Versuch …");
       scheduleGuideReload(true);
     }
     throw error;
@@ -835,8 +853,19 @@ async function requestGuide(preview, request) {
     if (!guide || nextGuide.revision !== guide.revision) throw new Error("TV Guide revision mismatch");
     lastGuideLoadedAt = Date.now();
     if (mode === "now") render();
+    if (settingsViewPending && !guide.refresh_running) finishSettingsLoading();
     scheduleGuideReload();
     return;
+  }
+  if (settingsViewPending) {
+    showSettingsLoading();
+    // Keep the previous view until the selected country's preparation finishes.
+    // Empty final results are valid too; never wait for nonexistent programmes.
+    if (nextGuide.country !== settingsViewPending.country ||
+        (settingsViewPending.waitForRefresh && nextGuide.refresh_running)) {
+      scheduleGuideReload();
+      return;
+    }
   }
   const countryChanged = guide && guide.country !== nextGuide.country;
   guide = nextGuide;
@@ -865,6 +894,7 @@ async function requestGuide(preview, request) {
     b.classList.toggle("active", b.dataset.mode === mode));
   render();
   if (countryChanged) root.scrollTo({top:0, behavior:"instant"});
+  if (settingsViewPending && !nextGuide._preview) finishSettingsLoading();
 
   if (nextGuide._preview) {
     clearTimeout(startupReloadTimer);
@@ -988,7 +1018,7 @@ scope.listen(document, "visibilitychange", () => {
     clearTimeout(startupReloadTimer);
     startupReloadTimer = null;
   } else {
-    if (guideReloadFailed || !guide || guide.refresh_running || Date.now() - lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) {
+    if (settingsViewPending || guideReloadFailed || !guide || guide.refresh_running || Date.now() - lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) {
       loadGuide().catch(() => {});
     } else if (mode === "now") {
       render();
@@ -1044,7 +1074,7 @@ function resume() {
   guidePageSuspended = false;
   syncHomeAssistantTheme();
   if (guide && mode === 'now') render();
-  if (guideReloadFailed || !guide || guide.refresh_running || Date.now()-lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) loadGuide().catch(()=>{});
+  if (settingsViewPending || guideReloadFailed || !guide || guide.refresh_running || Date.now()-lastGuideLoadedAt >= GUIDE_VISIBILITY_REFRESH_AGE) loadGuide().catch(()=>{});
   loadReminders().catch(()=>{});
   loadBookmarksRemote().then(()=>{if(bookmarksDialog.open)renderBookmarks();}).catch(()=>{});
   preparation.resume();

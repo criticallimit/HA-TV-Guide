@@ -213,7 +213,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Seneste EPG-opdatering",
     "Nächste Erinnerung": "Næste påmindelse",
     "Großbritannien": "Storbritannien",
-    "Italien": "Italien"
+    "Italien": "Italien",
+    "Ansicht wird aktualisiert …": "Visningen opdateres …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Forbindelsen blev afbrudt. Prøver igen …"
   },
   "de": {
     "Alle Sender des eigenen Feeds": "Alle Sender des eigenen Feeds",
@@ -389,7 +391,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Letzte EPG-Aktualisierung",
     "Nächste Erinnerung": "Nächste Erinnerung",
     "Großbritannien": "Großbritannien",
-    "Italien": "Italien"
+    "Italien": "Italien",
+    "Ansicht wird aktualisiert …": "Ansicht wird aktualisiert …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Verbindung unterbrochen. Erneuter Versuch …"
   },
   "en": {
     "Alle Sender des eigenen Feeds": "All channels from your feed",
@@ -565,7 +569,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Last EPG update",
     "Nächste Erinnerung": "Next reminder",
     "Großbritannien": "United Kingdom",
-    "Italien": "Italy"
+    "Italien": "Italy",
+    "Ansicht wird aktualisiert …": "Updating view …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Connection interrupted. Retrying …"
   },
   "nl": {
     "Alle Sender des eigenen Feeds": "Alle zenders uit je eigen feed",
@@ -741,7 +747,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Laatste EPG-update",
     "Nächste Erinnerung": "Volgende herinnering",
     "Großbritannien": "Verenigd Koninkrijk",
-    "Italien": "Italië"
+    "Italien": "Italië",
+    "Ansicht wird aktualisiert …": "Weergave wordt bijgewerkt …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Verbinding verbroken. Opnieuw proberen …"
   },
   "fr": {
     "Alle Sender des eigenen Feeds": "Toutes les chaînes de votre flux",
@@ -917,7 +925,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Dernière mise à jour EPG",
     "Nächste Erinnerung": "Prochain rappel",
     "Großbritannien": "Royaume-Uni",
-    "Italien": "Italie"
+    "Italien": "Italie",
+    "Ansicht wird aktualisiert …": "Mise à jour de l’affichage …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Connexion interrompue. Nouvelle tentative …"
   },
   "it": {
     "Alle Sender des eigenen Feeds": "Tutti i canali del proprio feed",
@@ -1093,7 +1103,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Ultimo aggiornamento EPG",
     "Nächste Erinnerung": "Prossimo promemoria",
     "Großbritannien": "Regno Unito",
-    "Italien": "Italia"
+    "Italien": "Italia",
+    "Ansicht wird aktualisiert …": "Aggiornamento della vista …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Connessione interrotta. Nuovo tentativo …"
   },
   "nb": {
     "Alle Sender des eigenen Feeds": "Alle kanaler fra egen kilde",
@@ -1269,7 +1281,9 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Siste EPG-oppdatering",
     "Nächste Erinnerung": "Neste påminnelse",
     "Großbritannien": "Storbritannia",
-    "Italien": "Italia"
+    "Italien": "Italia",
+    "Ansicht wird aktualisiert …": "Visningen oppdateres …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Forbindelsen ble brutt. Prøver igjen …"
   },
   "sv": {
     "Alle Sender des eigenen Feeds": "Alla kanaler från ditt eget flöde",
@@ -1445,6 +1459,8 @@ export const translations = {
     "Letzte EPG-Aktualisierung": "Senaste EPG-uppdatering",
     "Nächste Erinnerung": "Nästa påminnelse",
     "Großbritannien": "Storbritannien",
-    "Italien": "Italien"
+    "Italien": "Italien",
+    "Ansicht wird aktualisiert …": "Vyn uppdateras …",
+    "Verbindung unterbrochen. Erneuter Versuch …": "Anslutningen avbröts. Försöker igen …"
   }
 };
