@@ -24,12 +24,14 @@
     "HA action notifications and native timer scheduler",
     "Tracked worker pool instead of daemon workers",
     "In-process authenticated route adapter instead of HTTP server",
-    "Complete offline logo library packaged and served by native HA view",
+    "Indexed logo archives downloaded to integration storage and served by native HA view",
     "Removed add-on state bridges, sensor-option publishing, duplicate saved-record and Supervisor/notification routes",
     "Validate restored native programme cache records and metadata",
     "Reject unrepresentable datetime instants in native XMLTV/cache/timeline validation without changing valid schedules",
     "Recover valid sender preferences when stored order/hidden fields contain malformed types",
     "Validate inactive-country catalogue metadata and discard embedded programme timelines",
-    "Removed unused standalone backend translations; native UI and HA notifications retain their own lazy translations"
+    "Removed unused standalone backend translations; native UI and HA notifications retain their own lazy translations",
+    "Use current curated main-channel metadata when restoring programme caches",
+    "Bound timeline merge comparisons to nearby UTC start buckets and tolerate malformed cached priorities"
   ]
 }

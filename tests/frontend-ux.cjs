@@ -251,6 +251,23 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.evaluate(()=>catalogueRows.every((row,i)=>card.shadowRoot.querySelector('#availableChannelsList').children[i]===row)),true);
     }finally{await page.close();}
   });
+  await check('adding and removing stations retains catalogue logos and focus',async()=>{
+    const page=await mount('personal');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showChannelSettings').click();await page.locator('#saveChannelSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{
+        window.catalogueRows=[...card.shadowRoot.querySelector('#availableChannelsList').children];
+        window.catalogueImages=[...card.shadowRoot.querySelectorAll('#availableChannelsList img')];
+      });
+      const checkbox=page.locator('#availableChannelsList [data-channel-id="de:b"] input');
+      await checkbox.check();
+      assert.equal(await checkbox.evaluate(node=>node===node.getRootNode().activeElement),true,'Keep keyboard focus on the selected station');
+      assert.equal(await page.evaluate(()=>catalogueRows.every((row,i)=>card.shadowRoot.querySelector('#availableChannelsList').children[i]===row)),true,'Adding a station must not rebuild the catalogue');
+      await page.locator('#channelSettingsList [data-channel-id="de:b"] .move-remove').click();
+      assert.equal(await checkbox.isChecked(),false);
+      assert.equal(await page.evaluate(()=>catalogueImages.every((image,i)=>card.shadowRoot.querySelectorAll('#availableChannelsList img')[i]===image)),true,'Removing a station must retain decoded catalogue logos');
+    }finally{await page.close();}
+  });
   await check('post-save state does not reuse an older in-flight read',async()=>{
     const page=await mount('personal');try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);

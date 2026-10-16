@@ -18,6 +18,7 @@ export class TVGuideChannelPicker {
 
   beginLoading() {
     this.channels = null;
+    this.byCountry = null;
     this.search.disabled = true;
     this.filters.replaceChildren();
     this.available.replaceChildren();
@@ -27,6 +28,12 @@ export class TVGuideChannelPicker {
   setData(data) {
     this.search.disabled = false;
     this.channels = new Map(data.channels.map(channel => [channel.id, channel]));
+    this.byCountry = new Map();
+    for (const channel of this.channels.values()) {
+      const list = this.byCountry.get(channel.source_country) || [];
+      list.push(channel);
+      this.byCountry.set(channel.source_country, list);
+    }
     this.order = [...data.order];
     this.countries = [...data.countries];
     const collator = new Intl.Collator(this.i18n?.language || "en", {usage:"sort", sensitivity:"base"});
@@ -68,8 +75,16 @@ export class TVGuideChannelPicker {
   }
 
   select(id, checked) {
-    this.order = checked ? [...this.order, id] : this.order.filter(item => item !== id);
-    this.render();
+    this.order = checked ? [...new Set([...this.order, id])] : this.order.filter(item => item !== id);
+    this.syncAvailableSelection();
+    this.renderPersonal();
+  }
+
+  syncAvailableSelection() {
+    const selected = new Set(this.order);
+    for (const row of this.available.querySelectorAll("[data-channel-id]")) {
+      row.querySelector("input").checked = selected.has(row.dataset.channelId);
+    }
   }
 
   renderAvailable() {
@@ -81,7 +96,7 @@ export class TVGuideChannelPicker {
     for (const country of this.supported) {
       if (!this.countries.includes(country.code)) continue;
       const name = this.t(country.name);
-      const channels = [...this.channels.values()].filter(channel => channel.source_country === country.code &&
+      const channels = (this.byCountry.get(country.code) || []).filter(channel =>
         `${channel.name} ${name}`.toLocaleLowerCase().includes(term));
       if (!channels.length) continue;
       const heading = document.createElement("h4");
@@ -147,8 +162,8 @@ export class TVGuideChannelPicker {
             const next = index + (action === "up" ? -1 : 1);
             [this.order[index], this.order[next]] = [this.order[next], this.order[index]];
           }
-          if (action === "remove") this.render();
-          else this.renderPersonal();
+          if (action === "remove") this.syncAvailableSelection();
+          this.renderPersonal();
         });
         actions.append(button);
       }

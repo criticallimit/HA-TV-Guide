@@ -63,6 +63,15 @@ class JsonFileTests(unittest.TestCase):
                         self.assertLess(prefs['order'].index('zdf'),prefs['order'].index('ard'))
                     self.assertEqual(self.path.read_text(encoding='utf-8'),original)
 
+    def test_malformed_language_uses_default_without_rewriting_options(self):
+        with patch.object(app, 'OPTIONS_FILE', self.path):
+            for language in ([], {}, 42, None):
+                with self.subTest(language=language):
+                    original = json.dumps({'language':language})
+                    self.path.write_text(original, encoding='utf-8')
+                    self.assertEqual(app.load_options()['language'], 'auto')
+                    self.assertEqual(self.path.read_text(encoding='utf-8'), original)
+
     def test_wrong_root_cannot_break_settings_or_country_preferences(self):
         with patch.multiple(app, OPTIONS_FILE=self.path, CHANNEL_PREFS_FILE=self.path):
             for value in [None, [], 42, "old"]:

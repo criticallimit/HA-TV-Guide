@@ -464,6 +464,21 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertIsNone(restored.feed_latest_end)
         self.assertTrue(restored._cache_fresh())
 
+    def test_restored_main_metadata_uses_current_catalogue_and_keeps_programmes(self):
+        now = datetime.now(timezone.utc)
+        programme = {'title':'Cached programme', 'start':now.isoformat(), 'end':(now+timedelta(hours=1)).isoformat()}
+        current = self.runtime.CHANNELS['channels'][0]
+        channel = {**current, 'name':'Outdated station', 'order':99999, 'logo_file':'logos/obsolete.svg', 'programs':[programme]}
+        self.runtime.STORE.parsed_cache_file.write_text(json.dumps({
+            'schema_version':10, 'country':'de', 'channels':[channel], 'source_metrics':[{'ok':True}]
+        }), encoding='utf-8')
+        restored = self.runtime.EPGStore('de')
+        first = restored.channels[0]
+        self.assertEqual(first['id'], current['id'])
+        for key in ('name', 'order', 'logo_file', 'xmltv_ids'):
+            self.assertEqual(first[key], current[key])
+        self.assertEqual(first['programs'], [programme])
+
     def test_invalid_provider_instants_cannot_poison_guide_guide_timelines(self):
         for value in ('99991231233000 -0100','00010101000000 +0100'):
             self.assertIsNone(self.runtime.xmltv_datetime(value))
