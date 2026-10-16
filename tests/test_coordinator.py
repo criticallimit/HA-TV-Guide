@@ -71,9 +71,32 @@ class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.import_patch.start()
         self.addCleanup(self.import_patch.stop)
         spec.loader.exec_module(module)
+        self.module = module
         self.coordinator = module.TVGuideEPGCoordinator(hass, "primary", "de", ("primary", "fallback"))
         self.busy = []
         self.coordinator.subscribe_refresh(lambda: self.busy.append(self.coordinator.refresh_running))
+
+    async def test_pending_refresh_cannot_publish_an_old_country_mapping(self):
+        self.responses = {'primary':FUTURE}
+        entered, release = asyncio.Event(), asyncio.Event()
+        async def executor(fn, *args):
+            result = fn(*args)
+            if fn is self.module.resolve_catalogue_channels and args[0] == 'de':
+                entered.set()
+                await release.wait()
+            return result
+        self.coordinator.hass.async_add_executor_job = executor
+        with patch.object(self.module, 'resolve_catalogue_channels', side_effect=lambda country, channels:[{'id':country}]):
+            pending = asyncio.create_task(self.coordinator._async_update_data())
+            try:
+                await asyncio.wait_for(entered.wait(), 1)
+                self.coordinator.country = 'gb'
+                release.set()
+                await pending
+                self.assertEqual(self.coordinator.canonical_channels, [{'id':'gb'}])
+            finally:
+                release.set()
+                await pending
 
     async def test_primary_success_does_not_download_fallback(self):
         self.responses = {"primary": FUTURE}

@@ -75,7 +75,7 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=36' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=37' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_maintenance is not None
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
@@ -230,6 +230,12 @@ async def main():
                     data={**entry.data,'backend_mode':'original'},
                     options={**entry.options,'backend_mode':'old'},version=1,minor_version=1)
                 await hass.async_block_till_done()
+                menu_settings = {**await request('settings'), 'language':'en', 'default_view':'2015',
+                                 'theme_mode':'light', 'columns_desktop':6, 'max_channels':1,
+                                 'refresh_minutes':720, 'notification_service':'notify.mobile_app_menu_test'}
+                await asyncio.wait_for(request('settings', 'POST', menu_settings), 2)
+                menu_keys = ('country','language','default_view','theme_mode','columns_desktop',
+                             'max_channels','refresh_minutes','notification_service')
                 for cycle in range(3):
                     previous_backend = hass.data['tv_guide'][entry.entry_id].backend
                     previous_scheduler = hass.data['tv_guide_reminder_schedulers'][entry.entry_id]
@@ -240,6 +246,12 @@ async def main():
                     assert entry.version==2
                     assert 'backend_mode' not in entry.data and 'backend_mode' not in entry.options
                     assert len([item for item in registry.entities.values() if item.config_entry_id==entry.entry_id])==6
+                    restored_settings = await request('settings')
+                    assert all(restored_settings[key] == menu_settings[key] for key in menu_keys)
+                    current_coordinator = hass.data['tv_guide'][entry.entry_id]
+                    assert current_coordinator.update_interval.total_seconds() == 720*60
+                    assert hass.data['tv_guide_reminder_schedulers'][entry.entry_id].notification_service == menu_settings['notification_service']
+                print('PASS HA complete settings persistence and runtime application through three reloads', flush=True)
                 print('PASS HA acceptance: version-one migration and three reload cycles without entity duplication or surviving old workers/timers',flush=True)
                 assert entry.version==2
                 assert frontend.async_panel_exists(hass,'tv-guide')

@@ -26,7 +26,13 @@ def async_register_ui_services(hass):
     async def snapshot(options):
         coordinator=next(iter(hass.data.get(DOMAIN,{}).values()),None)
         if coordinator is not None:
-            return coordinator.data or [],coordinator.canonical_channels,coordinator.channels,coordinator.refresh_running
+            records, catalogue, channels = coordinator.data or [], coordinator.canonical_channels, coordinator.channels
+            country = options.get('country', '')
+            # The options listener may still be remapping the existing feed.
+            # The first guide after a committed save must already use its country.
+            if getattr(coordinator, 'country', country) != country:
+                catalogue = await hass.async_add_executor_job(resolve_catalogue_channels, country, channels)
+            return records, catalogue, channels, coordinator.refresh_running
         catalogue=await hass.async_add_executor_job(resolve_catalogue_channels,options.get('country',''),[])
         return [],catalogue,[],False
 

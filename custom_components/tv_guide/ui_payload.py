@@ -28,14 +28,14 @@ def normalize_ui_settings(values):
             if values[key] not in choices:
                 raise ValueError('Invalid '+key)
             result[key]=values[key]
-    for key,minimum,maximum in [('columns_desktop',3,6),('max_channels',0,MAX_DISPLAY_CHANNELS)]:
+    for key,minimum,maximum in [('columns_desktop',3,6),('max_channels',0,500)]:
         if key in values:
             value=values[key]
             if type(value) is not int or not minimum<=value<=maximum:
                 raise ValueError('Invalid '+key)
             result[key]=value
     if 'refresh_minutes' in values:
-        if type(values['refresh_minutes']) is not int or values['refresh_minutes'] not in (30,60,120,180,360,720,1440):
+        if type(values['refresh_minutes']) is not int or not 30<=values['refresh_minutes']<=1440:
             raise ValueError('Invalid refresh interval')
         result['refresh_minutes']=values['refresh_minutes']
     if 'notification_service' in values:

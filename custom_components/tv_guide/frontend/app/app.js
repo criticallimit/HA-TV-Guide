@@ -1,4 +1,4 @@
-import {createI18n} from './i18n.js';
+import {createI18n} from './i18n.js?v=native-17';
 import {createGuideCore} from './guide-core.js?v=native-13';
 import {TVGuideChannelPicker} from './channel-picker.js?v=native-14';
 import {createPreparation} from './preparation.js?v=native-11';
@@ -184,6 +184,7 @@ function saveFirstPaintGuide(snapshot) {
   scope.idle(save);
 }
 let mode = "now";
+let initialViewPending = true;
 let selectedDate = startOfDay(new Date());
 let customTarget = null;
 let activeDetail = null;
@@ -194,6 +195,7 @@ const GUIDE_VISIBILITY_REFRESH_AGE = 60 * 1000;
 let channelSettingsRequest = 0;
 let appSettingsRequest = 0;
 let settingsWrite = 0, settingsSaving = false;
+let appSettingsEditable = false, notificationTesting = false;
 let channelView = "main";
 let reminders = [];
 let bookmarksRevision = 0, bookmarksRequest = 0;
@@ -254,7 +256,8 @@ function activeChannels() {
     ? (guide.custom_channel_ids || [])
     : (guide.main_channel_ids || []);
   const byId = new Map(guide.channels.map(channel => [channel.id, channel]));
-  return ids.map(id => byId.get(id)).filter(Boolean);
+  const maximum = Number(guide.ui?.max_channels) || 0;
+  return (maximum > 0 ? ids.slice(0, maximum) : ids).map(id => byId.get(id)).filter(Boolean);
 }
 
 function isBookmarked(channel, program) {
@@ -419,16 +422,22 @@ function renderBookmarks() {
 }
 
 async function testConfiguredNotification() {
+  if (!appSettingsEditable || notificationTesting) return;
+  const request = appSettingsRequest;
+  const isCurrent = () => request === appSettingsRequest && appSettingsDialog.open;
+  notificationTesting = true;
   testNotification.disabled = true;
   testNotificationStatus.textContent = t("Wird gesendet …");
   try {
-    const payload = await requestAction({endpoint:"test-notification",method:"POST",body:{test:true, language:i18n?.language || "de"}});
+    const payload = await requestAction({endpoint:"test-notification",method:"POST",body:{test:true, notification_service:settingNotificationService.value,
+      language:i18n.resolve({language:settingLanguage.value, country:settingCountry.value})}});
     if (!payload.ok) throw new Error(t(payload.error) || t("Testbenachrichtigung konnte nicht gesendet werden."));
-    testNotificationStatus.textContent = t("Gesendet über {service}", {service:payload.service});
+    if (isCurrent()) testNotificationStatus.textContent = t("Gesendet über {service}", {service:payload.service});
   } catch (err) {
-    testNotificationStatus.textContent = t(err.message);
+    if (isCurrent()) testNotificationStatus.textContent = t(err.message);
   } finally {
-    testNotification.disabled = false;
+    notificationTesting = false;
+    testNotification.disabled = !appSettingsEditable;
   }
 }
 
@@ -468,6 +477,8 @@ async function loadNotificationServiceChoices(currentService, isCurrent = () => 
 }
 
 function setAppSettingsEditing(enabled) {
+  appSettingsEditable = enabled;
+  testNotification.disabled = !enabled || notificationTesting;
   appSettingsDialog.querySelectorAll("input, select").forEach(control => control.disabled = !enabled);
 }
 function setChannelSettingsEditing(enabled) {
@@ -481,6 +492,7 @@ async function openAppSettings() {
   const request = ++appSettingsRequest;
   const isCurrent = () => request === appSettingsRequest && appSettingsDialog.open;
   appSettingsStatus.textContent = t("Einstellungen werden geladen …");
+  testNotificationStatus.textContent = "";
   saveAppSettings.disabled = true;
   setAppSettingsEditing(false);
   appSettingsDialog.querySelectorAll("details").forEach(section => section.open = false);
@@ -492,11 +504,20 @@ async function openAppSettings() {
     i18n?.configure(settings);
     settingLanguage.value = settings.language || "auto";
     settingCountry.value = settings.country ?? "";
+    const xmltvOption = settingCountry.querySelector('option[value=""]');
+    xmltvOption.hidden = xmltvOption.disabled = Array.isArray(settings.countries) && settings.countries.length > 0;
     settingDefaultView.value = settings.default_view || "now";
     settingColumns.value = String(settings.columns_desktop || 5);
     settingMaxChannels.value = String(settings.max_channels ?? 0);
     settingTheme.value = settings.theme_mode || "auto";
-    settingRefresh.value = String(settings.refresh_minutes || 180);
+    const interval = String(settings.refresh_minutes || 180);
+    settingRefresh.querySelectorAll('[data-custom-interval]').forEach(option => option.remove());
+    if (![...settingRefresh.options].some(option => option.value === interval)) {
+      const option = new Option(interval + ' min', interval);
+      option.dataset.customInterval = '1';
+      settingRefresh.append(option);
+    }
+    settingRefresh.value = interval;
     await loadNotificationServiceChoices(
       settings.notification_service || "persistent_notification.create", isCurrent
     );
@@ -509,7 +530,35 @@ async function openAppSettings() {
   }
 }
 
+function appSettingsValues() {
+  return {
+    country:settingCountry.value, language:settingLanguage.value,
+    default_view:settingDefaultView.value, columns_desktop:Number(settingColumns.value),
+    max_channels:Number(settingMaxChannels.value), theme_mode:settingTheme.value,
+    refresh_minutes:Number(settingRefresh.value), notification_service:settingNotificationService.value.trim()
+  };
+}
+
+function applyCommittedAppSettings(committed) {
+  i18n.configure({...committed, home_assistant:guide?.ui?.home_assistant});
+  if (!guide) return;
+  guide = {...guide, ui:{...guide.ui, ...committed}};
+  root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
+  syncHomeAssistantTheme();
+  render(); renderBookmarks(); if (activeDetail) updateDetailControls();
+  lastGuideLoadedAt = 0;
+  if (committed.country === guide.country) saveFirstPaintGuide(guide);
+  else { try { sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY); } catch {} }
+}
+
 async function persistAppSettings() {
+  for (const control of [settingColumns, settingMaxChannels]) {
+    if (!control.checkValidity()) {
+      control.closest('details').open = true;
+      control.reportValidity();
+      return;
+    }
+  }
   const write = ++settingsWrite;
   settingsSaving = true;
   // A guide started before this transaction must not repaint the old country
@@ -521,40 +570,33 @@ async function persistAppSettings() {
   appSettingsStatus.textContent = t("Wird gespeichert …");
   saveAppSettings.disabled = true;
   setAppSettingsEditing(false);
-  let saved = false;
-  const changes = {
-    country:settingCountry.value, language:settingLanguage.value,
-    default_view:settingDefaultView.value, columns_desktop:Number(settingColumns.value),
-    max_channels:Number(settingMaxChannels.value), theme_mode:settingTheme.value,
-    refresh_minutes:Number(settingRefresh.value), notification_service:settingNotificationService.value.trim()
+  let saved = false, lateConfirmed = false;
+  const changes = appSettingsValues();
+  const confirm = (payload, late = false) => {
+    if (!payload.ok || write !== settingsWrite) return;
+    lateConfirmed ||= late;
+    const preserveDraft = late && isCurrent() && JSON.stringify(appSettingsValues()) !== JSON.stringify(changes);
+    applyCommittedAppSettings(payload.settings || changes);
+    if (isCurrent()) {
+      if (preserveDraft) appSettingsStatus.textContent = "";
+      else {
+        setAppSettingsEditing(false);
+        saveAppSettings.disabled = true;
+        appSettingsStatus.textContent = payload.refresh_started
+          ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.") : t("Gespeichert.");
+        setTimeout(() => { if (isCurrent()) appSettingsDialog.close(); }, 500);
+      }
+    }
+    if (late) loadGuide().catch(() => {});
   };
   try {
-    const payload = await requestAction({endpoint:"settings",
-      method:"POST",
-      body:changes
-    });
+    const payload = await requestAction({endpoint:"settings", method:"POST", body:changes,
+      onLateResponse:payload => confirm(payload, true)});
     if (!payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
     saved = true;
-    if (write !== settingsWrite) return;
-    const committed = payload.settings || changes;
-    i18n.configure({...committed, home_assistant:guide?.ui?.home_assistant});
-    if (guide) {
-      // Apply persisted appearance locally; do not wait for EPG transfer.
-      guide = {...guide, ui:{...guide.ui, ...committed}};
-      root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
-      syncHomeAssistantTheme();
-      render(); renderBookmarks(); if (activeDetail) updateDetailControls();
-      lastGuideLoadedAt = 0;
-      if (committed.country === guide.country) saveFirstPaintGuide(guide);
-      else { try { sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY); } catch {} }
-    }
-    if (!isCurrent()) return;
-    appSettingsStatus.textContent = payload.refresh_started
-      ? t("Gespeichert. Programmdaten werden im Hintergrund aktualisiert.")
-      : t("Gespeichert.");
-    setTimeout(() => { if (isCurrent()) appSettingsDialog.close(); }, 500);
+    confirm(payload);
   } catch (err) {
-    if (isCurrent()) appSettingsStatus.textContent = t(err.message);
+    if (isCurrent() && !lateConfirmed) appSettingsStatus.textContent = t(err.message);
   } finally {
     if (write === settingsWrite) {
       settingsSaving = false;
@@ -562,7 +604,7 @@ async function persistAppSettings() {
       // so a rejected transaction cannot leave guide polling suspended.
       loadGuide().catch(() => {});
     }
-    if (isCurrent() && !saved) {
+    if (isCurrent() && !saved && !lateConfirmed) {
       setAppSettingsEditing(true);
       saveAppSettings.disabled = false;
     }
@@ -709,6 +751,7 @@ function setMode(nextMode) {
     return;
   }
 
+  initialViewPending = false;
   mode = nextMode;
   if (nextMode === "now") selectedDate = startOfDay(new Date());
   root.querySelectorAll(".tab").forEach(b =>
@@ -775,7 +818,7 @@ async function requestGuide(preview, request) {
     : {};
   // Only a complete in-memory guide may opt into the minimal unchanged reply.
   if (!preview && guide?.revision && lastGuideLoadedAt) body.known_revision = guide.revision;
-  const at = root.dataset.initialized ? TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString() : undefined;
+  const at = root.dataset.initialized && !initialViewPending ? TVGuideCore.targetForMode(mode,selectedDate,customTarget).toISOString() : undefined;
   const nextGuide = await requestAction({endpoint:"guide",method:"GET",at,body});
   if (request !== guideRequest) return;
   guideReloadFailed = false;
@@ -801,8 +844,11 @@ async function requestGuide(preview, request) {
   root.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
   syncHomeAssistantTheme();
 
-  if (!root.dataset.initialized) {
+  if (initialViewPending) {
     mode = ["now","1800","2015","2200"].includes(guide.ui?.default_view) ? guide.ui.default_view : "now";
+    if (!nextGuide._preview) initialViewPending = false;
+  }
+  if (!root.dataset.initialized) {
     root.dataset.initialized = "1";
     updateBookmarkCount();
   }
@@ -840,6 +886,7 @@ applyCustomTime.addEventListener("click", () => {
   if (Number.isNaN(target.getTime())) return;
   selectedDate = startOfDay(target);
   customTarget = target;
+  initialViewPending = false;
   mode = "other";
   root.querySelectorAll(".tab").forEach(b =>
     b.classList.toggle("active", b.dataset.mode === "other"));
