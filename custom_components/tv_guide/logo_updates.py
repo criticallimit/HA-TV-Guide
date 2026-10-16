@@ -77,9 +77,6 @@ class LogoUpdates:
         active = _read_json(self.root / 'active.json')
         if not active:
             return
-        if active.get('bundled_revision') != self.library.bundled_revision:
-            self._discard_active()
-            return
         try:
             revision = active['revision']
             if not re.fullmatch(r'[0-9a-f]{16,64}', revision):

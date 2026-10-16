@@ -100,25 +100,20 @@ class GuideRuntime:
         prefix = raw_id.split(':',1)[0].split('_',1)[0]
         country = channel.get('source_country') or (prefix if prefix in self.runtime.COUNTRIES else self.runtime.STORE.country)
         channel_id = str(channel.get("source_channel_id") or raw_id).split(":")[-1]
-        root = Path(__file__).parent / "frontend" / "app" / "logos"
+        curated = self._logos.channel_urls(country, channel_id)
+        if curated:
+            return curated['logo_normalized_light'], curated['logo_normalized_dark']
+        original = {**channel, 'source_country': country}
         result = []
-        for theme in ("light", "dark"):
-            path = root / f"{country}-{channel_id}-{theme}.svg"
-            local = path.is_file()
-            if local and self._logos.revision == self._logos.bundled_revision:
-                result.append(f"/tv_guide/frontend/app/logos/{quote(path.name)}")
+        for theme in ('light', 'dark'):
+            source = self.runtime._logo_source_for_channel(original, theme)
+            if self._logos.contains(source):
+                bundled = self.runtime.LOGO_LIBRARY['channels'].get(channel_id)
+                normalized = bool(bundled and source == bundled.get(theme)) or source.startswith(('logos/europe/', 'logos/uk/'))
+                result.append('/tv_guide/logo/' + quote(source, safe='/') + '?v=' + self._logos.revision + ('' if normalized else '&normalize=1'))
             else:
-                original = {**channel, 'source_country': channel.get('source_country') or country}
-                source = self.runtime._logo_source_for_channel(original, theme)
-                if self._logos.contains(source):
-                    bundled = self.runtime.LOGO_LIBRARY['channels'].get(str(original.get('source_channel_id') or original.get('id') or ''))
-                    normalized = bool(bundled and source==bundled.get(theme)) or source.startswith(('logos/europe/','logos/uk/'))
-                    result.append('/tv_guide/logo/'+quote(source,safe='/')+'?v='+self._logos.revision+('' if normalized else '&normalize=1'))
-                elif local:
-                    result.append(f"/tv_guide/frontend/app/logos/{quote(path.name)}")
-                else:
-                    svg = self.runtime._normalized_text_logo_svg(channel.get("name") or channel_id, theme)
-                    result.append("data:image/svg+xml," + quote(svg))
+                svg = self.runtime._normalized_text_logo_svg(channel.get('name') or channel_id, theme)
+                result.append('data:image/svg+xml,' + quote(svg))
         return tuple(result)
 
     def _worker_stopped(self):

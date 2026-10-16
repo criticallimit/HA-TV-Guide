@@ -115,7 +115,7 @@ let guide = null;
 // A bounded first-paint snapshot, scoped to this browser tab. Time coverage
 // decides whether an older snapshot can still produce a useful initial view.
 // Only store it when serialization fits the strict size budget; never add polling.
-const GUIDE_FIRST_PAINT_KEY = "tv-guide-first-paint-v1";
+const GUIDE_FIRST_PAINT_KEY = "tv-guide-first-paint-v2";
 const GUIDE_FIRST_PAINT_TTL_MS = 6 * 60 * 60 * 1000;
 const GUIDE_FIRST_PAINT_MAX_CHARS = 1024 * 1024;
 function showCachedGuide() {
@@ -123,7 +123,7 @@ function showCachedGuide() {
     const raw = sessionStorage.getItem(GUIDE_FIRST_PAINT_KEY);
     if (!raw || raw.length > GUIDE_FIRST_PAINT_MAX_CHARS) return;
     const cached = JSON.parse(raw);
-    if (!cached || cached.version !== 1 || !Number.isFinite(cached.at) || Date.now() - cached.at > GUIDE_FIRST_PAINT_TTL_MS ||
+    if (!cached || cached.version !== 2 || !Number.isFinite(cached.at) || Date.now() - cached.at > GUIDE_FIRST_PAINT_TTL_MS ||
         cached.at > Date.now() || !cached.guide || !Array.isArray(cached.guide.channels) ||
         !cached.guide.ui || cached.guide.refresh_running) return;
     const initialMode = ["now","1800","2015","2200"].includes(cached.guide.ui.default_view)
@@ -176,7 +176,7 @@ function saveFirstPaintGuide(snapshot) {
       const now = Date.now();
       const initialMode = snapshot.ui?.default_view || "now";
       const target = TVGuideCore.targetForMode(initialMode,startOfDay(new Date()),null).getTime();
-      const data = JSON.stringify({version:1, at:now, guide:guideWindow(snapshot, target)});
+      const data = JSON.stringify({version:2, at:now, guide:guideWindow(snapshot, target)});
       if (data.length <= GUIDE_FIRST_PAINT_MAX_CHARS) sessionStorage.setItem(GUIDE_FIRST_PAINT_KEY, data);
       else sessionStorage.removeItem(GUIDE_FIRST_PAINT_KEY);
     } catch {}

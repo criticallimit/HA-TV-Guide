@@ -407,7 +407,7 @@ class GuideRuntimeTests(unittest.TestCase):
         guide = self.backend.request('guide','GET')
         self.assertEqual(guide['country'],'de')
         self.assertEqual(guide['main_channel_ids'][0],'ard')
-        self.assertIn('/tv_guide/frontend/app/logos/de-ard-light.svg',guide['channels'][0]['logo_normalized_light'])
+        self.assertIn('/tv_guide/logo/logos/channels/de/ard-light.svg',guide['channels'][0]['logo_normalized_light'])
         picker = self.backend.request('personal-channels','GET')
         self.assertEqual({item['code'] for item in picker['supported_countries']}, set(self.runtime.COUNTRIES))
         self.assertTrue(any(item['id'].startswith('gb:') for item in picker['channels']))
@@ -804,7 +804,7 @@ class GuideRuntimeTests(unittest.TestCase):
     def test_foreign_main_logo_uses_its_country_even_when_another_is_active(self):
         channel=self.runtime.COUNTRY_CATALOGS['gb']['channels'][0]
         for logo in self.backend.logo_urls(channel):
-            self.assertTrue(logo.startswith('/tv_guide/frontend/app/logos/gb-'),logo)
+            self.assertTrue(logo.startswith('/tv_guide/logo/logos/channels/gb/'),logo)
 
     def test_damaged_cached_rows_and_metadata_preserve_valid_programmes(self):
         now=datetime.now(timezone.utc)
@@ -919,16 +919,14 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(status['country'],'de')
         self.assertFalse(status['refresh_running'])
 
-    def test_every_bundled_curated_logo_has_both_local_variants(self):
-        bundled = json.loads((ROOT / 'frontend/app/logo_catalog.json').read_text())
-        self.assertLessEqual(set(bundled), set(self.runtime.COUNTRIES))
-        for country in bundled:
-            catalog=self.runtime.COUNTRY_CATALOGS[country]
+    def test_every_main_channel_uses_both_database_variants(self):
+        self.assertFalse((ROOT/'frontend/app/logos').exists())
+        for country,catalog in self.runtime.COUNTRY_CATALOGS.items():
             for channel in catalog['channels']:
                 logos=self.backend.logo_urls({**channel,'id':country+':'+channel['id'],'source_channel_id':channel['id']})
                 for logo in logos:
-                    self.assertTrue(logo.startswith('/tv_guide/frontend/app/logos/'),(country,channel['id']))
-                    self.assertTrue((ROOT/'frontend/app/logos'/logo.rsplit('/',1)[1]).is_file())
+                    self.assertTrue(logo.startswith('/tv_guide/logo/logos/channels/'+country+'/'),logo)
+                    self.assertIn('?v='+self.backend._logos.revision,logo)
 
     def test_additional_channel_uses_packaged_library_without_downloads(self):
         channel_id,definition=next((key,item) for key,item in self.runtime.LOGO_LIBRARY['channels'].items() if key.startswith('epg_') and self.backend._logos.contains(item.get('light')))

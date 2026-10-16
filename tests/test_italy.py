@@ -47,11 +47,12 @@ class ItalyTests(unittest.TestCase):
 
     def test_complete_theme_assets_and_documented_country(self):
         catalog=json.loads((COMPONENT/'catalogs/channels_it.json').read_text())['channels']
-        logos=json.loads((COMPONENT/'frontend/app/logo_catalog.json').read_text())['it']
-        self.assertEqual(set(logos),{c['id'] for c in catalog})
+        library=module('logo_assets').LogoLibrary()
+        library.archive_root=ROOT/'tests/fixtures/logo-samples'
         for channel in catalog:
+            themes=library.channels['it:'+channel['id']]
             for theme in ('light','dark'):
-                svg=(COMPONENT/f"frontend/app/logos/it-{channel['id']}-{theme}.svg").read_text()
+                svg=library.render(themes[theme])[0].decode()
                 self.assertIn('data:image/',svg)
                 self.assertNotIn('href="https:',svg)
         for path in [ROOT/'README.md',ROOT/'info.md']:

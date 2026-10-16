@@ -1,3 +1,4 @@
+const serveLogo=require('./logo-fixtures.cjs');
 /* Perceived startup and save latency with deliberately delayed guide responses. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
@@ -8,6 +9,7 @@ const italyChannels=JSON.parse(fs.readFileSync(path.join(root,'../catalogs/chann
 const engine=process.env.TVG_ENGINE||'chromium';
 const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
+  if(serveLogo(url,res))return;
   if(url.pathname==='/'){res.setHeader('Content-Type','text/html');res.end('<style>body{margin:0}</style>');return;}
   const file=path.resolve(root,url.pathname.slice('/tv_guide/frontend/'.length));
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);res.end();return;}
@@ -30,7 +32,7 @@ const server=http.createServer((req,res)=>{
       if(scenario==='new-country')countryOptions.push({code:'zz',name:'New country',language:'en'});
       const now=Date.now();
       window.settings={country:'de',language:'de',default_view:'now',theme_mode:'auto',columns_desktop:5,max_channels:0,refresh_minutes:180,notification_service:'persistent_notification.create'};
-      const channels=['a','b'].map((id,index)=>({id,name:'Station '+id,source_country:'de',country_name:'Deutschland',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:Array.from({length:7},(_,i)=>({id:id+i,title:'Programme '+id+i,start:new Date(now+(i+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString(),end:new Date(now+(i+1+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString()}))}));
+      const channels=['a','b'].map((id,index)=>({id,name:'Station '+id,source_country:'de',country_name:'Deutschland',logo_normalized_light:'/tv_guide/logo/logos/channels/de/ard-light.svg',logo_normalized_dark:'/tv_guide/logo/logos/channels/de/ard-dark.svg',programs:Array.from({length:7},(_,i)=>({id:id+i,title:'Programme '+id+i,start:new Date(now+(i+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString(),end:new Date(now+(i+1+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString()}))}));
       window.model={revision:'ux',country:'de',channels,main_channel_ids:['a','b'],custom_channel_ids:['a','b'],ui:{...settings},refresh_running:false};
       if(scenario==='compact'){model.channels.push({...channels[0],id:'de:a',source_channel_id:'a'});model.custom_channel_ids=['de:a'];}
       if(scenario==='personal'){
@@ -41,12 +43,12 @@ const server=http.createServer((req,res)=>{
       if(scenario==='italy'){
         Object.assign(settings,{country:'it',language:'it'});
         const template=structuredClone(channels[1]);
-        channels.splice(0,channels.length,...italyChannels.map(channel=>({...template,id:channel.id,name:channel.name,source_country:'it',country_name:'Italia',logo_normalized_light:'/tv_guide/frontend/app/logos/it-'+channel.id+'-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/it-'+channel.id+'-dark.svg'})));
+        channels.splice(0,channels.length,...italyChannels.map(channel=>({...template,id:channel.id,name:channel.name,source_country:'it',country_name:'Italia',logo_normalized_light:'/tv_guide/logo/logos/channels/it/'+channel.id+'-light.svg',logo_normalized_dark:'/tv_guide/logo/logos/channels/it/'+channel.id+'-dark.svg'})));
         Object.assign(model,{country:'it',ui:{...settings},main_channel_ids:channels.map(c=>c.id),custom_channel_ids:channels.map(c=>c.id)});
       }
       window.savedReads=0;window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
       window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];window.heldGuides=[];window.holdGuides=false;window.holdSettings=false;window.settingsPosts=0;window.notifications=[];window.holdNotification=false;window.holdSettingsReads=false;
-      if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
+      if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v2',JSON.stringify({version:2,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
       window.preparation=scenario==='preparation'?{installation_id:'ux-first',first_install:true,complete:false,logos:{completed:1,total:2,running:true,ready:false,error:false},programmes:{ready:true,running:false,sources_completed:1,error:false}}:{complete:true};
       window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}},notify:{mobile_app_test:{}}},async callService(domain,service,payload){notifications.push({domain,service,payload});if(holdNotification)await new Promise(resolve=>window.releaseNotification=resolve);},async callWS(message){
         if(message.service==='get_ui_settings')return {response:structuredClone(settings)};
@@ -97,7 +99,7 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('.channel-card').count(),45);
       for(const theme of ['light','dark']){
         const decoded=await page.evaluate(async({ids,theme})=>Promise.all(ids.map(async id=>{
-          const image=new Image();image.src='/tv_guide/frontend/app/logos/it-'+id+'-'+theme+'.svg';await image.decode();
+          const image=new Image();image.src='/tv_guide/logo/logos/channels/it/'+id+'-'+theme+'.svg';await image.decode();
           if(theme==='dark'){
             const canvas=document.createElement('canvas');canvas.width=260;canvas.height=64;
             const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const pixels=ctx.getImageData(0,0,260,64).data;

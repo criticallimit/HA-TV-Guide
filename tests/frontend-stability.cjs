@@ -1,3 +1,4 @@
+const serveLogo=require('./logo-fixtures.cjs');
 /* Cross-engine lifecycle and work-budget regressions for native Lovelace cards. */
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -10,6 +11,7 @@ const engineName=process.env.TVG_ENGINE||'chromium';
 const diagnostic=process.env.TVG_DIAGNOSTIC==='1';
 const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
+  if(serveLogo(url,res))return;
   if(url.pathname==='/'){res.setHeader('Content-Type','text/html');res.end('<style>body{margin:0}</style>');return;}
   const file=path.resolve(root,url.pathname.slice('/tv_guide/frontend/'.length));
   if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404);res.end();return;}
@@ -38,7 +40,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{
     window.requests=[];window.retained=[];
     const programs=Array.from({length:336},(_,i)=>({id:'p'+i,title:'Programme '+i,desc:'Programme description. '.repeat(20),start:new Date(Date.now()+(i-1)*3600000).toISOString(),end:new Date(Date.now()+i*3600000+1800000).toISOString()}));
-    const channels=Array.from({length:20},(_,i)=>({id:'ch'+i,name:'Station '+i,logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs}));
+    const channels=Array.from({length:20},(_,i)=>({id:'ch'+i,name:'Station '+i,logo_normalized_light:'/tv_guide/logo/logos/channels/de/ard-light.svg',logo_normalized_dark:'/tv_guide/logo/logos/channels/de/ard-dark.svg',programs}));
     window.model={revision:'complete-guide',country:'de',refresh_running:false,channels,main_channel_ids:channels.map(c=>c.id),custom_channel_ids:channels.map(c=>c.id),ui:{language:'de',theme_mode:'auto',default_view:'now',columns_desktop:5,max_channels:0}};
     window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
       if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
@@ -184,7 +186,7 @@ const server=http.createServer((req,res)=>{
       if(message.service==='get_preparation_status')return {response:{complete:true}};
       if(message.service!=='get_guide')throw Error('Unexpected feed service');
       const at=message.service_data.at||new Date().toISOString();feedCalls.push(at);
-      return {response:{_windowed:true,country:'de',ui:model.ui,feed_latest_end:programmes.at(-1).end,main_channel_ids:['feed'],custom_channel_ids:['feed'],channels:[{id:'feed',name:'Custom XMLTV',logo_normalized_light:'logos/de-ard-light.svg',logo_normalized_dark:'logos/de-ard-dark.svg',programs:programmes.filter(p=>Date.parse(p.end)>Date.parse(at)).slice(0,7)}]}};
+      return {response:{_windowed:true,country:'de',ui:model.ui,feed_latest_end:programmes.at(-1).end,main_channel_ids:['feed'],custom_channel_ids:['feed'],channels:[{id:'feed',name:'Custom XMLTV',logo_normalized_light:'/tv_guide/logo/logos/channels/de/ard-light.svg',logo_normalized_dark:'/tv_guide/logo/logos/channels/de/ard-dark.svg',programs:programmes.filter(p=>Date.parse(p.end)>Date.parse(at)).slice(0,7)}]}};
     }};
     window.card=document.createElement('tv-guide-card');card.hass=feedHass;document.body.append(card);
   });
@@ -198,7 +200,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('[data-mode="now"]').click();
   await page.waitForFunction(()=>feedCalls.length===3);
   assert.equal(await page.locator('.program-link strong').first().textContent(),'Feed 0');
-  assert.equal(await page.locator('.channel-logo-dark').first().getAttribute('src'),'/tv_guide/frontend/app/logos/de-ard-dark.svg','Relative XMLTV logos must resolve against bundled assets');
+  assert.equal(await page.locator('.channel-logo-dark').first().getAttribute('src'),'/tv_guide/logo/logos/channels/de/ard-dark.svg','Database logo URLs must resolve against the public image endpoint');
   await page.evaluate(()=>card.remove());
   // A brief tab switch must not discard a pending reconnect retry.
   await page.evaluate(()=>{window.preparation={complete:true};window.card=mount();});
@@ -225,7 +227,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{delete document.hidden;card.remove();});
   // A fast repair can complete between polls without changing the package count.
   await page.evaluate(()=>{
-    model.channels=[{id:'logo',name:'Logo repair',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:[{id:'logo-programme',title:'Programme',start:new Date().toISOString(),end:new Date(Date.now()+3600000).toISOString()}]}];
+    model.channels=[{id:'logo',name:'Logo repair',logo_normalized_light:'/tv_guide/logo/logos/channels/de/ard-light.svg',logo_normalized_dark:'/tv_guide/logo/logos/channels/de/ard-dark.svg',programs:[{id:'logo-programme',title:'Programme',start:new Date().toISOString(),end:new Date(Date.now()+3600000).toISOString()}]}];
     model.main_channel_ids=model.custom_channel_ids=['logo'];
     window.preparation={installation_id:'fast-repair',first_install:false,complete:false,logos:{completed:37,total:37,ready:false,error:'damaged',running:false},programmes:{ready:true,running:false,error:false,sources_completed:1}};
     window.card=mount();

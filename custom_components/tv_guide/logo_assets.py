@@ -8,6 +8,7 @@ import posixpath
 import re
 import threading
 import zipfile
+from urllib.parse import quote
 
 
 class LogoLibrary:
@@ -38,11 +39,28 @@ class LogoLibrary:
                     or item.get('mime') not in {'image/png', 'image/svg+xml', 'image/jpeg', 'image/webp', 'image/gif'}):
                 raise ValueError('Invalid logo entry')
 
+        channels = index.get('channels', {})
+        if not isinstance(channels, dict) or len(channels) > 5000:
+            raise ValueError('Invalid channel logo mappings')
+        for key, themes in channels.items():
+            if (not isinstance(key, str) or not re.fullmatch(r'[a-z]{2}:[a-zA-Z0-9_-]{1,128}', key)
+                    or not isinstance(themes, dict) or set(themes) != {'light', 'dark'}
+                    or any(not isinstance(source, str) or source not in entries for source in themes.values())):
+                raise ValueError('Invalid channel logo mapping')
+
+    def channel_urls(self, country, channel_id):
+        """Return revisioned URLs for main-channel artwork from the active database."""
+        with self._lock:
+            themes = self.channels.get(f'{country}:{channel_id}', {})
+            return {'logo_normalized_' + theme: '/tv_guide/logo/' + quote(source, safe='/') + '?v=' + self.revision
+                    for theme, source in themes.items()}
+
     def activate(self, index, archive_root, manifest=None):
         """Switch the entire verified library while image readers retain a consistent view."""
         self.validate_index(index)
         with self._lock:
             self.entries = index['entries']
+            self.channels = index.get('channels', {})
             self.revision = index['revision']
             self.archive_root = Path(archive_root)
             self.download_manifest = manifest

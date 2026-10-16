@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare verified logo test data
+        run: python3 tests/prepare_logo_fixtures.py
       - name: Test authenticated actions, countries, reminders and lifecycle in real Home Assistant
         run: docker run --rm -v "$PWD:/repo:ro" --entrypoint python ghcr.io/home-assistant/home-assistant:stable /repo/tests/ha_smoke.py
 
@@ -33,6 +35,8 @@ jobs:
         run: python tools/validate_registrations.py
       - name: Check generated locale bundles
         run: python tools/build_locales.py --check
+      - name: Prepare verified logo test data
+        run: python tests/prepare_logo_fixtures.py
       - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
       - name: Verify published logo update descriptor
@@ -60,6 +64,8 @@ jobs:
         run: npm install --no-save --package-lock=false playwright@1.62.1
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
+      - name: Prepare verified logo test data
+        run: python3 tests/prepare_logo_fixtures.py
       - name: Verify scoped view bundle
         run: python tools/build_frontend_view.py --check
       - name: Check TV Guide card syntax
@@ -125,6 +131,8 @@ jobs:
         run: npm install --no-save --package-lock=false playwright@1.62.1
       - name: Install WebKit
         run: npx playwright install --with-deps webkit
+      - name: Prepare verified logo test data
+        run: python3 tests/prepare_logo_fixtures.py
       - name: Verify repeated opening, resource cleanup and stable theme updates
         env:
           TVG_ENGINE: webkit

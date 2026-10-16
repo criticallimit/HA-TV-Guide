@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 import struct
+import importlib.util
 
 ROOT = Path(__file__).resolve().parents[1] / 'custom_components/tv_guide'
 
@@ -32,29 +33,32 @@ def render_dark(item, original, mime):
     return '<svg xmlns="http://www.w3.org/2000/svg" width="260" height="64" viewBox="0 0 260 64" data-tv-guide-theme="dark">' + image + '</svg>\n'
 
 
-def build(manifest, check=False):
+def build(manifest, check=False, archives=None, output=None):
+    spec=importlib.util.spec_from_file_location('_logo_variant_assets',ROOT/'logo_assets.py')
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    library=module.LogoLibrary()
+    library.archive_root=archives or ROOT.parents[1]/'tests/fixtures/logo-samples'
     metadata = json.loads(manifest.read_text())
     country = metadata['country']
     if not re.fullmatch('[a-z]{2}', country):
         raise ValueError('Invalid country')
     for ident, item in metadata['channels'].items():
-        if not re.fullmatch('[a-z0-9_]+', ident):
-            raise ValueError('Invalid station ID')
-        path = ROOT / 'frontend/app/logos' / f'{country}-{ident}-light.svg'
-        match = re.search(r'href="data:(image/[^;]+);base64,([^\"]+)"', path.read_text())
+        themes=library.channels[country+':'+ident]
+        svg=library.read(themes['light'])[0].decode()
+        match=re.search(r'href="data:(image/[^;]+);base64,([^\"]+)"',svg)
         if not match:
-            raise ValueError('Missing embedded original: ' + ident)
-        mime, encoded = match.groups()
-        original = base64.b64decode(encoded, validate=True)
-        if sha256(original).hexdigest() != item['expected_sha256'] or mime != item['mime']:
-            raise ValueError('Artwork provenance mismatch: ' + ident)
-        target = path.with_name(f'{country}-{ident}-dark.svg')
-        expected = render_dark(item, original, mime)
-        if check:
-            if target.read_text() != expected:
-                raise ValueError('Outdated dark variant: ' + ident)
+            raise ValueError('Missing embedded original: '+ident)
+        mime,encoded=match.groups()
+        original=base64.b64decode(encoded,validate=True)
+        if sha256(original).hexdigest()!=item['expected_sha256'] or mime!=item['mime']:
+            raise ValueError('Artwork provenance mismatch: '+ident)
+        expected=render_dark(item,original,mime)
+        if output is None or check:
+            if library.read(themes['dark'])[0].decode()!=expected:
+                raise ValueError('Outdated dark variant: '+ident)
         else:
-            target.write_text(expected)
+            output.mkdir(parents=True,exist_ok=True)
+            (output/f'{country}-{ident}-dark.svg').write_text(expected)
     print(f"Verified {len(metadata['channels'])} transparent dark logo variants ({country})")
 
 
@@ -62,5 +66,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('manifest', type=Path)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--archives',type=Path)
+    parser.add_argument('--output',type=Path)
     args = parser.parse_args()
-    build(args.manifest, args.check)
+    build(args.manifest,args.check,args.archives,args.output)
