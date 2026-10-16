@@ -12,6 +12,7 @@ import time
 from datetime import timedelta, timezone
 from urllib.parse import urlparse
 from urllib.request import Request
+from zoneinfo import ZoneInfo
 
 from .cache_catalogue import write_catalogue
 from .french_sources import FrenchProgrammeSources
@@ -26,19 +27,20 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
     def country(self):
         return getattr(self, "_country", "de")
 
+    def xmltv_datetime(self, value):
+        return self.runtime.xmltv_datetime(value, self.timezone)
+
     @property
     def catalog(self):
-        return self.runtime.CHANNELS if self.country == "de" else self.runtime.COUNTRY_CATALOGS[self.country]
+        return self.runtime.COUNTRY_CATALOGS[self.country]
 
     @property
     def source_urls(self):
-        return self.runtime.BUILTIN_EPG_URLS if self.country == "de" else self.runtime.COUNTRIES[self.country]["sources"]
+        return self.country_config["sources"]
 
     @property
     def provider_audit(self):
-        if self.country == "de":
-            return self.runtime.OFFICIAL_PROVIDER_AUDIT
-        providers = self.runtime.COUNTRIES[self.country].get("providers", {})
+        providers = self.country_config.get("providers", {})
         return {ch["id"]: providers.get(ch["id"]) for ch in self.catalog["channels"]}
 
     @property
@@ -51,6 +53,8 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
 
     def __init__(self, country=None):
         self._country = self.runtime.country_code(country or self.runtime.load_options().get("country"))
+        self.country_config = self.runtime.COUNTRIES[self.country]
+        self.timezone = ZoneInfo(self.country_config["timezone"])
         self.lock = threading.Lock()
         self.options = self.runtime.load_options()
         self.channels = [{
@@ -212,7 +216,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             payload = {
                 "country": self.country,
                 "schema_version": self.runtime.PARSED_CACHE_SCHEMA_VERSION,
-                "saved_at": self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).isoformat(),
+                "saved_at": self.runtime.datetime.now(self.timezone).isoformat(),
                 "last_loaded": self.last_loaded,
                 "source_url": source_url,
                 "feed_latest_end": self.feed_latest_end,
@@ -250,7 +254,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             return False
         # The following time-window check also rejects empty programme lists.
         # Avoid traversing all channels twice on each freshness check.
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         if not any(
             self.runtime.datetime.fromisoformat(item["start"]) <= now < self.runtime.datetime.fromisoformat(item["end"])
             for channel in self.channels for item in channel.get("programs") or []
@@ -360,7 +364,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                         parsed_channels = self._tag_programmes(
                             parsed_channels,
                             url,
-                            100 if url == self.runtime.EPGPW_EPG_URL else 220 if url == self.runtime.OPEN_EPG_URL else 210 if url == self.runtime.EPGSHARE_EPG_URL else 240,
+                            max(1, 230 - index * 10),
                         )
                         successful_sets.append(parsed_channels)
                         successful_urls.append(url)
@@ -395,16 +399,6 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                             flush=True,
                         )
 
-                quarantined = self._quarantine_conflicting_fallback(successful_sets)
-                for metric in source_metrics:
-                    if metric.get("url") == self.runtime.EPGPW_EPG_URL:
-                        metric["quarantined_channels"] = quarantined
-                        fallback_sets = [channels for channels in successful_sets if any(
-                            item.get("_source") == self.runtime.EPGPW_EPG_URL
-                            for channel in channels for item in channel.get("programs") or []
-                        )]
-                        if quarantined and not fallback_sets:
-                            metric.update(ok=False, error="Sendungsdaten widersprechen zwei übereinstimmenden Quellen.", programmes=0, available_channels=0, main_channels=0, latest_end=None)
                 latest_end = max((
                     self.runtime.datetime.fromisoformat(item["end"])
                     for channels in successful_sets for channel in channels
@@ -429,7 +423,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                 latest_end = max((self.runtime.datetime.fromisoformat(item["end"])
                                   for channel in self.channels for item in channel.get("programs") or []), default=None)
                 self.feed_latest_end = latest_end.isoformat() if latest_end else None
-                self.last_loaded = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).isoformat()
+                self.last_loaded = self.runtime.datetime.now(self.timezone).isoformat()
                 self.last_error = None
                 self._save_parsed_cache("multi-source")
 
@@ -509,7 +503,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                 payload_ids.append(channel_id)
 
         channels = [dict(by_id[channel_id]) for channel_id in payload_ids]
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         global_latest = (
             self.runtime.datetime.fromisoformat(self.feed_latest_end)
             if self.feed_latest_end else None
@@ -572,9 +566,9 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
         return {
             "country": self.country,
             "country_name": self.runtime.COUNTRIES[self.country]["name"],
-            "generated_at": self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).isoformat(),
-            "profile": self.catalog["profile"],
-            "group": self.catalog["group"],
+            "generated_at": self.runtime.datetime.now(self.timezone).isoformat(),
+            "profile": self.catalog.get("profile", self.country),
+            "group": self.catalog.get("group", self.country_config["name"]),
             "provider": "XMLTV",
             "source_url": "multi-source",
             "sources": self.source_urls,
@@ -592,6 +586,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             "refresh_minutes": self.options["refresh_minutes"],
             "ui": {
                 "language": self.runtime.load_options().get("language", "auto"),
+                "country_language": self.country_config.get("language"),
                 "home_assistant": self.runtime.home_assistant_locale(),
                 "default_view": ui.get("default_view", "now"),
                 "columns_desktop": ui.get("columns_desktop", 5),

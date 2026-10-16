@@ -23,7 +23,7 @@ def record(name, alternate, **extra):
 
 class ProgrammeTitleTests(unittest.TestCase):
     def setUp(self):
-        self.store = app.EPGStore.__new__(app.EPGStore)
+        self.store = app.EPGStore("de")
 
     def test_programme_name_precedes_episode_for_all_shared_channels(self):
         for channel, service in [('rtl', 'RTL'), ('vox', 'VOX'), ('nitro', 'NITRO'),

@@ -65,7 +65,7 @@ class RegionalProgrammeSources:
         return result
 
     def _fetch_regional_programs(self, provider):
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         today = now.date()
         programmes = []
         parser = self._parse_tv4_schedule if provider["kind"] == "tv4" else self._parse_chmedia_schedule
@@ -81,7 +81,7 @@ class RegionalProgrammeSources:
                     if (not item.get("title") or start.utcoffset() is None or end.utcoffset() is None
                             or not start < end <= start + timedelta(days=1)):
                         continue
-                    start, end = start.astimezone(self.runtime.EPG_TIMEZONE), end.astimezone(self.runtime.EPG_TIMEZONE)
+                    start, end = start.astimezone(self.timezone), end.astimezone(self.timezone)
                     if not day <= start.date() <= day + timedelta(days=1):
                         continue
                     if end <= now - timedelta(hours=6) or start.date() >= today + timedelta(days=3):

@@ -8,18 +8,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-CATALOG_FILES = {
-    "de": "channels.json",
-    "at": "channels_at.json",
-    "ch": "channels_ch.json",
-    "nl": "channels_nl.json",
-    "be": "channels_be.json",
-    "dk": "channels_dk.json",
-    "no": "channels_no.json",
-    "fr": "channels_fr.json",
-    "se": "channels_se.json",
-    "gb": "channels_gb.json",
-}
+from .countries import CATALOG_FILES
 
 CATALOG_DIR = Path(__file__).with_name("catalogs")
 

@@ -155,7 +155,7 @@ class ProgrammeSources:
             # Every unmatched XMLTV channel is still part of the catalogue.
             # The source id is hashed only for the stable internal key; the
             # original XMLTV id remains available as source_id.
-            source_identity = cid if self.country == "de" else f"{self.country}:{cid}"
+            source_identity = self.country_config.get("source_id_prefix", self.country + ":") + cid
             dynamic_base_id = self.runtime.feed_channel_id(source_identity)
             dynamic_id = dynamic_base_id
             suffix = 1
@@ -197,8 +197,8 @@ class ProgrammeSources:
                 elem.clear()
                 continue
 
-            start = self.runtime.xmltv_datetime(elem.attrib.get("start"))
-            end = self.runtime.xmltv_datetime(elem.attrib.get("stop"))
+            start = self.xmltv_datetime(elem.attrib.get("start"))
+            end = self.xmltv_datetime(elem.attrib.get("stop"))
             if not start or not end or end.timestamp() <= start.timestamp():
                 elem.clear()
                 continue
@@ -225,7 +225,7 @@ class ProgrammeSources:
             elem.clear()
 
         self.feed_latest_end = latest_end.isoformat() if latest_end else None
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         if latest_end and latest_end < now - timedelta(hours=2):
             raise ValueError(
                 f"EPG-Feed ist veraltet: letzte Sendung endet am {latest_end.isoformat()}; "
@@ -316,7 +316,7 @@ class ProgrammeSources:
         return re.sub(r"\s+", " ", text).strip()
 
     def _fetch_radio_bremen_programs(self):
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         programmes = []
         for day_index in range(3):
             schedule_date = today + timedelta(days=day_index)
@@ -459,7 +459,7 @@ class ProgrammeSources:
             start_dt = self.runtime.datetime.combine(
                 schedule_date + timedelta(days=day_offset),
                 self.runtime.datetime.min.time(),
-            ).replace(tzinfo=self.runtime.EPG_TIMEZONE).replace(
+            ).replace(tzinfo=self.timezone).replace(
                 hour=hour,
                 minute=minute,
                 second=0,
@@ -486,7 +486,7 @@ class ProgrammeSources:
 
         family_markers = [
             str(item.get("marker") or "").strip()
-            for item in self.runtime.OFFICIAL_PROVIDER_BY_CHANNEL.values()
+            for item in self.country_config.get("providers", {}).values()
             if item and item.get("kind") == kind and item.get("marker")
         ]
 
@@ -596,8 +596,8 @@ class ProgrammeSources:
                         start = self.runtime.datetime.fromisoformat(value["startDate"])
                         end = self.runtime.datetime.fromisoformat(value["endDate"])
                         if start.utcoffset() is not None and end.utcoffset() is not None:
-                            start = start.astimezone(self.runtime.EPG_TIMEZONE)
-                            end = end.astimezone(self.runtime.EPG_TIMEZONE)
+                            start = start.astimezone(self.timezone)
+                            end = end.astimezone(self.timezone)
                             works = value.get("workFeatured") or []
                             if isinstance(works, dict):
                                 works = [works]
@@ -645,7 +645,7 @@ class ProgrammeSources:
         return False
 
     def _fetch_generic_official_programs(self, channel_id, provider):
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         url_template = provider.get("url")
         kind = provider.get("kind")
 
@@ -686,7 +686,7 @@ class ProgrammeSources:
         by_start = {}
         for item in programmes:
             start = item.get("start")
-            item.setdefault("_source_url", url_template.format(date=self.runtime.datetime.fromisoformat(start).astimezone(self.runtime.EPG_TIMEZONE).date().isoformat()) if start else url_template)
+            item.setdefault("_source_url", url_template.format(date=self.runtime.datetime.fromisoformat(start).astimezone(self.timezone).date().isoformat()) if start else url_template)
             if start and start not in by_start:
                 by_start[start] = item
         return sorted(by_start.values(), key=lambda item: item.get("start") or "")
@@ -719,11 +719,11 @@ class ProgrammeSources:
         return self._html_lines(page)
 
     def _fetch_teletext_programs(self, channel_id):
-        provider = self.runtime.TELETEXT_PROVIDER_BY_CHANNEL.get(channel_id)
+        provider = self.country_config.get("teletext_providers", {}).get(channel_id)
         if not provider:
             return []
 
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         programmes = []
         for day_key, date_offset in (("today", 0), ("tomorrow", 1)):
             schedule_date = today + timedelta(days=date_offset)
@@ -756,11 +756,11 @@ class ProgrammeSources:
         return sorted(by_start.values(), key=lambda item: item.get("start") or "")
 
     def _fetch_secondary_web_programs(self, channel_id):
-        url_template = self.runtime.SECONDARY_WEB_PROVIDER_BY_CHANNEL.get(channel_id)
+        url_template = self.country_config.get("secondary_urls", {}).get(channel_id)
         if not url_template:
             return []
 
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         programmes = []
         for day_index in range(3):
             schedule_date = today + timedelta(days=day_index)
@@ -851,7 +851,7 @@ class ProgrammeSources:
             if previous_minutes is not None and minutes + 360 < previous_minutes:
                 offset += 1
             previous_minutes = minutes
-            start = self.runtime.datetime.combine(day + timedelta(days=offset), self.runtime.datetime.min.time(), self.runtime.EPG_TIMEZONE).replace(hour=hour, minute=minute)
+            start = self.runtime.datetime.combine(day + timedelta(days=offset), self.runtime.datetime.min.time(), self.timezone).replace(hour=hour, minute=minute)
             duration = 0
             for meta in item.get("statusMeta") or []:
                 value = meta.get("value") or ""
@@ -876,7 +876,7 @@ class ProgrammeSources:
         return result
 
     def _fetch_country_official_programs(self, provider):
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         raw_items = []
         kind = provider["kind"]
         marker = provider["marker"]
@@ -908,7 +908,7 @@ class ProgrammeSources:
                                     end = self.runtime.datetime.fromisoformat(item["end"]["planned"])
                                     if start.utcoffset() is None or end.utcoffset() is None:
                                         continue
-                                    if start < self.runtime.datetime.now(self.runtime.EPG_TIMEZONE) and item["start"].get("actual") and item["end"].get("actual"):
+                                    if start < self.runtime.datetime.now(self.timezone) and item["start"].get("actual") and item["end"].get("actual"):
                                         start = self.runtime.datetime.fromisoformat(item["start"]["actual"])
                                         end = self.runtime.datetime.fromisoformat(item["end"]["actual"])
                                     day_items.append({"title": item.get("title"), "desc": item.get("description") or "",
@@ -1012,8 +1012,8 @@ class ProgrammeSources:
                         continue
                     url = provider["url"].format(date=day.strftime("%d-%m-%Y"), guid=station["guid"])
                     for item in json.loads(self._fetch_html(url, "NPO")):
-                        start = self.runtime.datetime.fromtimestamp(int(item["programStart"]), self.runtime.EPG_TIMEZONE)
-                        end = self.runtime.datetime.fromtimestamp(int(item["programEnd"]), self.runtime.EPG_TIMEZONE)
+                        start = self.runtime.datetime.fromtimestamp(int(item["programStart"]), self.timezone)
+                        end = self.runtime.datetime.fromtimestamp(int(item["programEnd"]), self.timezone)
                         day_items.append({
                             "title": item.get("mainTitle"), "subtitle": item.get("episodeTitle") or "",
                             "desc": item.get("synopsis") or "", "start_dt": start, "end_dt": end,
@@ -1081,7 +1081,7 @@ class ProgrammeSources:
                             item, _ = decoder.raw_decode(text, match.end())
                             if item.get("dateString") != day.isoformat():
                                 continue
-                            start = self.runtime.datetime.fromtimestamp(int(item["timestamp"]), self.runtime.EPG_TIMEZONE)
+                            start = self.runtime.datetime.fromtimestamp(int(item["timestamp"]), self.timezone)
                             duration = int(item["duration"])
                             if not 0 < duration <= 86400:
                                 continue
@@ -1096,18 +1096,18 @@ class ProgrammeSources:
                 raw_items.extend([
                     item for item in day_items
                     if item["start_dt"].utcoffset() is not None
-                    and day <= item["start_dt"].astimezone(self.runtime.EPG_TIMEZONE).date() <= day + timedelta(days=kind in {"vrt", "svt"})
+                    and day <= item["start_dt"].astimezone(self.timezone).date() <= day + timedelta(days=kind in {"vrt", "svt"})
                 ])
             except (KeyError, TypeError, ValueError, OSError) as exc:
                 print(f"[TV Guide] Senderquelle {kind} für {day}: {exc}", flush=True)
                 continue
         valid = [item for item in raw_items if item.get("title")
                  and item["start_dt"].utcoffset() is not None and item["end_dt"].utcoffset() is not None
-                 and today <= item["start_dt"].astimezone(self.runtime.EPG_TIMEZONE).date() < today + timedelta(days=3)
+                 and today <= item["start_dt"].astimezone(self.timezone).date() < today + timedelta(days=3)
                  and item["end_dt"] > item["start_dt"]]
         for item in valid:
-            item["start_dt"] = item["start_dt"].astimezone(self.runtime.EPG_TIMEZONE)
-            item["end_dt"] = item["end_dt"].astimezone(self.runtime.EPG_TIMEZONE)
+            item["start_dt"] = item["start_dt"].astimezone(self.timezone)
+            item["end_dt"] = item["end_dt"].astimezone(self.timezone)
         programmes = self._build_programmes_from_starts(valid)
         by_start = {item["start_dt"].isoformat(): item for item in valid}
         for item in programmes:
@@ -1129,7 +1129,7 @@ class ProgrammeSources:
         return self._fetch_generic_official_programs(channel_id, provider)
 
     def _fetch_swr_programs(self):
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         raw_items = []
 
         for day_index in range(3):
@@ -1159,7 +1159,7 @@ class ProgrammeSources:
                     pending_start = self.runtime.datetime.combine(
                         date_value,
                         self.runtime.datetime.min.time(),
-                    ).replace(tzinfo=self.runtime.EPG_TIMEZONE).replace(
+                    ).replace(tzinfo=self.timezone).replace(
                         hour=hour,
                         minute=minute,
                         second=0,
@@ -1204,7 +1204,7 @@ class ProgrammeSources:
         )
 
     def _fetch_sr_programs(self):
-        today = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE).date()
+        today = self.runtime.datetime.now(self.timezone).date()
         programmes = []
 
         for day_index in range(3):
@@ -1234,7 +1234,7 @@ class ProgrammeSources:
 
     def _supplement_missing_channels(self, channels):
         by_id = {channel["id"]: channel for channel in channels}
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         self._official_html_cache = {}
         self._official_fetch_errors = {}
         enriched = 0
@@ -1254,7 +1254,7 @@ class ProgrammeSources:
                     }
                     continue
                 secondary_provider = self.runtime.COUNTRIES[self.country].get("secondary_providers", {}).get(channel_id)
-                secondary_url = secondary_provider.get("url") if secondary_provider else self.runtime.SECONDARY_WEB_PROVIDER_BY_CHANNEL.get(channel_id)
+                secondary_url = secondary_provider.get("url") if secondary_provider else self.country_config.get("secondary_urls", {}).get(channel_id)
                 if not provider and not secondary_url:
                     provider_results[channel_id] = {
                         "status": "no_verified_provider",
@@ -1285,7 +1285,7 @@ class ProgrammeSources:
                             "radiobremen": self.runtime.ARD_RB_PROGRAM_URL,
                         }.get(provider.get("kind"), "")
                         if not item.get("_source_url"):
-                            item["_source_url"] = source_template.format(date=self.runtime.datetime.fromisoformat(item["start"]).astimezone(self.runtime.EPG_TIMEZONE).date().isoformat(), guid="")
+                            item["_source_url"] = source_template.format(date=self.runtime.datetime.fromisoformat(item["start"]).astimezone(self.timezone).date().isoformat(), guid="")
                         item["_source_rank"] = 450
                     for item in teletext:
                         item["_source"] = "teletext"
@@ -1327,7 +1327,7 @@ class ProgrammeSources:
                         provider.get("url") or provider.get("kind")
                         if provider else "Sekundäre Web-Programmquelle"
                     )
-                    if self.runtime.TELETEXT_PROVIDER_BY_CHANNEL.get(channel_id):
+                    if self.country_config.get("teletext_providers", {}).get(channel_id):
                         source_label = f"{source_label} + Videotext"
                     if secondary_url:
                         source_label = f"{source_label} + Sekundärquelle"
@@ -1374,8 +1374,8 @@ class ProgrammeSources:
         self.official_metrics = {
             "attempted": attempted,
             "enriched": enriched,
-            "teletext_channels": len(self.runtime.TELETEXT_PROVIDER_BY_CHANNEL) if self.country == "de" else 0,
-            "secondary_web_channels": len(self.runtime.SECONDARY_WEB_PROVIDER_BY_CHANNEL) if self.country == "de" else len(self.runtime.COUNTRIES[self.country].get("secondary_providers", {})),
+            "teletext_channels": len(self.country_config.get("teletext_providers", {})),
+            "secondary_web_channels": len(self.country_config.get("secondary_urls", {})) + len(self.country_config.get("secondary_providers", {})),
             "missing_official": missing_official,
             "provider_results": provider_results,
         }

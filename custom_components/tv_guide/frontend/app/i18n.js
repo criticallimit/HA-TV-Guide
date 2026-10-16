@@ -1,8 +1,9 @@
-import {translations} from './translations.js?v=native-18';
+import {translations} from './translations.js?v=native-19';
 export function createI18n(root, getHass) {
   const supported = ['da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'];
   let language = 'de';
   let translated = false;
+  let countryLanguages = new Map();
   function baseLanguage(value) {
     const code = String(value || '').toLowerCase().replace('_', '-').split('-')[0];
     return code === 'no' ? 'nb' : code;
@@ -21,14 +22,9 @@ export function createI18n(root, getHass) {
     if (profile) return supportedLanguage(profile);
     const installation = options.home_assistant || {};
     if (installation.language) return supportedLanguage(installation.language);
-    const country = String(installation.country || options.country || 'de').toLowerCase();
-    if (country === 'de' || country === 'at') return 'de';
-    if (country === 'nl') return 'nl';
-    if (country === 'no') return 'nb';
-    if (country === 'fr') return 'fr';
-    if (country === 'dk') return 'da';
-    if (country === 'se') return 'sv';
-    if (country === 'gb') return 'en';
+    const country = String(options.country || installation.country || 'de').toLowerCase();
+    const registered = options.country_language || countryLanguages.get(country);
+    if (registered) return supportedLanguage(registered);
     // A country cannot identify the user's language in multilingual regions.
     return supportedLanguage(navigator.language || 'en');
   }
@@ -59,6 +55,7 @@ export function createI18n(root, getHass) {
     sortTranslatedOptions(root.querySelector('#settingCountry'));
   }
   function configure(options = {}) {
+    if (Array.isArray(options.countries)) countryLanguages = new Map(options.countries.map(item => [item.code, item.language]));
     const next = resolve(options);
     const changed = next !== language;
     if (!changed && translated) return false;

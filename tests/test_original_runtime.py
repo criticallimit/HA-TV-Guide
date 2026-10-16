@@ -26,6 +26,7 @@ class GuideRuntimeTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(PKG + '.guide_runtime', ROOT / 'guide_runtime.py')
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        self.module = module
         self.temp = tempfile.TemporaryDirectory(dir=os.environ.get('TVG_TEST_TMP'))
         self.addCleanup(self.temp.cleanup)
         self.backend = module.GuideRuntime(Path(self.temp.name)/'entry', {'country':'de'}, {'language':'de','country':'DE'}, lambda:None)
@@ -36,6 +37,68 @@ class GuideRuntimeTests(unittest.TestCase):
         self.addCleanup(downloading.stop)
         self.submit = self.runtime.start_background
         self.runtime.start_background = lambda *args, **kwargs: None
+
+    def test_all_countries_use_registered_sources_timezones_and_isolated_caches(self):
+        from io import BytesIO
+        from zoneinfo import ZoneInfo
+        paths = set()
+        identities = set()
+        for country, config in self.runtime.COUNTRIES.items():
+            with self.subTest(country=country):
+                store = self.runtime.EPGStore(country)
+                self.assertEqual(store.source_urls, config['sources'])
+                self.assertEqual(store.timezone, ZoneInfo(config['timezone']))
+                self.assertNotIn(store.cache_file, paths)
+                paths.add(store.cache_file)
+                xml = b'<tv><channel id="Extra.same"><display-name>Extra</display-name></channel><programme channel="Extra.same" start="20300101120000" stop="20300101130000"><title>Local noon</title></programme></tv>'
+                with patch.object(store, '_open_xml', side_effect=lambda: BytesIO(xml)):
+                    extra = next(ch for ch in store._parse() if ch.get('source_id') == 'Extra.same')
+                self.assertNotIn(extra['id'], identities)
+                identities.add(extra['id'])
+                start = datetime.fromisoformat(extra['programs'][0]['start'])
+                self.assertEqual(start.astimezone(store.timezone).hour, 12)
+                self.assertEqual(start.utcoffset(), datetime(2030, 1, 1, 12, tzinfo=store.timezone).utcoffset())
+        self.assertEqual(self.runtime.country_file(self.runtime.CACHE_FILE, 'de'), self.runtime.CACHE_FILE)
+        self.assertIn(self.runtime.feed_channel_id('Extra.same'), identities)
+
+    def test_new_country_needs_only_registration_and_catalogue(self):
+        import shutil
+        from io import BytesIO
+        module = self.module
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            shutil.copytree(ROOT / 'catalogs', root / 'catalogs')
+            config = {'name': 'New country', 'catalog': 'channels_zz.json', 'timezone': 'Pacific/Auckland',
+                      'sources': ['https://example.org/guide.xml.gz'], 'language': 'en'}
+            (root / 'catalogs' / config['catalog']).write_text(json.dumps({'channels':[
+                {'id':'zz_station', 'name':'New station', 'order':1, 'xmltv_ids':['Station.zz']}]}))
+            with patch.dict(module.COUNTRIES, {'zz':config}), patch.object(module, 'COUNTRY_ROOT', root):
+                backend = type(self.backend)(root / 'entry', {'country':'zz'}, {'language':'en'}, lambda:None)
+                try:
+                    backend.runtime.start_background = lambda *args, **kwargs: None
+                    store = backend.runtime.STORE
+                    xml = b'<tv><channel id="Station.zz"/><programme channel="Station.zz" start="20300101120000" stop="20300101130000"><title>New programme</title></programme></tv>'
+                    with patch.object(store, '_open_xml', side_effect=lambda: BytesIO(xml)):
+                        store.channels = store._parse()
+                    store.last_loaded = datetime.now(timezone.utc).isoformat()
+                    settings = backend.request('settings', 'GET')
+                    self.assertIn('zz', [item['code'] for item in settings['countries']])
+                    self.assertEqual(store.channels[0]['programs'][0]['title'], 'New programme')
+                    saved = backend.request('personal-channels','POST',{'order':['zz:zz_station'],'countries':['zz']})
+                    self.assertEqual(saved['order'], ['zz:zz_station'])
+                    guide = backend.request('guide', 'GET')
+                    self.assertEqual(guide['country'], 'zz')
+                    self.assertEqual(guide['custom_channel_ids'], ['zz:zz_station'])
+                    store._save_parsed_cache("multi-source")
+                finally:
+                    backend.close()
+                backend = type(self.backend)(root / 'entry', {'country':'zz'}, {'language':'en'}, lambda:None)
+                try:
+                    backend.runtime.start_background = lambda *args, **kwargs: None
+                    self.assertEqual(backend.request('personal-channels', 'GET')['order'], ['zz:zz_station'])
+                    self.assertEqual(backend.runtime.STORE.channels[0]['programs'][0]['title'], 'New programme')
+                finally:
+                    backend.close()
 
     def test_startup_is_isolated_from_addon_paths_and_supervisor(self):
         self.assertTrue(self.runtime.OPTIONS_FILE.is_relative_to(Path(self.temp.name)))
@@ -196,7 +259,7 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(guide['main_channel_ids'][0],'ard')
         self.assertIn('/tv_guide/frontend/app/logos/de-ard-light.svg',guide['channels'][0]['logo_normalized_light'])
         picker = self.backend.request('personal-channels','GET')
-        self.assertEqual(len(picker['supported_countries']),10)
+        self.assertEqual({item['code'] for item in picker['supported_countries']}, set(self.runtime.COUNTRIES))
         self.assertTrue(any(item['id'].startswith('gb:') for item in picker['channels']))
         self.assertTrue(any(item['id'].startswith('at:') for item in picker['channels']))
 
@@ -282,7 +345,7 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(self.backend.request('guide', 'GET')['custom_channel_ids'], keys)
 
     def test_original_provider_map_artwork_and_merge_engine_are_present(self):
-        self.assertGreater(len(self.runtime.OFFICIAL_PROVIDER_BY_CHANNEL),10)
+        self.assertGreater(len(self.runtime.COUNTRIES["de"]["providers"]),10)
         self.assertTrue(callable(self.runtime.STORE._merge_program_lists))
         self.assertTrue(callable(self.runtime.STORE._parse))
         status=self.backend.request('status','GET')
@@ -605,7 +668,7 @@ class GuideRuntimeTests(unittest.TestCase):
     def test_restored_main_metadata_uses_current_catalogue_and_keeps_programmes(self):
         now = datetime.now(timezone.utc)
         programme = {'title':'Cached programme', 'start':now.isoformat(), 'end':(now+timedelta(hours=1)).isoformat()}
-        current = self.runtime.CHANNELS['channels'][0]
+        current = self.runtime.COUNTRY_CATALOGS['de']['channels'][0]
         channel = {**current, 'name':'Outdated station', 'order':99999, 'logo_file':'logos/obsolete.svg', 'programs':[programme]}
         self.runtime.STORE.parsed_cache_file.write_text(json.dumps({
             'schema_version':10, 'country':'de', 'channels':[channel], 'source_metrics':[{'ok':True}]
@@ -682,7 +745,7 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertIsNone(self.submit(lambda: self.fail('Must not run after unload')))
 
     def test_reference_data_is_repaired_on_restart(self):
-        path=self.runtime.BASE/'data/countries.json'
+        path=self.runtime.BASE/'data/logo_library.json'
         original=path.read_bytes()
         path.write_text('{}',encoding='utf-8')
         self.backend.close()
@@ -700,9 +763,11 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(status['country'],'de')
         self.assertFalse(status['refresh_running'])
 
-    def test_every_curated_main_channel_has_both_local_logo_variants(self):
-        for country in self.runtime.COUNTRIES:
-            catalog=self.runtime.CHANNELS if country=='de' else self.runtime.COUNTRY_CATALOGS[country]
+    def test_every_bundled_curated_logo_has_both_local_variants(self):
+        bundled = json.loads((ROOT / 'frontend/app/logo_catalog.json').read_text())
+        self.assertLessEqual(set(bundled), set(self.runtime.COUNTRIES))
+        for country in bundled:
+            catalog=self.runtime.COUNTRY_CATALOGS[country]
             for channel in catalog['channels']:
                 logos=self.backend.logo_urls({**channel,'id':country+':'+channel['id'],'source_channel_id':channel['id']})
                 for logo in logos:

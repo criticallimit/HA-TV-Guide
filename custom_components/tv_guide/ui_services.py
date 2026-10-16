@@ -1,5 +1,6 @@
 """Authenticated response actions backing the TV Guide presentation."""
 import asyncio
+from .countries import COUNTRY_NAMES
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 import voluptuous as vol
@@ -115,7 +116,7 @@ def async_register_ui_services(hass):
                 except (ValueError,RuntimeError,TypeError) as exc:
                     raise HomeAssistantError(str(exc)) from exc
         if call.service=='get_ui_settings':
-            return ui_settings(options)
+            return {**ui_settings(options), "country_choices": [{"code": code, "name": name} for code, name in COUNTRY_NAMES.items()]}
         if call.service=='set_ui_settings':
             try:
                 changes=normalize_ui_settings(call.data['options'])

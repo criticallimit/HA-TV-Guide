@@ -5,8 +5,12 @@ import importlib.util
 import json
 from pathlib import Path
 import unittest
+import sys
+import types
 ROOT=Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'
-spec=importlib.util.spec_from_file_location('_tvguide_ui_payload_tests',ROOT/'ui_payload.py')
+package=types.ModuleType('_tvguide_ui_payload_tests');package.__path__=[str(ROOT)]
+sys.modules[package.__name__]=package
+spec=importlib.util.spec_from_file_location(package.__name__+'.ui_payload',ROOT/'ui_payload.py')
 ui=importlib.util.module_from_spec(spec);spec.loader.exec_module(ui)
 
 class UIPayloadTests(unittest.TestCase):
@@ -121,7 +125,8 @@ class UIPayloadTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(bundled).hexdigest(),provenance['bundled_sha256'][name],name)
             self.assertEqual(hashlib.sha256(original).hexdigest(),provenance['source_sha256'][name],name)
         logos=json.loads((app/'logo_catalog.json').read_text(encoding='utf-8'))
-        self.assertEqual(len(logos),10)
+        self.assertTrue(logos)
+        self.assertLessEqual(set(logos),set(ui.COUNTRIES))
         for country in logos.values():
             for channel in country.values():
                 for asset in channel.values():self.assertTrue((app/asset).is_file(),asset)

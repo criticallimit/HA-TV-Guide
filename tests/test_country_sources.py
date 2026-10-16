@@ -1,13 +1,18 @@
 """Country baseline selection tests without Home Assistant."""
 import importlib.util
 import unittest
+import json
+import sys
+import types
 from pathlib import Path
 
 
 def load_module(name):
     """Load pure helpers without shadowing standard-library modules."""
     path = Path(__file__).resolve().parents[1] / "custom_components" / "tv_guide" / f"{name}.py"
-    spec = importlib.util.spec_from_file_location(name, path)
+    package = types.ModuleType("_tvguide_country_tests"); package.__path__ = [str(path.parent)]
+    sys.modules[package.__name__] = package
+    spec = importlib.util.spec_from_file_location(package.__name__ + "." + name, path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -22,9 +27,10 @@ validate_feed_url = _module.validate_feed_url
 class CountrySourceTests(unittest.TestCase):
     def test_country_fallbacks_and_explicit_override(self):
         sources = load_module("country_sources")
-        for country in ("de", "gb"):
+        countries = json.loads((Path(__file__).resolve().parents[1] / "custom_components/tv_guide/countries.json").read_text())
+        for country, config in countries.items():
             candidates = sources.feed_candidates({"country": country})
-            self.assertEqual(len(candidates), 2)
+            self.assertEqual(candidates, tuple(config['sources']))
             self.assertEqual(candidates[0], COUNTRY_FEEDS[country])
             for url in candidates:
                 self.assertEqual(validate_feed_url(url), url)
@@ -33,8 +39,9 @@ class CountrySourceTests(unittest.TestCase):
         self.assertEqual(sources.feed_candidates({"country": "at"}), (COUNTRY_FEEDS["at"],))
         self.assertEqual(sources.feed_candidates({}), ())
 
-    def test_ten_sources_have_safe_syntax(self):
-        self.assertEqual(len(COUNTRY_FEEDS), 10)
+    def test_all_registered_sources_have_safe_syntax(self):
+        countries = json.loads((Path(__file__).resolve().parents[1] / "custom_components/tv_guide/countries.json").read_text())
+        self.assertEqual(set(COUNTRY_FEEDS), set(countries))
         for source in COUNTRY_FEEDS.values():
             self.assertEqual(validate_feed_url(source), source)
 

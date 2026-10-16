@@ -102,3 +102,11 @@ TV Guide is an independent open-source project. The project-authored code is lic
 
 See [third-party notices](https://github.com/criticallimit/HA-TV-Guide/blob/main/THIRD_PARTY_NOTICES.md) for source, trademark and third-party rights information.
 
+
+## Adding a country
+
+Register the country once in `custom_components/tv_guide/countries.json` and add its channel catalogue under `catalogs/`. Each registration needs a display name, an IANA timezone, the catalogue filename and an ordered list of working XMLTV source URLs. The first source is primary; subsequent sources are fallbacks. Catalogue channels need stable IDs, names, order and matching XMLTV IDs or aliases. Use country-prefixed IDs for new curated stations.
+
+Setup, settings, the country picker, feed selection, personal lists and caches all use this registration. Optional `language` provides an initial locale fallback; the Home Assistant profile and explicit language selection take precedence. Omit it for multilingual countries. Existing `providers`, `secondary_providers`, `secondary_urls` and `teletext_providers` register optional broadcaster sources through shared adapters. A broadcaster using a new API format needs an adapter; a new country using existing XMLTV feeds does not need a country-specific code path. Logos are optional; provide curated artwork or matching logo-library metadata for full visual coverage.
+
+`storage_prefix` and `source_id_prefix` are compatibility metadata for existing installations; omit both for new countries. Do not change them or existing channel IDs after publishing. Run the Python suite and browser/HA CI before publishing a new country; source availability and schedule quality still depend on the upstream provider.

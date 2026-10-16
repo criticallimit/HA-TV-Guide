@@ -11,7 +11,7 @@ from datetime import timedelta, timezone
 class ProgrammeTimeline:
     def _retain_cached_programmes(self, channels):
         """Keep still-valid cache entries only in slots not covered by fresh data."""
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
         cached = {channel["id"]: channel for channel in self.channels}
         fresh_ids = {channel["id"] for channel in channels}
         excluded = set(self.runtime.COUNTRIES[self.country].get("excluded_xmltv_ids", []))
@@ -59,7 +59,7 @@ class ProgrammeTimeline:
             self.runtime.datetime.fromisoformat(self.feed_latest_end)
             if self.feed_latest_end else None
         )
-        now = self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)
+        now = self.runtime.datetime.now(self.timezone)
 
         # Partial sources are useful in a merge architecture. Reject only
         # feeds that contain no usable programmes or are already effectively
@@ -320,7 +320,7 @@ class ProgrammeTimeline:
 
     def coverage_metrics(self, now=None):
         """Report actual main-channel coverage, independently of feed availability."""
-        now = (now or self.runtime.datetime.now(self.runtime.EPG_TIMEZONE)).astimezone(self.runtime.EPG_TIMEZONE)
+        now = (now or self.runtime.datetime.now(self.timezone)).astimezone(self.timezone)
         mains = [ch for ch in self.channels if ch.get("preset")]
         intervals = {}
         for channel in mains:
@@ -337,7 +337,7 @@ class ProgrammeTimeline:
                    if not any(start <= now < end for start, end in intervals[ch["id"]])]
         days = []
         for offset in range(3):
-            start = self.runtime.datetime.combine(now.date() + timedelta(days=offset), self.runtime.datetime.min.time(), self.runtime.EPG_TIMEZONE)
+            start = self.runtime.datetime.combine(now.date() + timedelta(days=offset), self.runtime.datetime.min.time(), self.timezone)
             end = start + timedelta(days=1)
             absent = [ch["id"] for ch in mains
                       if not any(left < end and right > start for left, right in intervals[ch["id"]])]
@@ -372,54 +372,6 @@ class ProgrammeTimeline:
             "programmes": programme_count,
             "latest_end": latest_end.isoformat() if latest_end else None,
         }
-
-    def _quarantine_conflicting_fallback(self, channel_sets):
-        references = {}
-        for channels in channel_sets:
-            for channel in channels:
-                items = channel.get("programs") or []
-                if items and items[0].get("_source") in {self.runtime.OPEN_EPG_URL, self.runtime.EPGSHARE_EPG_URL}:
-                    references.setdefault(channel["id"], []).append(items)
-        quarantined = []
-        compared_channels = 0
-        for channels in channel_sets:
-            for channel in channels:
-                items = channel.get("programs") or []
-                sources = references.get(channel["id"], [])
-                if not items or items[0].get("_source") != self.runtime.EPGPW_EPG_URL or len(sources) != 2:
-                    continue
-                compared = mismatched = 0
-                for item in items:
-                    start = self.runtime.datetime.fromisoformat(item["start"])
-                    end = self.runtime.datetime.fromisoformat(item["end"])
-                    midpoint = start + (end - start) / 2
-                    matches = [next((entry for entry in source if
-                        self.runtime.datetime.fromisoformat(entry["start"]) <= midpoint < self.runtime.datetime.fromisoformat(entry["end"])
-                    ), None) for source in sources]
-                    if not all(matches) or not self._same_overlapping_programme(*matches):
-                        continue
-                    compared += 1
-                    title = self._title_key(item.get("title"))
-                    reference = self._title_key(matches[0].get("title"))
-                    if title != reference and not (min(len(title), len(reference)) >= 5 and (title in reference or reference in title)):
-                        mismatched += 1
-                if compared >= 3:
-                    compared_channels += 1
-                if compared >= 3 and mismatched / compared >= 0.8:
-                    channel["programs"] = []
-                    channel["available"] = False
-                    quarantined.append(channel["id"])
-                    print(f"[TV Guide] Widersprüchliche epg.pw-Daten verworfen für {channel['id']}: {mismatched}/{compared} bestätigte Zeitslots abweichend", flush=True)
-        if len(quarantined) >= 5 and len(quarantined) / compared_channels >= 0.8:
-            for channels in channel_sets:
-                for channel in channels:
-                    items = channel.get("programs") or []
-                    if items and items[0].get("_source") == self.runtime.EPGPW_EPG_URL:
-                        channel["programs"] = []
-                        channel["available"] = False
-                        quarantined.append(channel["id"])
-            print("[TV Guide] epg.pw wegen systematisch widersprüchlicher Sendungsdaten vollständig quarantänisiert.", flush=True)
-        return quarantined
 
     def _merge_channel_sets(self, channel_sets):
         merged = {}
