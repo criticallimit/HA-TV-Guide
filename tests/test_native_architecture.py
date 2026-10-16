@@ -124,3 +124,45 @@ class ConditionalProviderTests(unittest.TestCase):
         for accept in ('application/json','text/html'):
             with transport.open(Request('https://example.org/guide',headers={'Accept':accept})) as response:response.read()
         self.assertIsNone(seen[1].get_header('If-none-match'))
+
+
+    def test_revalidation_updates_validator_and_honours_no_store(self):
+        calls=[]
+        def open(request,**kwargs):
+            calls.append(request)
+            if len(calls)==1:return Response(ETag='"v1"')
+            headers=Message()
+            headers['ETag']='"v2"'
+            if len(calls)==3:headers['Cache-Control']='no-store'
+            raise HTTPError(request.full_url,304,'Not Modified',headers,None)
+        transport=ProviderTransport(open)
+        for _ in range(3):
+            with transport.open('https://example.org/guide') as response:
+                self.assertEqual(response.read(),b'programme')
+        self.assertEqual(calls[2].get_header('If-none-match'),'"v2"')
+        self.assertEqual(transport._bytes,0)
+        self.assertFalse(transport._entries)
+
+    def test_interrupted_or_oversized_replacement_drops_old_validator(self):
+        for oversized in (False,True):
+            with self.subTest(oversized=oversized):
+                calls=[]
+                def open(request,**kwargs):
+                    calls.append(request)
+                    return Response(b'new body' if len(calls)==2 else b'old',ETag='"v1"')
+                transport=ProviderTransport(open,maximum_entry=4)
+                with transport.open('https://example.org/guide') as response:response.read()
+                with transport.open('https://example.org/guide') as response:
+                    response.read(-1 if oversized else 1)
+                self.assertEqual(transport._bytes,0)
+                with transport.open('https://example.org/guide') as response:response.read()
+                self.assertIsNone(calls[2].get_header('If-none-match'))
+
+    def test_partial_content_is_never_cached_as_a_complete_representation(self):
+        def open(request,**kwargs):
+            response=Response(b'fragment',ETag='"v1"')
+            response.status=206
+            return response
+        transport=ProviderTransport(open)
+        with transport.open('https://example.org/guide') as response:response.read()
+        self.assertFalse(transport._entries)
