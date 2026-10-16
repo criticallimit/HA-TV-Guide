@@ -124,7 +124,7 @@ class GuideRuntimeTests(unittest.TestCase):
             reads.append(store.country)
             raise AssertionError('Full programme cache must not be loaded by settings commit')
         settings = self.backend.request('settings', 'GET')
-        with patch.object(self.runtime.EPGStore, '_load_parsed_cache', slow):
+        with patch.object(self.runtime.EPGStore, '_load_parsed_cache', slow), patch.object(self.runtime,'restore_country'):
             for country in ['at', 'fr', 'de', 'gb', 'at']:
                 result = self.backend.request('settings', 'POST', {**settings, 'country':country})
                 self.assertTrue(result['ok'])
@@ -160,7 +160,8 @@ class GuideRuntimeTests(unittest.TestCase):
         store.source_metrics=[{'ok':True}]
         store._save_parsed_cache('fixture')
         settings=self.backend.request('settings','GET')
-        self.backend.request('settings','POST',{**settings,'country':'at'})
+        with patch.object(self.runtime,'restore_country'):
+            self.backend.request('settings','POST',{**settings,'country':'at'})
         selected=self.runtime.STORE
         self.assertTrue(selected._cache_pending)
         with patch.object(selected,'_download',side_effect=AssertionError('Fresh cache must not download')) as download:
@@ -189,6 +190,65 @@ class GuideRuntimeTests(unittest.TestCase):
                 restore.result(timeout=5)
         self.assertEqual(self.runtime.STORE.country,'fr')
 
+    def test_native_programmes_are_shared_and_presentation_commits_do_not_rebuild_them(self):
+        store=self.runtime.STORE
+        now=datetime.now(timezone.utc)
+        store.channels[0]['programs']=[{'title':'Shared timeline','start':now.isoformat(),'end':(now+timedelta(hours=1)).isoformat()}]
+        self.backend._backend_changed()
+        with patch.object(store,'_validate_program_timeline',wraps=store._validate_program_timeline) as validate:
+            first=self.backend.request('guide','GET')
+            calls=validate.call_count
+            main=next(ch for ch in first['channels'] if ch['id']=='ard')
+            personal=next(ch for ch in first['channels'] if ch['id']=='de:ard')
+            self.assertIs(main['programs'],personal['programs'])
+            snapshot=self.backend.state_snapshot()
+            settings=self.backend.request('settings','GET')
+            self.backend.request('settings','POST',{**settings,'theme_mode':'light'})
+            second=self.backend.request('guide','GET')
+            self.assertEqual(validate.call_count,calls)
+            self.assertIs(self.backend.state_snapshot()[0],snapshot[0])
+            self.assertEqual(second['ui']['theme_mode'],'light')
+            self.assertNotEqual(first['revision'],second['revision'])
+        store.channels[0]['programs'][0]['title']='Corrected programme'
+        self.backend._backend_changed()
+        self.assertEqual(self.backend.request('guide','GET')['channels'][0]['programs'][0]['title'],'Corrected programme')
+
+    def test_compact_guide_is_lossless_and_transfers_shared_timelines_once(self):
+        store=self.runtime.STORE
+        now=datetime.now(timezone.utc)
+        for channel in store.channels:
+            channel['programs']=[{'title':str(i),'desc':'programme description '*20,
+                'start':(now+timedelta(minutes=30*i)).isoformat(),
+                'end':(now+timedelta(minutes=30*(i+1))).isoformat()} for i in range(48)]
+        self.backend._backend_changed()
+        full=self.backend.request('guide','GET')
+        compact=self.backend.request('guide','GET',{'compact':True})
+        sets=compact['programme_sets']
+        restored={key:value for key,value in compact.items() if key!='programme_sets'}
+        restored['channels']=[{**{key:value for key,value in channel.items() if key!='programme_set'},
+            'programs':sets[channel['programme_set']]} for channel in compact['channels']]
+        self.assertEqual(restored,full)
+        self.assertLess(len(json.dumps(compact)),len(json.dumps(full))*.6)
+        self.assertEqual(len(sets),len(store.channels))
+        preview=self.backend.request('guide','GET',{'compact':True,'preview':True,'at':now.isoformat(),'time_zone':'UTC'})
+        self.assertTrue(preview['_preview'])
+        self.assertTrue(all(len(rows)<=7 for rows in preview['programme_sets'].values()))
+
+    def test_disk_cache_restore_is_not_delayed_by_busy_network_workers(self):
+        entered=[threading.Event(),threading.Event()];release=threading.Event()
+        def blocked(index):entered[index].set();release.wait(4)
+        jobs=[self.backend._pool.submit(blocked,index) for index in range(2)]
+        try:
+            self.assertTrue(all(event.wait(1) for event in entered))
+            store=self.runtime.EPGStore('at',load_cache=False)
+            self.runtime.COUNTRY_STORES['at']=store
+            self.runtime.REQUIRED_COUNTRIES=frozenset({'de','at'})
+            self.backend.restore_country(store).result(timeout=1)
+            self.assertFalse(store._cache_pending)
+        finally:
+            release.set()
+            for job in jobs:job.result(timeout=2)
+
     def test_startup_is_isolated_from_addon_paths_and_supervisor(self):
         self.assertTrue(self.runtime.OPTIONS_FILE.is_relative_to(Path(self.temp.name)))
         self.assertEqual(self.runtime.home_assistant_locale()['language'],'de')
@@ -200,8 +260,9 @@ class GuideRuntimeTests(unittest.TestCase):
     def test_native_engine_has_no_obsolete_http_or_logo_workers(self):
         for name in ('normalized_logo_path','normalized_logo_data','preload_country_caches_once'):
             self.assertFalse(hasattr(self.runtime,name),name)
-        self.assertFalse(hasattr(self.runtime.Handler,'translate_path'))
-        self.assertFalse(hasattr(self.runtime.Handler,'send_response'))
+        self.assertFalse(hasattr(self.runtime,'Handler'))
+        self.assertTrue(callable(self.runtime.operations.get))
+        self.assertFalse(hasattr(self.runtime.operations,'send_response'))
         self.assertFalse(hasattr(self.backend,'preload_next'))
 
     def test_obsolete_mode_is_removed_from_runtime_options_on_restart(self):
@@ -233,7 +294,7 @@ class GuideRuntimeTests(unittest.TestCase):
         from concurrent.futures import Future
         guide = self.backend.request('guide', 'GET')
         snapshot = self.backend.state_snapshot()
-        def immediate(function):
+        def immediate(function, **kwargs):
             result = Future()
             try:
                 result.set_result(function())
@@ -296,7 +357,7 @@ class GuideRuntimeTests(unittest.TestCase):
         settings = self.backend.request('settings', 'GET')
         self.backend.request('settings', 'POST', {**settings, 'language': 'en'})
         fourth = self.backend.state_snapshot()
-        self.assertIsNot(third[0], fourth[0])
+        self.assertIs(third[0], fourth[0], "Presentation settings retain the shared programme snapshot")
 
     def test_known_revision_skips_full_guide_payload(self):
         first = self.backend.request('guide', 'GET')
@@ -508,8 +569,11 @@ class GuideRuntimeTests(unittest.TestCase):
     def test_obsolete_queued_countries_do_not_delay_latest_country(self):
         entered, release, latest = threading.Event(), threading.Event(), threading.Event()
         started, fetched = [], []
+        running = {country:threading.Event() for country in ("at","fr")}
         def refresh(store, force=False):
             started.append(store.country)
+            if store.country in running:
+                running[store.country].set()
             try:
                 if store.country in {'at', 'fr'}:
                     if len(started) == 2:
@@ -527,6 +591,7 @@ class GuideRuntimeTests(unittest.TestCase):
             try:
                 for country in ('at', 'fr'):
                     self.backend.request('settings', 'POST', {**settings, 'country':country})
+                    self.assertTrue(running[country].wait(2))
                 self.assertTrue(entered.wait(2))
                 for country in ('gb', 'nl'):
                     self.backend.request('settings', 'POST', {**settings, 'country':country})

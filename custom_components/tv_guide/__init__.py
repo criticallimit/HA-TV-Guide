@@ -112,7 +112,19 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     expected_url = effective_feed(options)
     if getattr(coordinator, "is_multi_source", False):
-        if not options.get("feed_url") and coordinator.country == (options.get("country") or "de"):
+        if not options.get("feed_url"):
+            async with hass.data.setdefault(DOMAIN + "_settings_lock", asyncio.Lock()):
+                if hass.data.get(DOMAIN, {}).get(entry.entry_id) is not coordinator:
+                    return
+                latest = {**entry.data, **entry.options}
+                if latest.get('feed_url'):
+                    return  # The newer source-change listener owns its reload.
+                current = await coordinator.async_guide_request('settings')
+                keys = ('country','language','default_view','columns_desktop','max_channels','theme_mode','refresh_minutes','notification_service')
+                wanted = {key:latest.get(key,current[key]) for key in keys}
+                if any(wanted[key] != current[key] for key in keys):
+                    await coordinator.async_guide_request('settings','POST',wanted)
+                options = latest
             scheduler = hass.data.get(DOMAIN + "_reminder_schedulers", {}).get(entry.entry_id)
             if scheduler is not None:
                 scheduler.notification_service = options.get("notification_service", "persistent_notification.create")

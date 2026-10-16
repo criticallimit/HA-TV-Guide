@@ -75,9 +75,12 @@ async def main():
                     assert hass.states.get(entity_id) is not None
                 from homeassistant.components import frontend
                 assert frontend.async_panel_exists(hass,'tv-guide')
-                assert '/tv_guide/frontend/tv-guide-card.js?v=39' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+                assert '/tv_guide/frontend/tv-guide-card.js?v=40' in hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
                 coordinator = hass.data['tv_guide'][entry.entry_id]
                 assert coordinator._cancel_maintenance is not None
+                assert coordinator.backend.settings.persistent is False
+                from homeassistant.helpers.aiohttp_client import async_get_clientsession
+                assert coordinator.backend.provider_client.session is async_get_clientsession(hass)
                 with patch.object(coordinator.backend,'maintain_caches') as maintenance:
                     await coordinator._async_maintenance(None)
                     maintenance.assert_called_once()
@@ -124,6 +127,11 @@ async def main():
                 assert preview['revision'] == guide['revision']
                 assert preview['channels'][0]['programs'] == guide['channels'][0]['programs']
                 assert '_preview' not in (await request('guide'))
+                compact=await request('guide',body={'compact':True})
+                restored={key:value for key,value in compact.items() if key!='programme_sets'}
+                restored['channels']=[{**{key:value for key,value in channel.items() if key!='programme_set'},
+                    'programs':compact['programme_sets'][channel['programme_set']]} for channel in compact['channels']]
+                assert restored == guide
                 unchanged=await request('guide',body={'known_revision':guide['revision']})
                 assert unchanged=={'unchanged':True,'revision':guide['revision']}
                 with patch.object(coordinator.backend,'start_logo_download') as retry_logos, \
@@ -179,9 +187,13 @@ async def main():
                     if not catalogue_release.wait(10):
                         raise TimeoutError('Country catalogue test was not released')
                     return original_catalogue(store)
+                original_cache_load = coordinator.backend.runtime.EPGStore._load_parsed_cache
+                def background_cache_load(store):
+                    assert threading.current_thread().name.startswith('tv-guide-cache'), 'Settings must not restore a full cache in the HA executor'
+                    return original_cache_load(store)
                 with patch.object(coordinator.backend, 'state_snapshot', delayed_snapshot), \
                         patch.object(coordinator.backend.runtime.PERSONAL_CHANNELS, 'settings', delayed_catalogue), \
-                        patch.object(coordinator.backend.runtime.EPGStore, '_load_parsed_cache', side_effect=AssertionError('Settings must not read full programme caches')), \
+                        patch.object(coordinator.backend.runtime.EPGStore, '_load_parsed_cache', background_cache_load), \
                         patch.object(hass.config_entries, 'async_reload', side_effect=AssertionError('Settings must not reload the integration')) as reload_entry:
                     old_snapshot = asyncio.create_task(coordinator._snapshot())
                     old_catalogue = asyncio.create_task(request("personal-channels"))

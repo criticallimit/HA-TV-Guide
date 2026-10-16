@@ -1,15 +1,11 @@
 """Host the reference programme engine without its server or Supervisor workers."""
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from hashlib import sha256
 from functools import partial
-import importlib.util
-from io import BytesIO
 import json
 import logging
 from pathlib import Path
 from time import monotonic, perf_counter
-import sys
 import threading
 from uuid import uuid4
 from urllib.parse import quote
@@ -20,6 +16,11 @@ from .logo_updates import LogoUpdates
 from .worker_io import worker_urlopen
 from .ui_payload import guide_preview
 from .countries import COUNTRIES, ROOT as COUNTRY_ROOT
+from .provider_transport import ProviderTransport
+from .work_scheduler import WorkScheduler
+from .settings_state import SettingsState
+from .programme_repository import ProgrammeRepository, compact_guide
+from .original_backend.services import ProgrammeEngine
 
 GET_ENDPOINTS = {"guide", "channels", "personal-channels", "channel-settings", "settings", "status"}
 POST_ENDPOINTS = {"settings", "personal-channels", "channel-settings"}
@@ -29,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 class GuideRuntime:
     """Entry-owned reference runtime, cache directory and stoppable worker pool."""
 
-    def __init__(self, storage: Path, options: dict, locale: dict, wake):
+    def __init__(self, storage: Path, options: dict, locale: dict, wake, persist_settings=True, provider_client=None):
         storage.mkdir(parents=True, exist_ok=True)
         self._preparation_marker = storage / 'preparation-complete.json'
         self._first_install = not self._preparation_marker.exists()
@@ -60,7 +61,6 @@ class GuideRuntime:
         self._settings_request_lock = threading.RLock()
         self._personal_request_lock = threading.RLock()
         self._snapshot_lock = threading.Lock()
-        self._pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix="tv-guide")
         self._jobs = {}
         self._worker_context = threading.local()
         self._wake = wake
@@ -70,44 +70,28 @@ class GuideRuntime:
         self._guide_generation = 0
         self._settings_generation = 0
         self._snapshot_cache = None
-        name = __package__ + ".original_backend._entry_" + storage.name.replace("-", "_")
-        self._module_name = name
-        spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / "original_backend" / "services.py")
-        runtime = importlib.util.module_from_spec(spec)
-        runtime.GUIDE_COUNTRIES = COUNTRIES
-        runtime.GUIDE_CATALOGS = {
-            code: json.loads((COUNTRY_ROOT / "catalogs" / item["catalog"]).read_text(encoding="utf-8"))
-            for code, item in COUNTRIES.items()
-        }
-        runtime.GUIDE_ASSET_ROOT = assets
-        runtime.GUIDE_STORAGE_ROOT = storage
-        runtime.GUIDE_LOCALE = locale
-        runtime.GUIDE_WAKE = self._backend_changed
-        # Persist presentation settings between HA restarts; never touch /data.
-        options_path = storage / "options.json"
-        try:
-            previous = json.loads(options_path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            previous = {}
-        if not isinstance(previous, dict):
-            previous = {}
-        persisted_options = {**previous, **options, "country": options.get("country") or "de"}
-        persisted_options.pop("backend_mode", None)
-        options_tmp = options_path.with_suffix(".tmp")
-        options_tmp.write_text(json.dumps(persisted_options), encoding="utf-8")
-        options_tmp.replace(options_path)
-        sys.modules[name] = runtime
-        try:
-            spec.loader.exec_module(runtime)
-        except BaseException:
-            sys.modules.pop(name, None)
-            self._pool.shutdown(wait=False, cancel_futures=True)
-            raise
+        self.programmes = ProgrammeRepository()
+        self.provider_client = provider_client
+        self.settings = SettingsState(storage / "options.json", {**options, "country":options.get("country") or "de"}, persistent=persist_settings)
+        catalogs = {code:json.loads((COUNTRY_ROOT / "catalogs" / item["catalog"]).read_text(encoding="utf-8"))
+                    for code,item in COUNTRIES.items()}
+        runtime = ProgrammeEngine(assets, storage, COUNTRIES, catalogs, locale, self.settings, self._backend_changed)
         self.runtime = runtime
-        runtime.urlopen = partial(worker_urlopen, runtime.urlopen, self._worker_stopped)
+        self._pool = WorkScheduler(2)
+        try:
+            self._cache_pool = WorkScheduler(1, "tv-guide-cache")
+        except BaseException:
+            self._pool.shutdown(cancel_futures=True)
+            raise
+        if provider_client is not None:
+            provider_client.stopped = self._worker_stopped
+        self.transport = ProviderTransport(provider_client.open if provider_client is not None else runtime.urlopen)
+        runtime.urlopen = partial(worker_urlopen, self.transport.open, self._worker_stopped)
         runtime.start_background = self.start_background
         runtime.worker_stopped = self._worker_stopped
         runtime.normalized_logo_urls = self.logo_urls
+        runtime.public_programmes = self.programmes.programmes
+        runtime.restore_country = self.restore_country
 
     def _invalidate_caches(self, *, programmes=True):
         with self._lock:
@@ -115,10 +99,14 @@ class GuideRuntime:
             self._guide_generation += 1
             if programmes:
                 self._snapshot_cache = None
+                self.programmes.clear()
 
-    def _backend_changed(self):
+    def _backend_changed(self, *, programmes=True, routing=False):
         # Called by provider workers when new programme data become available.
-        self._invalidate_caches()
+        self._invalidate_caches(programmes=programmes)
+        if routing:
+            with self._lock:
+                self._snapshot_cache = None
         self._wake()
 
     def logo_urls(self, channel):
@@ -199,7 +187,12 @@ class GuideRuntime:
                             if self._jobs.get(function) is job:
                                 self._jobs.pop(function)
                             return
-            future = self._pool.submit(run)
+            owner = getattr(function, '__self__', None)
+            def priority():
+                if owner is self.runtime.STORE:
+                    return 0
+                return 20 if function == self._download_logos else 10
+            future = self._pool.submit(run, priority=priority)
             job['future'] = future
             def finished(completed):
                 with self._lock:
@@ -216,6 +209,32 @@ class GuideRuntime:
                     self._backend_changed()
             future.add_done_callback(finished)
             return future
+
+    def restore_country(self, store):
+        def restore():
+            try:
+                if self.closed or self.runtime.COUNTRY_STORES.get(store.country) is not store or store.country not in self.runtime.REQUIRED_COUNTRIES:
+                    return
+                with store.lock:
+                    if store._cache_pending:
+                        store._load_parsed_cache()
+                        store._cache_pending = False
+            finally:
+                store._cache_loading = False
+                store.refresh_running = False
+            if not self.closed:
+                if store.country in self.runtime.REQUIRED_COUNTRIES:
+                    store.ensure_fresh_async()
+                self._backend_changed()
+        with self._lock:
+            if self.closed:
+                return
+            if getattr(store, '_cache_loading', False):
+                return store._cache_future
+            store._cache_loading = True
+            store.refresh_running = True
+            store._cache_future = self._cache_pool.submit(restore, priority=lambda:0 if store is self.runtime.STORE else 10)
+            return store._cache_future
 
     def maintain_caches(self):
         """Check used caches independently of coordinator notification scheduling."""
@@ -315,48 +334,37 @@ class GuideRuntime:
                     return {"unchanged": True, "revision": f"{self._guide_revision}:{self._guide_generation}"}
                 cached = self._guide_cache if monotonic() - self._guide_cached_at < 10 else None
                 if method == "POST":
-                    self._invalidate_caches(programmes=endpoint != "personal-channels")
+                    self._invalidate_caches(programmes=False)
                 generation = self._guide_generation
             if method == "GET" and endpoint == "guide" and cached is not None:
-                return guide_preview(cached, body) if preview else cached
+                return self._guide_response(cached, body, preview)
             started = perf_counter()
-            handler = object.__new__(self.runtime.Handler)
-            handler.path = "/api/" + endpoint
-            handler.headers = {"Content-Length": str(len(encoded))}
-            handler.rfile = BytesIO(encoded)
-            result = {}
-            def capture(payload, status=200):
-                if status >= 400:
-                    raise ValueError(payload.get("error", "TV Guide request failed"))
-                result.update(payload)
-            handler._json = capture
+            previous_country = self.runtime.STORE.country
             if method == "GET":
-                handler.do_GET()
+                result = self.runtime.operations.get(endpoint)
             else:
                 try:
-                    handler.do_POST()
+                    result = self.runtime.operations.post(endpoint, body or {})
                 finally:
-                    # A concurrent guide can start after the pre-write
-                    # invalidation but still read the old persisted values.
-                    # Never let that snapshot survive completion of a write.
                     with self._lock:
                         if endpoint == "settings":
                             self._settings_generation += 1
-                        self._invalidate_caches(programmes=endpoint != "personal-channels")
+                        self._invalidate_caches(programmes=False)
+                        if previous_country != self.runtime.STORE.country:
+                            self._snapshot_cache = None
             if endpoint == "guide":
-                for channel in result.get("channels", []):
-                    channel_id = channel.get("source_channel_id") or channel["id"]
-                    for programme in channel.get("programs", []):
-                        start = datetime.fromisoformat(programme["start"]).astimezone(timezone.utc)
-                        key = f"{channel_id}\n{start.isoformat()}"
-                        programme["id"] = "guide_" + sha256(key.encode()).hexdigest()
                 result["revision"] = f"{self._guide_revision}:{generation}"
                 with self._lock:
                     if generation == self._guide_generation and not self.closed:
                         self._guide_cache = result
                         self._guide_cached_at = monotonic()
                 _LOGGER.debug("TV Guide prepared guide in %.1f ms", (perf_counter() - started) * 1000)
-            return guide_preview(result, body) if preview else result
+            return self._guide_response(result, body, preview)
+
+    @staticmethod
+    def _guide_response(payload, body, preview):
+        result = guide_preview(payload, body) if preview else payload
+        return compact_guide(result) if isinstance(body, dict) and body.get("compact") is True else result
 
     def snapshot(self, store=None):
         store = store if store is not None else self.runtime.STORE
@@ -396,8 +404,10 @@ class GuideRuntime:
     def close(self):
         with self._lock:
             self.closed = True
+        if self.provider_client is not None:
+            self.provider_client.close()
         # Retain ownership of active requests after marking the runtime closed.
         with self._request_lock, self._settings_request_lock, self._personal_request_lock, self._snapshot_lock:
             pass
+        self._cache_pool.shutdown(wait=True, cancel_futures=True)
         self._pool.shutdown(wait=True, cancel_futures=True)
-        sys.modules.pop(self._module_name, None)

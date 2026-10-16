@@ -8,6 +8,13 @@ from homeassistant.helpers.event import async_track_time_interval
 from .const import DOMAIN
 from .coordinator import TVGuideEPGCoordinator
 from .guide_runtime import GuideRuntime
+from .provider_bridge import ProviderBridge
+
+
+def create_provider_client(hass, loop):
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
+    return ProviderBridge(async_get_clientsession(hass),loop)
+
 
 
 class TVGuideCoordinator(TVGuideEPGCoordinator):
@@ -102,7 +109,13 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         locale = {"language": self.hass.config.language, "country": self.hass.config.country,
                   "time_zone": self.hass.config.time_zone}
         storage = Path(self.hass.config.path(".storage", "tv_guide_store", self.entry.entry_id))
-        self.backend = await self.hass.async_add_executor_job(GuideRuntime, storage, self.options, locale, self._wake)
+        provider = create_provider_client(self.hass, self._loop)
+        try:
+            self.backend = await self.hass.async_add_executor_job(GuideRuntime, storage, self.options, locale, self._wake, False, provider)
+        except BaseException:
+            if provider is not None:
+                provider.close()
+            raise
         if self._closed:
             return
         # Setup must not wait for all broadcaster endpoints to finish.

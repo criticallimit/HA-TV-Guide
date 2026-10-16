@@ -1,4 +1,5 @@
 """Bound XML parsing and retain only programme stores that are actually needed."""
+import importlib
 import importlib.util
 import json
 import tempfile
@@ -26,7 +27,7 @@ class MemoryTests(unittest.TestCase):
         registry = patch.multiple(app, STORE=self.active, COUNTRY_STORES=self.registry)
         registry.start()
         self.addCleanup(registry.stop)
-        personal = patch.object(app, "PERSONAL_CHANNELS", app.PersonalChannels(app))
+        personal = patch.object(app, "PERSONAL_CHANNELS", importlib.import_module(type(app).__module__.rsplit(".",1)[0] + ".personal_channels").PersonalChannels(app))
         personal.start()
         self.addCleanup(personal.stop)
 

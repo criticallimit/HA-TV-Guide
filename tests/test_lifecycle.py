@@ -68,6 +68,11 @@ class OriginalCoordinator(Coordinator):
     def __init__(self,hass,entry,options):
         super().__init__(hass,'original-providers',options.get('country','de'),())
         self.stopped=False
+        self.settings={'country':self.country,'language':'auto','default_view':'now','columns_desktop':5,
+                       'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
+    async def async_guide_request(self,endpoint,method='GET',body=None):
+        if method=='POST':self.settings.update(body);self.country=self.settings['country']
+        return {'ok':True,'settings':dict(self.settings)} if method=='POST' else dict(self.settings)
     async def async_stop(self):self.stopped=True
 
 class Scheduler:
@@ -259,6 +264,17 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
             finally:
                 release.set()
                 await older
+
+    async def test_native_options_update_applies_to_runtime_without_reloading(self):
+        await self.module.async_setup_entry(self.hass,self.entry)
+        coordinator=self.hass.data['tv_guide']['entry']
+        self.entry.options={'country':'fr','language':'en','theme_mode':'light','refresh_minutes':720}
+        await self.module.async_update_options(self.hass,self.entry)
+        self.assertEqual(coordinator.settings['country'],'fr')
+        self.assertEqual(coordinator.settings['language'],'en')
+        self.assertEqual(coordinator.settings['theme_mode'],'light')
+        self.assertEqual(coordinator.settings['refresh_minutes'],720)
+        self.assertEqual(self.hass.config_entries.reloaded,[])
 
     async def test_sender_options_notify_calendar_without_feed_reload(self):
         self.entry.data = {'feed_url':'https://example.org/feed.xml','country':'de'}

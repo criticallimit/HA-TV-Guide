@@ -28,6 +28,7 @@ const server=http.createServer((req,res)=>{
       window.settings={country:'de',language:'de',default_view:'now',theme_mode:'auto',columns_desktop:5,max_channels:0,refresh_minutes:180,notification_service:'persistent_notification.create'};
       const channels=['a','b'].map((id,index)=>({id,name:'Station '+id,source_country:'de',country_name:'Deutschland',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:Array.from({length:7},(_,i)=>({id:id+i,title:'Programme '+id+i,start:new Date(now+(i+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString(),end:new Date(now+(i+1+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString()}))}));
       window.model={revision:'ux',country:'de',channels,main_channel_ids:['a','b'],custom_channel_ids:['a','b'],ui:{...settings},refresh_running:false};
+      if(scenario==='compact'){model.channels.push({...channels[0],id:'de:a',source_channel_id:'a'});model.custom_channel_ids=['de:a'];}
       if(scenario==='personal'){
         channels.forEach(ch=>{ch.id='de:'+ch.id;ch.source_country='de';});
         channels.push({...structuredClone(channels[0]),id:'at:a',name:'Austria station',source_country:'at',country_name:'Österreich'});
@@ -68,6 +69,11 @@ const server=http.createServer((req,res)=>{
           return {response};
         }
         if(delayGuide)await new Promise(resolve=>window.releaseGuide=resolve);
+        if(scenario==='compact'){
+          const response=structuredClone(model);response.programme_sets={a:response.channels[0].programs,b:response.channels[1].programs};
+          response.channels=response.channels.map((channel,index)=>{const {programs,...metadata}=channel;return {...metadata,programme_set:index===1?'b':'a'};});
+          return {response};
+        }
         return {response:structuredClone(model)};
       }};
       window.card=document.createElement('tv-guide-card');card.hass=hass;document.body.append(card);
@@ -75,6 +81,23 @@ const server=http.createServer((req,res)=>{
     return page;
   }
   async function check(name,test){try{await test();console.log('PASS',engine,name);}catch(error){failures.push(name+': '+error.message);console.error('FAIL',engine,name,error.message);}}
+  await check('compact transport retains shared timelines, complete cards and local time navigation',async()=>{
+    const page=await mount('compact');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      assert.equal(await page.locator('.channel-card').count(),2);
+      const shared=await page.evaluate(async()=>{
+        const guide=await card._request({endpoint:'guide',method:'GET'});
+        return guide.channels[0].programs===guide.channels[2].programs && !guide.programme_sets;
+      });
+      assert.equal(shared,true);
+      assert.equal(await page.evaluate(()=>guideRequests.every(request=>request.body.compact===true)),true);
+      const before=await page.evaluate(()=>guideRequests.length);
+      await page.locator('.tab[data-mode="2015"]').click();
+      await page.locator('.tab[data-mode="now"]').click();
+      assert.equal(await page.locator('.channel-card').count(),2);
+      assert.equal(await page.evaluate(()=>guideRequests.length),before);
+    }finally{await page.close();}
+  });
   await check('useful cached guide with one schedule gap',async()=>{
     const page=await mount('cache');try{
       await page.waitForFunction(()=>typeof releaseGuide==='function');

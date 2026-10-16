@@ -34,6 +34,7 @@
     "Use current curated main-channel metadata when restoring programme caches",
     "Bound timeline merge comparisons to nearby UTC start buckets and tolerate malformed cached priorities",
     "Cooperatively stop obsolete country workers while retaining personal-list countries and restarting reselected countries",
-    "Use the shared native country registry and catalogues for every country; keep only consumed logo metadata and notification catalogues in the archive"
+    "Use the shared native country registry and catalogues for every country; keep only consumed logo metadata and notification catalogues in the archive",
+    "Replace dynamic per-entry module execution and local HTTP emulation with an explicitly constructed native engine, authoritative HA settings, shared programme projections, priority workers and pooled cancellable provider IO"
   ]
 }

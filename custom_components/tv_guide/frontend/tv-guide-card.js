@@ -381,7 +381,7 @@ class TVGuideCard extends HTMLElement {
       if (endpoint === "preparation" && ["GET","POST"].includes(method)) {
         response = await this._response(method === "POST" ? "retry_preparation" : "get_preparation_status");
       } else if (this._hass.services?.tv_guide?.guide_request && ["guide","channels","personal-channels","channel-settings","settings","status","refresh"].includes(endpoint)) {
-        response = await this._response("guide_request",{endpoint,method,...(method === "POST" || (endpoint === "guide" && (body.preview === true || typeof body.known_revision === "string")) ? {body} : {})});
+        response = await this._response("guide_request",{endpoint,method,...(method === "POST" || (endpoint === "guide" && (body.preview === true || typeof body.known_revision === "string")) ? {body:endpoint === "guide" ? {...body,compact:true} : body} : endpoint === "guide" ? {body:{compact:true}} : {})});
       } else if (method === "GET" && endpoint === "guide") response = await this._response("get_guide", request.at ? {at:request.at} : {});
       else if (method === "GET" && endpoint === "personal-channels") response = await this._response("get_personal_channels");
       else if (method === "GET" && endpoint === "settings") response = await this._response("get_ui_settings");
@@ -425,6 +425,16 @@ class TVGuideCard extends HTMLElement {
         await this._hass.callService(domain,service,{title:t("TV Guide – Erinnerung"),message:t("{channel}: „{title}“ beginnt um {time} Uhr.",{channel:"TV Guide",title:t("Testbenachrichtigung"),time})});
         response = {ok:true,service:destination};
       } else throw new Error("Unsupported TV Guide operation");
+      if (endpoint === "guide" && response?.programme_sets) {
+        const {programme_sets, ...guide} = response;
+        guide.channels = guide.channels.map(channel => {
+          const rows = programme_sets[channel.programme_set];
+          if (!Array.isArray(rows)) throw new Error("Invalid programme timeline");
+          const {programme_set, ...metadata} = channel;
+          return {...metadata, programs:rows};
+        });
+        return guide;
+      }
       return response;
   }
   _start() {
