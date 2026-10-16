@@ -60,7 +60,7 @@ const server = http.createServer((req,res) => {
         if(message.service==='get_guide')response=model;
         else if(message.service==='get_saved_programmes')response=saved;
         else if(message.service==='get_personal_channels')response={channels:model.channels,order:model.custom_channel_ids,countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]};
-        else if(message.service==='get_ui_settings')response={...model.ui,country:'de'};
+        else if(message.service==='get_ui_settings')response={...model.ui,country:'de',countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
         else if(message.service==='set_ui_settings'){Object.assign(model.ui,message.service_data.options);response={ok:true};}
         else throw new Error('Unexpected service');
         return {response:structuredClone(response)};
@@ -252,7 +252,7 @@ const server = http.createServer((req,res) => {
       if(endpoint==='guide')response=body?.known_revision && body.known_revision===model.revision ? {unchanged:true,revision:model.revision} : model;
       else if(endpoint==='personal-channels'&&method==='GET')response={channels:model.channels.map(ch=>({...ch,id:'de:'+ch.id})),order:model.main_channel_ids.map(id=>'de:'+id),countries:['de'],supported_countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
       else if(endpoint==='personal-channels')response={ok:true,order:body.order,countries:body.countries};
-      else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de'};
+      else if(endpoint==='settings'&&method==='GET')response={...model.ui,country:'de',countries:[{code:'de',name:'Deutschland'},{code:'gb',name:'Großbritannien'}]};
       else if(endpoint==='settings'){Object.assign(model.ui,body);response={ok:true};}
       else throw new Error('Unexpected original runtime route');
       return {response:structuredClone(response)};
