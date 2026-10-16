@@ -214,7 +214,7 @@ const server=http.createServer((req,res)=>{
       const state=await page.evaluate(()=>({language:card.shadowRoot.querySelector('.guide-root').lang,columns:card.shadowRoot.querySelector('.guide-root').style.getPropertyValue('--desktop-columns'),saveDisabled:card.shadowRoot.querySelector('#saveAppSettings').disabled}));
       assert.deepEqual(state,{language:'en',columns:'4',saveDisabled:true},'Persisted settings must apply immediately and prevent duplicate saves');
       await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
-      await page.locator('#settingsLoading').waitFor({state:'visible'});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'visible'});
       assert.match(await page.locator('#settingsLoadingLabel').textContent(),/Updating view/);
       assert.equal(await page.locator('#grid').getAttribute('aria-busy'),'true');
       const geometry=await page.evaluate(()=>{const r=card.shadowRoot;return {overlay:r.querySelector('.settings-loading-scrim').getBoundingClientRect().height,card:r.querySelector('.guide-root').clientHeight};});
@@ -223,7 +223,7 @@ const server=http.createServer((req,res)=>{
       await page.emulateMedia({reducedMotion:'reduce'});
       assert.equal(await page.locator('.settings-loading-spinner').evaluate(el=>getComputedStyle(el).animationName),'none');
       await page.evaluate(()=>{delayGuide=false;releaseGuide();});
-      await page.locator('#settingsLoading').waitFor({state:'hidden'});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'hidden'});
       assert.equal(await page.locator('#grid').getAttribute('aria-busy'),null);
     }finally{await page.close();}
   });
@@ -234,17 +234,17 @@ const server=http.createServer((req,res)=>{
       await page.evaluate(()=>{model.refresh_running=true;card.shadowRoot.querySelector('#settingCountry').value='it';});
       await page.locator('#saveAppSettings').click();
       await page.locator('#appSettingsDialog').waitFor({state:'hidden'});
-      await page.locator('#settingsLoading').waitFor({state:'visible'});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'visible'});
       assert.equal(await page.evaluate(()=>card._app.guide.country),'de');
       await page.evaluate(async()=>{failGuide=true;await card._app.loadGuide().catch(()=>{});});
       assert.match(await page.locator('#settingsLoadingLabel').textContent(),/Verbindung unterbrochen/);
       await page.evaluate(()=>{failGuide=false;model.refresh_running=false;model.channels.forEach(ch=>ch.programs=[]);});
       // The existing automatic retry must finish even for an empty final feed.
-      await page.locator('#settingsLoading').waitFor({state:'hidden',timeout:10000});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'hidden',timeout:10000});
       assert.equal(await page.evaluate(()=>card._app.guide.country),'it');
       await page.evaluate(()=>{holdGuides=true;void card._app.loadGuide();});
       await page.waitForFunction(()=>heldGuides.length===1);
-      assert.equal(await page.locator('#settingsLoading').isVisible(),false,'Ordinary background refreshes stay unobtrusive');
+      assert.equal(await page.locator('#settingsLoading .settings-loading-scrim').isVisible(),false,'Ordinary background refreshes stay unobtrusive');
       await page.evaluate(()=>heldGuides.shift()());
     }finally{await page.close();}
   });
@@ -262,10 +262,10 @@ const server=http.createServer((req,res)=>{
         await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
       }
       await page.waitForFunction(()=>heldGuides.length===4);
-      await page.locator('#settingsLoading').waitFor({state:'visible'});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'visible'});
       await page.evaluate(()=>heldGuides.pop()());
       await page.waitForFunction(()=>card._app.guide.country==='gb');
-      await page.locator('#settingsLoading').waitFor({state:'hidden'});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'hidden'});
       await page.evaluate(()=>{for(const release of heldGuides.splice(0))release();});
       await page.waitForTimeout(100);
       assert.equal(await page.evaluate(()=>card._app.guide.country),'gb');
