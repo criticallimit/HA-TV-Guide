@@ -14,23 +14,36 @@ class NoRedirects(HTTPRedirectHandler):
         return None
 
 
+def validate_manifest(manifest, entries=None):
+    """Accept bounded packages only from immutable commits of our logo repository."""
+    if not isinstance(manifest, dict) or not re.fullmatch(
+        r'https://raw\.githubusercontent\.com/criticallimit/HA-TV-Guide/[0-9a-f]{40}/custom_components/tv_guide/logo_library/',
+        str(manifest.get('base_url', '')),
+    ):
+        raise ValueError('Invalid logo download source')
+    packages = manifest.get('archives')
+    if not isinstance(packages, dict) or not 0 < len(packages) <= 128:
+        raise ValueError('Invalid logo package manifest')
+    for name, item in packages.items():
+        if (not re.fullmatch(r'logos-\d{3}\.zip', name) or not isinstance(item, dict)
+                or not re.fullmatch(r'[0-9a-f]{64}', str(item.get('sha256', '')))
+                or type(item.get('size')) is not int or not 0 < item['size'] <= 8 * 1024 * 1024):
+            raise ValueError('Invalid logo package manifest')
+    if sum(item['size'] for item in packages.values()) > 256 * 1024 * 1024:
+        raise ValueError('Logo library exceeds size limit')
+    if entries is not None and set(packages) != {item['archive'] for item in entries.values()}:
+        raise ValueError('Logo index and download manifest differ')
+
+
 class LogoDownload:
     def __init__(self, library):
         self.library = library
-        manifest = json.loads((library.root / 'downloads.json').read_text(encoding='utf-8'))
+        manifest = getattr(library, 'download_manifest', None)
+        if manifest is None:
+            manifest = json.loads((library.root / 'downloads.json').read_text(encoding='utf-8'))
+        validate_manifest(manifest, getattr(library, 'entries', None))
         self.base_url = manifest['base_url']
-        if not re.fullmatch(r'https://raw\.githubusercontent\.com/criticallimit/HA-TV-Guide/[0-9a-f]{40}/custom_components/tv_guide/logo_library/', self.base_url):
-            raise ValueError('Invalid logo download source')
         self.packages = manifest['archives']
-        if not self.packages:
-            raise ValueError('Empty logo package manifest')
-        if hasattr(library, 'entries') and set(self.packages) != {item['archive'] for item in library.entries.values()}:
-            raise ValueError('Logo index and download manifest differ')
-        for name, item in self.packages.items():
-            if (not re.fullmatch(r'logos-\d{3}\.zip', name)
-                    or not re.fullmatch(r'[0-9a-f]{64}', item['sha256'])
-                    or type(item['size']) is not int or not 0 < item['size'] <= 8 * 1024 * 1024):
-                raise ValueError('Invalid logo package manifest')
         self._lock = threading.Lock()
         self._running = False
         self._ready = set()

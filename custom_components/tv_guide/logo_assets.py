@@ -6,6 +6,7 @@ import json
 from pathlib import Path, PurePosixPath
 import posixpath
 import re
+import threading
 import zipfile
 
 
@@ -15,25 +16,56 @@ class LogoLibrary:
     def __init__(self, root=None):
         self.root=Path(root) if root is not None else Path(__file__).parent/'logo_library'
         self.archive_root = self.root
-        index=json.loads((self.root/'index.json').read_text(encoding='utf-8'))
-        self.entries=index['entries']
-        self.revision=index['revision']
-        for source,item in self.entries.items():
-            if not source.startswith('logos/') or '..' in PurePosixPath(source).parts:
-                raise ValueError('Invalid bundled logo path')
-            if not re.fullmatch(r'logos-\d{3}\.zip',item['archive']) or not re.fullmatch(r'[0-9a-f]{64}',item['member']):
-                raise ValueError('Invalid bundled logo object')
+        self._lock = threading.RLock()
+        self._bundled_index = json.loads((self.root/'index.json').read_text(encoding='utf-8'))
+        self.bundled_revision = self._bundled_index['revision']
+        self.activate(self._bundled_index, self.root)
+
+    @staticmethod
+    def validate_index(index):
+        if (not isinstance(index, dict) or index.get('schema_version') != 1
+                or not re.fullmatch(r'[0-9a-f]{16,64}', str(index.get('revision', '')))):
+            raise ValueError('Invalid logo index')
+        entries = index.get('entries')
+        if not isinstance(entries, dict) or not 0 < len(entries) <= 100000:
+            raise ValueError('Invalid logo entries')
+        for source, item in entries.items():
+            if (not isinstance(source, str) or len(source) > 512 or not source.startswith('logos/')
+                    or '..' in PurePosixPath(source).parts or not isinstance(item, dict)
+                    or not re.fullmatch(r'logos-\d{3}\.zip', str(item.get('archive', '')))
+                    or not re.fullmatch(r'[0-9a-f]{64}', str(item.get('member', '')))
+                    or not re.fullmatch(r'[0-9a-f]{64}', str(item.get('sha256', '')))
+                    or item.get('mime') not in {'image/png', 'image/svg+xml', 'image/jpeg', 'image/webp', 'image/gif'}):
+                raise ValueError('Invalid logo entry')
+
+    def activate(self, index, archive_root, manifest=None):
+        """Switch the entire verified library while image readers retain a consistent view."""
+        self.validate_index(index)
+        with self._lock:
+            self.entries = index['entries']
+            self.revision = index['revision']
+            self.archive_root = Path(archive_root)
+            self.download_manifest = manifest
+            # The bundled fallback stays on disk; retain only the active index
+            # once an independently published library has been activated.
+            self._bundled_index = index if self.revision == self.bundled_revision else None
+            self._render_cached.cache_clear()
 
     def contains(self, source):
-        return source in self.entries
+        with self._lock:
+            return source in self.entries
 
     def configure_cache(self, path):
-        path = Path(path) / self.revision
-        if self.archive_root != path:
-            self._render_cached.cache_clear()
-            self.archive_root = path
+        index = self._bundled_index
+        if index is None:
+            index = json.loads((self.root/'index.json').read_text(encoding='utf-8'))
+        self.activate(index, Path(path) / self.bundled_revision)
 
     def read(self, source):
+        with self._lock:
+            return self._read(source)
+
+    def _read(self, source):
         item=self.entries.get(source)
         if item is None:
             raise KeyError(source)
@@ -45,7 +77,8 @@ class LogoLibrary:
 
     def render(self, source, normalize=False):
         """Make referenced Europe artwork self-contained for an HTML img element."""
-        return self._render_cached(source,normalize)
+        with self._lock:
+            return self._render_cached(source,normalize)
 
     @lru_cache(maxsize=128)
     def _render_cached(self, source, normalize):

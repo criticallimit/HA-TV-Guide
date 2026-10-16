@@ -273,5 +273,25 @@ const server=http.createServer((req,res)=>{
       assert.deepEqual(result,{reads:2,timedOut:true,ids:['recovered']});
     }finally{await page.close();}
   });
+  await check('background logo revision replaces images while keeping programmes mounted',async()=>{
+    const page=await mount('personal');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      const result=await page.evaluate(async()=>{
+        const section=card.shadowRoot.querySelector('.channel-card');
+        const image=section.querySelector('img'),programme=section.querySelector('.program');
+        model.revision='logos-updated';
+        model.channels.forEach(channel=>{
+          channel.logo_normalized_light+='?v=logos-updated';
+          channel.logo_normalized_dark+='?v=logos-updated';
+        });
+        await card._app.loadGuide();
+        return {sameCard:section===card.shadowRoot.querySelector('.channel-card'),
+          sameProgramme:programme===section.querySelector('.program'),
+          newImage:image!==section.querySelector('img'),url:section.querySelector('img').src};
+      });
+      assert.equal(result.sameCard,true);assert.equal(result.sameProgramme,true);assert.equal(result.newImage,true);
+      assert.match(result.url,/v=logos-updated/);
+    }finally{await page.close();}
+  });
   await browser.close();server.close();assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
 })().catch(error=>{console.error(error);server.close();process.exit(1);});

@@ -16,6 +16,7 @@ from urllib.parse import quote
 import zipfile
 from .logo_assets import bundled_logo_library
 from .logo_download import LogoDownload
+from .logo_updates import LogoUpdates
 from .worker_io import worker_urlopen
 from .ui_payload import guide_preview
 
@@ -51,6 +52,7 @@ class GuideRuntime:
         self.closed = False
         self._logos = bundled_logo_library()
         self._logos.configure_cache(storage / 'logos')
+        self.logo_updates = LogoUpdates(self._logos, storage / 'logos')
         self.logo_download = LogoDownload(self._logos)
         self._lock = threading.RLock()
         self._request_lock = threading.RLock()
@@ -119,7 +121,8 @@ class GuideRuntime:
         result = []
         for theme in ("light", "dark"):
             path = root / f"{country}-{channel_id}-{theme}.svg"
-            if path.is_file():
+            local = path.is_file()
+            if local and self._logos.revision == self._logos.bundled_revision:
                 result.append(f"/tv_guide/frontend/app/logos/{quote(path.name)}")
             else:
                 original = {**channel, 'source_country': channel.get('source_country') or country}
@@ -128,6 +131,8 @@ class GuideRuntime:
                     bundled = self.runtime.LOGO_LIBRARY['channels'].get(str(original.get('source_channel_id') or original.get('id') or ''))
                     normalized = bool(bundled and source==bundled.get(theme)) or source.startswith(('logos/europe/','logos/uk/'))
                     result.append('/tv_guide/logo/'+quote(source,safe='/')+'?v='+self._logos.revision+('' if normalized else '&normalize=1'))
+                elif local:
+                    result.append(f"/tv_guide/frontend/app/logos/{quote(path.name)}")
                 else:
                     svg = self.runtime._normalized_text_logo_svg(channel.get("name") or channel_id, theme)
                     result.append("data:image/svg+xml," + quote(svg))
@@ -195,6 +200,13 @@ class GuideRuntime:
 
     def _download_logos(self, force=False):
         self.logo_download.run(lambda: self.closed, verify=force)
+        if not self.closed and self.logo_download.status()['ready']:
+            replacement = self.logo_updates.check(lambda: self.closed, force=force)
+            if replacement is not None:
+                self.logo_download = replacement
+                # New image URLs reach open cards through their regular guide
+                # refresh. Programme records and coordinator entities are unchanged.
+                self._invalidate_caches(programmes=False)
 
     def preparation_status(self):
         with self._lock:
@@ -204,7 +216,8 @@ class GuideRuntime:
                           'sources_completed': len(store.source_metrics),
                           'error': bool(store.last_error) and not store.refresh_running}
             logos = self.logo_download.status()
-            if self._download_logos in self._jobs:
+            job = self._jobs.get(self._download_logos)
+            if job is not None and (not logos['ready'] or job.get('forced')):
                 logos = {**logos, 'running': True, 'ready': False}
             complete = logos['ready'] and programmes['ready'] and not programmes['running'] and not programmes['error']
             first_install = self._first_install

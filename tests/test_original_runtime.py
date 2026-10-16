@@ -94,6 +94,33 @@ class GuideRuntimeTests(unittest.TestCase):
                          {'unchanged':True, 'revision':guide['revision']})
         self.assertIs(self.backend.state_snapshot()[0], snapshot[0])
 
+    def test_background_logo_activation_updates_main_logos_without_rebuilding_epg(self):
+        guide = self.backend.request('guide', 'GET')
+        snapshot = self.backend.state_snapshot()
+        downloader = self.backend.logo_download
+        revision = 'f' * 16
+        def activate(*args, **kwargs):
+            index = {**self.backend._logos._bundled_index, 'revision':revision}
+            self.backend._logos.activate(index, self.backend._logos.archive_root)
+            return downloader
+        with patch.object(downloader, 'status', return_value={'ready':True}), \
+                patch.object(self.backend.logo_updates, 'check', side_effect=activate):
+            self.backend._download_logos()
+        updated = self.backend.request('guide', 'GET', {'known_revision':guide['revision']})
+        self.assertNotIn('unchanged', updated)
+        first = updated['channels'][0]
+        self.assertIn('/tv_guide/logo/', first['logo_normalized_light'])
+        self.assertIn('?v=' + revision, first['logo_normalized_light'])
+        self.assertIs(self.backend.state_snapshot()[0], snapshot[0])
+
+    def test_routine_update_check_does_not_reopen_preparation_progress(self):
+        self.runtime.STORE.channels[0]['programs'] = [{'title':'cached'}]
+        self.backend._jobs[self.backend._download_logos] = {'forced':False}
+        with patch.object(self.backend.logo_download, 'status', return_value={'ready':True,'running':False}):
+            status = self.backend.preparation_status()
+        self.assertTrue(status['complete'])
+        self.assertFalse(status['logos']['running'])
+
     def test_personal_selection_keeps_shared_programme_snapshot(self):
         snapshot = self.backend.state_snapshot()
         order = self.backend.request('personal-channels', 'GET')['order'][:2][::-1]
@@ -411,7 +438,7 @@ class GuideRuntimeTests(unittest.TestCase):
     def test_queued_logo_verification_cannot_report_preparation_complete(self):
         self.runtime.STORE.channels[0]['programs']=[{'title':'cached'}]
         self.runtime.STORE.refresh_running=False
-        self.backend._jobs[self.backend._download_logos]={'queued':True}
+        self.backend._jobs[self.backend._download_logos]={'forced':True}
         with patch.object(self.backend.logo_download,'status',return_value={'ready':True,'running':False}):
             status=self.backend.preparation_status()
             self.assertFalse(status['complete'])
