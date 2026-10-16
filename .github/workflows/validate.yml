@@ -37,6 +37,8 @@ jobs:
         run: python tools/build_locales.py --check
       - name: Prepare verified logo test data
         run: python tests/prepare_logo_fixtures.py
+      - name: Check translated screenshot galleries
+        run: python tools/build_screenshot_gallery.py --check
       - name: Run offline unit tests
         run: python -m unittest discover -s tests -v
       - name: Verify published logo update descriptor
@@ -120,6 +122,7 @@ jobs:
         run: |
           node tests/frontend-stability.cjs
           node tests/frontend-ux.cjs
+          node tests/site-gallery.cjs
 
   webkit:
     runs-on: ubuntu-latest
@@ -141,3 +144,4 @@ jobs:
         run: |
           node tests/frontend-stability.cjs
           node tests/frontend-ux.cjs
+          node tests/site-gallery.cjs
