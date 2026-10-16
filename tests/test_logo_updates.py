@@ -305,6 +305,17 @@ class LogoUpdateTests(unittest.TestCase):
         self.assertIsNotNone(worker.check(lambda:False, self.opener, now=NOW))
         self.assertEqual(self.library.revision, 'b'*16)
 
+    def test_invalid_cached_check_times_cannot_block_daily_updates(self):
+        self.remote = self.old
+        for checked in (10**1000, -(10**1000), float('inf'), float('-inf'), float('nan'), NOW+1, 'bad', True):
+            with self.subTest(checked=checked):
+                (self.cache/'update-check.json').write_text(json.dumps({'revision':'a'*16, 'checked_at':checked}))
+                worker = updates.LogoUpdates(self.library, self.cache)
+                self.calls.clear()
+                self.assertIsNone(worker.check(lambda:False, self.opener, now=NOW))
+                self.assertEqual(len(self.calls), 1)
+                self.assertEqual(worker._state['checked_at'], NOW)
+
     def test_invalid_cached_etags_are_not_sent_to_the_update_server(self):
         self.remote = self.old
         for etag in ('\r\nInjected: header', 'x'*513, 'non-ascii-\u2603'):

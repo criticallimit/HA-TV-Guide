@@ -2,7 +2,6 @@
 from hashlib import sha256
 import json
 import logging
-import math
 import os
 from pathlib import Path
 import re
@@ -142,8 +141,8 @@ class LogoUpdates:
         try:
             now = time.time() if now is None else now
             checked = self._state.get('checked_at')
-            if stopped() or (not force and type(checked) in (int, float) and math.isfinite(checked)
-                             and 0 <= now - checked < CHECK_INTERVAL):
+            if stopped() or (not force and type(checked) in (int, float)
+                             and now - CHECK_INTERVAL < checked <= now):
                 return None
             self._state['checked_at'] = now
             self._state['revision'] = self.library.revision
