@@ -312,20 +312,22 @@ class TVGuideCard extends HTMLElement {
     if (!this.isConnected || !this._hass) throw new Error("Card closed");
     if (request.method === "POST" && ["bookmarks", "reminders"].includes(request.endpoint)) {
       const generation = this._generation;
-      // Serialize the mutation and its returned snapshot together. Otherwise a
-      // delayed earlier reply can restore entries removed by a later action.
-      const result = this._savedWrites.then(() => {
-        if (generation !== this._generation) throw new Error("Card closed");
-        return this._performRequest(request);
+      return new Promise((resolve, reject) => {
+        this._savedWrites = this._savedWrites.then(async () => {
+          if (generation !== this._generation || !this.isConnected) throw new Error("Card closed");
+          const transport = this._dispatchGuideRequest(request);
+          const response = this._performRequest(request, transport);
+          response.then(resolve, reject);
+          // A UI timeout cannot cancel an HA commit. Preserve operation order
+          // until its transport settles, including when the UI already failed.
+          await Promise.allSettled([transport, response]);
+        }).catch(reject);
       });
-      // A failed mutation must not poison the queue or retain its saved data.
-      this._savedWrites = result.then(() => {}, () => {});
-      return result;
     }
     return this._performRequest(request);
   }
 
-  async _performRequest(request) {
+  async _performRequest(request, transport) {
     if (!this.isConnected || !this._hass) throw new Error("Card closed");
     const generation=this._generation;
     return new Promise((resolve,reject)=>{
@@ -333,7 +335,7 @@ class TVGuideCard extends HTMLElement {
         this._pending.delete(pending); reject(new Error("Home Assistant request timed out"));
       },15000)};
       this._pending.add(pending);
-      this._dispatchGuideRequest(request).then(response=>{
+      (transport || this._dispatchGuideRequest(request)).then(response=>{
         if (!this.isConnected || generation!==this._generation) throw new Error("Card closed");
         resolve(response);
       }).catch(reject).finally(()=>{

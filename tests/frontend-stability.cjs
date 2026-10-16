@@ -291,6 +291,41 @@ const server=http.createServer((req,res)=>{
   assert.deepEqual(closedWrites,{statuses:['rejected','rejected'],writes:1},'Closing and reopening must invalidate queued writes');
   await page.evaluate(()=>card.remove());
   console.log('PASS',engineName,'ordered saved writes, delayed responses, failure recovery and closing queued actions');
+  // A UI timeout must not release write serialization while HA is still writing.
+  await page.evaluate(()=>{
+    window.timedWrites=[];window.timedValue='';
+    const timedHass={...hass,async callService(domain,service,data){
+      timedWrites.push(data.title);
+      if(data.title==='old')await new Promise(resolve=>window.releaseTimedWrite=resolve);
+      timedValue=data.title;
+    }};
+    window.card=document.createElement('tv-guide-card');card.hass=timedHass;document.body.append(card);
+  });
+  await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0&&card._pending.size===0);
+  await page.evaluate(()=>{
+    window.savedNativeTimeout=window.setTimeout;window.savedTimeoutCallbacks=[];
+    window.setTimeout=(callback,delay,...args)=>{
+      if(delay===15000)savedTimeoutCallbacks.push(callback);
+      return savedNativeTimeout(callback,delay,...args);
+    };
+    const body={action:'upsert',id:'same',title:'old',channel:'Station',channelId:'ch',start:new Date(Date.now()+3600000).toISOString(),end:new Date(Date.now()+7200000).toISOString()};
+    window.firstTimedWrite=card._request({endpoint:'bookmarks',method:'POST',body}).then(()=> 'fulfilled',()=> 'rejected');
+    window.secondTimedBody={...body,title:'new'};
+  });
+  await page.waitForFunction(()=>typeof releaseTimedWrite==='function');
+  const timed=await page.evaluate(async()=>{
+    window.secondTimedWrite=card._request({endpoint:'bookmarks',method:'POST',body:secondTimedBody});
+    savedTimeoutCallbacks[0]();
+    await new Promise(resolve=>savedNativeTimeout(resolve,0));
+    const beforeRelease=[...timedWrites];
+    window.setTimeout=savedNativeTimeout;
+    releaseTimedWrite();
+    const first=await firstTimedWrite;await secondTimedWrite;
+    return {beforeRelease,first,value:timedValue};
+  });
+  assert.deepEqual(timed,{beforeRelease:['old'],first:'rejected',value:'new'},'Timed-out writes must finish before later writes can commit');
+  await page.evaluate(()=>card.remove());
+  console.log('PASS',engineName,'write ordering survives UI timeout');
   // A committed settings save must not wait for the subsequent EPG transfer.
   await page.evaluate(()=>{
     const settings={...model.ui,country:'de',refresh_minutes:180,notification_service:'persistent_notification.create'};

@@ -290,23 +290,26 @@ class GuideRuntime:
     def state_snapshot(self):
         """Capture metadata quickly; build large EPG snapshots outside shared locks."""
         with self._snapshot_lock:
-            with self.runtime.SETTINGS_LOCK:
-                store = self.runtime.STORE
-                status = {
-                    'country': store.country,
-                    'refresh_running': store.refresh_running,
-                    'source_attempts': list(store.source_metrics),
-                    'last_loaded': store.last_loaded,
-                    'refresh_minutes': store.options.get('refresh_minutes', 180),
-                }
+            while True:
+                with self.runtime.SETTINGS_LOCK:
+                    store = self.runtime.STORE
+                    status = {
+                        'country': store.country,
+                        'refresh_running': store.refresh_running,
+                        'source_attempts': list(store.source_metrics),
+                        'last_loaded': store.last_loaded,
+                        'refresh_minutes': store.options.get('refresh_minutes', 180),
+                    }
+                    with self._lock:
+                        generation = self._guide_generation
+                        cached = self._snapshot_cache
+                snapshot = cached if cached is not None else self.snapshot(store)
                 with self._lock:
-                    generation = self._guide_generation
-                    cached = self._snapshot_cache
-            snapshot = cached if cached is not None else self.snapshot(store)
-            with self._lock:
-                if generation == self._guide_generation and not self.closed:
-                    self._snapshot_cache = snapshot
-            return (*snapshot, status)
+                    if generation != self._guide_generation and not self.closed:
+                        continue
+                    if not self.closed:
+                        self._snapshot_cache = snapshot
+                return (*snapshot, status)
 
     def close(self):
         with self._lock:

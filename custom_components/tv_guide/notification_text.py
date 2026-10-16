@@ -13,8 +13,10 @@ def _catalogue(language):
 
 def reminder_text(item, time_text, fallback_language='de'):
     """Call in HA's executor: loading the catalogue performs file I/O."""
-    language=str(item.get('language') or fallback_language).lower().replace('_','-').split('-')[0]
-    if language=='auto':language=fallback_language.split('-')[0]
+    configured=str(item.get('language') or fallback_language)
+    if configured.lower()=='auto':
+        configured=str(fallback_language or 'en')
+    language=configured.lower().replace('_','-').split('-')[0]
     if language=='no':language='nb'
     if language not in {'de','en','nl','fr','it','da','nb','sv'}:language='en'
     catalogue=_catalogue(language)

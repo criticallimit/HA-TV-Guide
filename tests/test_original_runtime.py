@@ -184,10 +184,38 @@ class GuideRuntimeTests(unittest.TestCase):
                 result=save.result(timeout=1)
             finally:
                 release.set()
-                snapshot.result(timeout=5)
+                captured=snapshot.result(timeout=5)
             self.assertTrue(result['ok'])
             self.assertEqual(self.backend.request('settings','GET')['language'],'en')
-            self.assertIsNone(self.backend._snapshot_cache)
+            self.assertIs(self.backend._snapshot_cache[0],captured[0])
+
+    def test_snapshot_does_not_restore_old_country_after_concurrent_switch(self):
+        settings=self.backend.request('settings','GET')
+        entered,release=threading.Event(),threading.Event()
+        original=self.backend.snapshot
+        def blocked(*args):
+            entered.set()
+            release.wait(5)
+            return original(*args)
+        with patch.object(self.backend,'snapshot',blocked), ThreadPoolExecutor(max_workers=2) as pool:
+            snapshot=pool.submit(self.backend.state_snapshot)
+            self.assertTrue(entered.wait(2))
+            try:
+                self.backend.request('settings','POST',{**settings,'country':'at'})
+            finally:
+                release.set()
+            result=snapshot.result(timeout=5)
+        self.assertEqual(result[3]['country'],'at')
+        self.assertTrue(all(channel['id'].startswith('at_') for channel in result[1]))
+
+    def test_interval_change_does_not_force_an_epg_redownload(self):
+        settings=self.backend.request('settings','GET')
+        calls=[]
+        self.runtime.start_background=lambda *args,**kwargs:calls.append((args,kwargs))
+        result=self.backend.request('settings','POST',{**settings,'refresh_minutes':360})
+        self.assertFalse(result['refresh_started'])
+        self.assertEqual(calls,[])
+        self.assertEqual(self.runtime.STORE.options['refresh_minutes'],360)
 
     def test_original_settings_switch_country_and_persist(self):
         settings=self.backend.request('settings','GET')
