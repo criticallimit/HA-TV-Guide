@@ -175,14 +175,6 @@ class GuideRequestHandler:
                 if not re.match(r"^[a-z0-9_]+\.[a-z0-9_]+$", notification_service):
                     return self._json({"ok": False, "error": "Ungültiger Benachrichtigungsdienst."}, status=400)
 
-                try:
-                    current_refresh_minutes = int(
-                        current_raw.get("refresh_minutes") or self.runtime.DEFAULT_REFRESH_MINUTES
-                    )
-                except Exception:
-                    current_refresh_minutes = self.runtime.DEFAULT_REFRESH_MINUTES
-
-                refresh_needed = refresh_minutes != current_refresh_minutes
                 new_options = {
                     "country": country,
                     "language": language,
@@ -202,7 +194,7 @@ class GuideRequestHandler:
                         self.runtime.STORE = self.runtime.COUNTRY_STORES[country]
                     self.runtime.STORE.options = self.runtime.load_options()
                     self.runtime.prune_country_stores()
-                    refresh_needed = refresh_needed or country_changed
+                    refresh_needed = country_changed
                     if refresh_needed and not self.runtime.STORE.refresh_running:
                         self.runtime.STORE.refresh_running = True
                         self.runtime.start_background(self.runtime.STORE.refresh, force=True)
