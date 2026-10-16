@@ -46,7 +46,7 @@ def version(revision, changed):
         entries[source] = {'sha256':digest, 'member':digest, 'archive':name, 'mime':'image/svg+xml'}
     index = {'schema_version':1, 'revision':revision, 'entries':entries}
     data = json.dumps(index).encode()
-    descriptor = {'schema_version':1, 'revision':revision,
+    descriptor = {'schema_version':1, 'generation':int(revision[0],16)-9, 'revision':revision,
                   'base_url':'https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/' + revision[0] * 40 + '/custom_components/tv_guide/logo_library/',
                   'index':{'size':len(data), 'sha256':sha256(data).hexdigest()},
                   'archives':{name:{'size':len(value), 'sha256':sha256(value).hexdigest()} for name,value in archives.items()}}
@@ -67,6 +67,7 @@ class LogoUpdateTests(unittest.TestCase):
         self.new = version('b' * 16, self.new_bytes)
         (self.bundled / 'index.json').write_bytes(self.old[1])
         (self.bundled / 'downloads.json').write_text(json.dumps(self.old[2]))
+        (self.bundled / 'updates.json').write_text(json.dumps(self.old[2]))
         self.library = assets.LogoLibrary(self.bundled)
         self.library.configure_cache(self.cache)
         downloader = download.LogoDownload(self.library)
@@ -221,11 +222,14 @@ class LogoUpdateTests(unittest.TestCase):
         index = deepcopy(self.old[0])
         index['revision'] = 'c'*16
         (self.bundled/'index.json').write_text(json.dumps(index))
+        (self.bundled/'updates.json').write_text(json.dumps(version('c'*16, self.old_bytes)[2]))
         restored = assets.LogoLibrary(self.bundled)
         restored.configure_cache(self.cache)
         worker = updates.LogoUpdates(restored, self.cache)
         self.assertEqual(restored.revision, 'c'*16)
         self.assertEqual(worker._state, {})
+        self.assertIsNone(worker.check(lambda:False, self.opener, now=NOW+1))
+        self.assertEqual(restored.revision, 'c'*16)
 
     def test_an_image_read_and_activation_cannot_mix_revisions(self):
         entered, release, activating = threading.Event(), threading.Event(), threading.Event()
@@ -253,6 +257,44 @@ class LogoUpdateTests(unittest.TestCase):
             self.assertEqual(reader.result(timeout=5)[0], self.old_bytes)
             self.assertIsNotNone(update.result(timeout=5))
         self.assertEqual(self.library.render('logos/library/0.svg')[0], self.new_bytes)
+
+    def test_older_remote_descriptor_cannot_downgrade_installed_update_after_restart(self):
+        self.assertIsNotNone(self.check())
+        restored = assets.LogoLibrary(self.bundled)
+        restored.configure_cache(self.cache)
+        worker = updates.LogoUpdates(restored, self.cache)
+        self.remote = self.old
+        self.calls.clear()
+        self.assertIsNone(worker.check(lambda:False, self.opener, now=NOW+updates.CHECK_INTERVAL))
+        self.assertEqual(restored.revision, 'b'*16)
+        self.assertEqual(restored.render('logos/library/0.svg')[0], self.new_bytes)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_changed_contents_cannot_reuse_the_installed_revision(self):
+        self.remote = deepcopy(self.old)
+        descriptor = self.remote[2]
+        descriptor['generation'] = 2
+        descriptor['index']['sha256'] = '0'*64
+        self.assertIsNone(self.check())
+        self.assertEqual(self.library.render('logos/library/0.svg')[0], self.old_bytes)
+        self.assertNotIn('etag', self.worker._state)
+
+    def test_publisher_can_roll_back_artwork_using_a_newer_generation(self):
+        self.assertIsNotNone(self.check())
+        self.remote = deepcopy(self.old)
+        self.remote[2]['generation'] = 3
+        self.assertIsNotNone(self.check(force=True))
+        self.assertEqual(self.library.revision, 'a'*16)
+        self.assertEqual(self.library.render('logos/library/0.svg')[0], self.old_bytes)
+        self.remote = self.new
+        self.assertIsNone(self.check(force=True))
+        self.assertEqual(self.library.revision, 'a'*16)
+
+    def test_malformed_cached_generation_cannot_block_future_updates(self):
+        (self.cache/'update-check.json').write_text(json.dumps({'revision':'a'*16, 'generation':['bad']}))
+        worker = updates.LogoUpdates(self.library, self.cache)
+        self.assertIsNotNone(worker.check(lambda:False, self.opener, now=NOW))
+        self.assertEqual(self.library.revision, 'b'*16)
 
     def test_concurrent_check_does_not_open_a_second_connection(self):
         self.worker._lock.acquire()

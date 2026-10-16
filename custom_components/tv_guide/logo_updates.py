@@ -28,6 +28,7 @@ def validate_descriptor(value):
     validate_manifest(value)
     index = value.get('index')
     if (value.get('schema_version') != 1
+            or type(value.get('generation')) is not int or not 0 < value['generation'] < 2**53
             or not re.fullmatch(r'[0-9a-f]{16,64}', str(value.get('revision', '')))
             or not isinstance(index, dict)
             or type(index.get('size')) is not int or not 0 < index['size'] <= MAX_INDEX_BYTES
@@ -58,6 +59,10 @@ class LogoUpdates:
         self.root = Path(cache_root)
         self._lock = threading.Lock()
         self._state = _read_json(self.root / 'update-check.json')
+        generation = self._state.get('generation', 0)
+        if type(generation) is not int or not 0 <= generation < 2**53:
+            self._state.pop('generation', None)
+        self._bundled = _read_json(library.root / 'updates.json')
         self._restore()
         if self._state and self._state.get('revision') != self.library.revision:
             self._state = {}
@@ -76,6 +81,8 @@ class LogoUpdates:
             folder = self.root / revision
             descriptor = _read_json(folder / 'downloads.json')
             validate_descriptor(descriptor)
+            if descriptor['generation'] < self._bundled.get('generation', 0):
+                raise ValueError('Installed logo update predates the bundled library')
             with (folder / 'index.json').open('rb') as source:
                 index = self._index(descriptor, source.read(descriptor['index']['size'] + 1))
             if revision != descriptor['revision']:
@@ -148,11 +155,21 @@ class LogoUpdates:
                     return None
                 descriptor = json.loads(data)
                 validate_descriptor(descriptor)
+                current = self.library.download_manifest or self._bundled
+                generation = max(current.get('generation', 0), self._state.get('generation', 0))
+                if descriptor['generation'] < generation:
+                    return None  # A stale CDN response must never downgrade artwork.
                 replacement = None
                 if descriptor['revision'] != self.library.revision:
+                    if descriptor['generation'] == generation:
+                        raise ValueError('Conflicting logo update generation')
                     replacement = self._stage(descriptor, opener, stopped)
                     if replacement is None:
                         return None
+                elif current and (descriptor['index'] != current.get('index')
+                                  or descriptor['archives'] != current.get('archives')):
+                    raise ValueError('Logo contents changed without a new revision')
+                self._state['generation'] = descriptor['generation']
                 self._prune()
                 self._state['revision'] = self.library.revision
                 if isinstance(etag, str) and len(etag) <= 512:

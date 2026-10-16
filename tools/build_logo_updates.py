@@ -22,8 +22,19 @@ def descriptor():
     modules['logo_assets'].LogoLibrary.validate_index(index)
     manifest = json.loads((folder / 'downloads.json').read_text(encoding='utf-8'))
     modules['logo_download'].validate_manifest(manifest, index['entries'])
-    return {'schema_version':1, 'revision':index['revision'],
-            'index':{'size':len(data), 'sha256':sha256(data).hexdigest()}, **manifest}
+    path = folder / 'updates.json'
+    previous = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+    fingerprint = {'size':len(data), 'sha256':sha256(data).hexdigest()}
+    same_revision = previous.get('revision') == index['revision']
+    if same_revision and (previous.get('index') != fingerprint or previous.get('archives') != manifest['archives']):
+        raise ValueError('Changed logo contents require a new index revision')
+    generation = previous.get('generation', 1)
+    if not same_revision and previous:
+        generation += 1
+    if type(generation) is not int or not 0 < generation < 2**53:
+        raise ValueError('Invalid logo update generation')
+    return {'schema_version':1, 'generation':generation, 'revision':index['revision'],
+            'index':fingerprint, **manifest}
 
 
 def main():
