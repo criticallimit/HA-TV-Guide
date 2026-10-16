@@ -1,26 +1,32 @@
 {
-  "source": "Existing indexed broadcaster artwork; colours preserved with theme-specific contrast plates.",
+  "source": "Verified broadcaster artwork with transparent dark variants. Brand panels retain their colours; designated wordmarks use white ink.",
   "channels": {
     "it_rai1": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-1-it.png",
       "expected_sha256": "af4e7b66b70f233a6ac233c24b85974a1c1f2598d7eb39c90140cfb814dd453b",
       "mime": "image/png",
       "library_light": "logos/europe/light/144f855a6af4fa1c1e55.svg",
-      "library_dark": "logos/europe/dark/144f855a6af4fa1c1e55.svg"
+      "library_dark": "logos/europe/dark/144f855a6af4fa1c1e55.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 363
     },
     "it_rai2": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-2-it.png",
       "expected_sha256": "77327a81b92f3a2b0ca5e4c22e6fd42baf52e14d5d0d92ba6c635ac4e3d1c2e9",
       "mime": "image/png",
       "library_light": "logos/europe/light/7bb5e175e043dcdcabf7.svg",
-      "library_dark": "logos/europe/dark/7bb5e175e043dcdcabf7.svg"
+      "library_dark": "logos/europe/dark/7bb5e175e043dcdcabf7.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 363
     },
     "it_rai3": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-3-it.png",
       "expected_sha256": "805fa291015627546dca81fb4cde5a3899d80c281155a48210669039c0e875f6",
       "mime": "image/png",
       "library_light": "logos/europe/light/2d3f7ff369b0beef61ec.svg",
-      "library_dark": "logos/europe/dark/2d3f7ff369b0beef61ec.svg"
+      "library_dark": "logos/europe/dark/2d3f7ff369b0beef61ec.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 363
     },
     "it_rete4": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rete4-it.png",
@@ -76,7 +82,9 @@
       "expected_sha256": "2e3a37f17aa7e74ad06ef4cfafb1bd1802c1bb9acc0d121c2eba50a0ffb69e5a",
       "mime": "image/png",
       "library_light": "logos/europe/light/69d8cd62d006deb89c31.svg",
-      "library_dark": "logos/europe/dark/69d8cd62d006deb89c31.svg"
+      "library_dark": "logos/europe/dark/69d8cd62d006deb89c31.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 363
     },
     "it_iris": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/iris-it.png",
@@ -90,21 +98,27 @@
       "expected_sha256": "277a269215e3b4ea64a6932615c84bd851870edd33012df8e2e25c18eb20b738",
       "mime": "image/png",
       "library_light": "logos/europe/light/d542a5d1b2332f23dce7.svg",
-      "library_dark": "logos/europe/dark/d542a5d1b2332f23dce7.svg"
+      "library_dark": "logos/europe/dark/d542a5d1b2332f23dce7.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 363
     },
     "it_raimovie": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-movie-it.png",
       "expected_sha256": "f32ff5377ff79828b5436de19750f59d9bffdf3cf22c7ca14a21c5ab679ec293",
       "mime": "image/png",
       "library_light": "logos/europe/light/b887e87a47624d189c54.svg",
-      "library_dark": "logos/europe/dark/b887e87a47624d189c54.svg"
+      "library_dark": "logos/europe/dark/b887e87a47624d189c54.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 185
     },
     "it_raipremium": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-premium-it.png",
       "expected_sha256": "aafb08b780fb878f1fedf686ed2f4166a8db19e9f09c7712b5f891b54ed15f5e",
       "mime": "image/png",
       "library_light": "logos/europe/light/cb49dc1816c7f9fa9e27.svg",
-      "library_dark": "logos/europe/dark/cb49dc1816c7f9fa9e27.svg"
+      "library_dark": "logos/europe/dark/cb49dc1816c7f9fa9e27.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 144
     },
     "it_cielo": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/cielo-it.png",
@@ -125,7 +139,8 @@
       "expected_sha256": "312dbbaca36f64ea5788eae8b8916540f3467cde33bab094e043a7b44939b2cb",
       "mime": "image/svg+xml",
       "library_light": "logos/library/light/312dbbaca36f64ea5788.svg",
-      "library_dark": "logos/library/dark/312dbbaca36f64ea5788.svg"
+      "library_dark": "logos/library/dark/312dbbaca36f64ea5788.svg",
+      "dark_variant": "white"
     },
     "it_la7cinema": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/la7-cinema-it.png",
@@ -202,7 +217,9 @@
       "expected_sha256": "7493829a29625d77416d9a87ef385bf0988987b5d583849198e996634922ac6d",
       "mime": "image/png",
       "library_light": "logos/europe/light/f9db96258af410f18b02.svg",
-      "library_dark": "logos/europe/dark/f9db96258af410f18b02.svg"
+      "library_dark": "logos/europe/dark/f9db96258af410f18b02.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 210
     },
     "it_raiyoyo": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-yoyo-it.png",
@@ -230,7 +247,9 @@
       "expected_sha256": "ad0131fc66559aad8e42b7d169fe09ab92ac638121ce34059aaf258cef05d7e4",
       "mime": "image/png",
       "library_light": "logos/europe/light/143d7b3eb8b9bea8f3d5.svg",
-      "library_dark": "logos/europe/dark/143d7b3eb8b9bea8f3d5.svg"
+      "library_dark": "logos/europe/dark/143d7b3eb8b9bea8f3d5.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 194
     },
     "it_mediasetextra": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/mediaset-extra-it.png",
@@ -244,14 +263,18 @@
       "expected_sha256": "52437d13bf7221c83c8add5bd1c237c7f763b8c9d70514e1d6f14272f8c11568",
       "mime": "image/png",
       "library_light": "logos/europe/light/274c0c29da1aaf92309d.svg",
-      "library_dark": "logos/europe/dark/274c0c29da1aaf92309d.svg"
+      "library_dark": "logos/europe/dark/274c0c29da1aaf92309d.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 205
     },
     "it_rainews24": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-news-24-it.png",
       "expected_sha256": "d1b542f42fd11ac34d6f5bb15c53c2a2ce408347e169a8b44a338a58c157e5af",
       "mime": "image/png",
       "library_light": "logos/europe/light/f2ea408e212acfb85772.svg",
-      "library_dark": "logos/europe/dark/f2ea408e212acfb85772.svg"
+      "library_dark": "logos/europe/dark/f2ea408e212acfb85772.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 157
     },
     "it_tgcom24": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/tgcom24-it.png",
@@ -300,7 +323,9 @@
       "expected_sha256": "d6da742eefa43964b3dfb574c33e0ba3fcdbcfd73f1b6ce4170388c4095fbbd7",
       "mime": "image/png",
       "library_light": "logos/europe/light/efbebb544d466e9cc58d.svg",
-      "library_dark": "logos/europe/dark/efbebb544d466e9cc58d.svg"
+      "library_dark": "logos/europe/dark/efbebb544d466e9cc58d.svg",
+      "dark_variant": "white-wordmark",
+      "wordmark_start": 175
     },
     "it_sportitalia": {
       "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/hd/sportitalia-hd-it.png",
@@ -316,5 +341,6 @@
       "library_light": "logos/europe/light/c91da2edb49d056eb061.svg",
       "library_dark": "logos/europe/dark/c91da2edb49d056eb061.svg"
     }
-  }
+  },
+  "country": "it"
 }
