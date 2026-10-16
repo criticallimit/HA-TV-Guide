@@ -1,7 +1,7 @@
-import {createI18n} from './i18n.js?v=native-23';
-import {createGuideCore} from './guide-core.js?v=native-13';
+import {createI18n} from './i18n.js?v=native-24';
+import {createGuideCore} from './guide-core.js?v=native-14';
 import {TVGuideChannelPicker} from './channel-picker.js?v=native-14';
-import {createPreparation} from './preparation.js?v=native-11';
+import {createPreparation} from './preparation.js?v=native-12';
 import {createScope} from './lifecycle.js';
 
 export function createGuideApp({root, request:requestAction, getHass, getTheme}) {
@@ -11,6 +11,16 @@ const clearTimeout = scope.clearTimeout;
 const setInterval = scope.setInterval;
 const i18n = createI18n(root, getHass);
 const TVGuideCore = createGuideCore(i18n);
+let preparation;
+function configureLanguage(options) {
+  const changed = i18n.configure(options);
+  if (changed) {
+    preparation?.updateLanguage();
+    if (activeDetail && detail.open) showDetail(activeDetail.channel, activeDetail.program);
+  }
+  return changed;
+}
+
 const t = (message, values) => i18n?.t(message, values) || message;
 const grid = root.querySelector("#grid");
 const settingsLoading = root.querySelector("#settingsLoading");
@@ -149,7 +159,7 @@ function showCachedGuide() {
     if (populated.length && !populated.some(channel => channel.programs.some(item =>
       new Date(item.end).getTime() > target))) return;
     guide = cached.guide;
-    i18n?.configure({...guide.ui, country:guide.country});
+    configureLanguage({...guide.ui, country:guide.country});
     const columns = Number(guide.ui.columns_desktop || 5);
     root.style.setProperty("--desktop-columns", String(Math.max(3, Math.min(6, columns))));
     mode = ["now","1800","2015","2200"].includes(guide.ui.default_view) ? guide.ui.default_view : "now";
@@ -334,7 +344,7 @@ async function saveReminderForActiveDetail(enabled, minutes) {
         id,
         channel:channel.name,
         channelId:channel.id,
-        title:program.title,
+        title:TVGuideCore.programTitle(program),
         start:program.start,
         end:program.end,
         minutes,
@@ -358,7 +368,7 @@ function showDetail(channel, program) {
 
   detailBody.innerHTML =
     '<div class="detail-channel">' + escapeHtml(channel.name) + '</div>' +
-    '<h2>' + escapeHtml(program.title) + '</h2>' +
+    '<h2>' + escapeHtml(TVGuideCore.programTitle(program)) + '</h2>' +
     '<p class="detail-time">' + dateFmt.format(new Date(program.start)) + ' · ' +
       fmt.format(new Date(program.start)) + '–' + fmt.format(new Date(program.end)) + '</p>' +
     subtitle + category + description;
@@ -387,7 +397,7 @@ async function toggleBookmark() {
       id,
       channel:channel.name,
       channelId:channel.id,
-      title:program.title,
+      title:TVGuideCore.programTitle(program),
       start:program.start,
       end:program.end
     };
@@ -413,7 +423,7 @@ function renderBookmarks() {
   bookmarksBody.innerHTML = bookmarks.map(item => {
     const reminder = reminders.find(r => r.id === item.id);
     const reminderText = reminder ? ' · ⏰ ' + escapeHtml(t('{minutes} Min.', {minutes:reminder.minutes})) : '';
-    return '<div class="bookmark-row"><div><strong>' + escapeHtml(item.title) + '</strong>' +
+    return '<div class="bookmark-row"><div><strong>' + escapeHtml(TVGuideCore.programTitle(item)) + '</strong>' +
       '<div>' + escapeHtml(item.channel) + ' · ' + dateFmt.format(new Date(item.start)) +
       ' · ' + fmt.format(new Date(item.start)) + reminderText + '</div></div>' +
       '<button type="button" data-remove="' + escapeHtml(item.id) + ("\">" + escapeHtml(t("×")) + "</button></div>");
@@ -515,7 +525,7 @@ async function openAppSettings() {
   try {
     const settings = await requestAction({endpoint:"settings",method:"GET"});
     if (!isCurrent()) return;
-    i18n?.configure(settings);
+    configureLanguage(settings);
     settingLanguage.value = settings.language || "auto";
     settingCountry.replaceChildren();
     const countries = settings.countries || settings.country_choices || [];
@@ -562,7 +572,7 @@ function appSettingsValues() {
 }
 
 function applyCommittedAppSettings(committed) {
-  i18n.configure({...committed, home_assistant:guide?.ui?.home_assistant});
+  configureLanguage({...committed, home_assistant:guide?.ui?.home_assistant});
   if (!guide) return;
   guide = {...guide, ui:{...guide.ui, ...committed}};
   root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
@@ -859,19 +869,26 @@ async function requestGuide(preview, request) {
   }
   if (settingsViewPending) {
     showSettingsLoading();
-    // Keep the previous view until the selected country's preparation finishes.
-    // Empty final results are valid too; never wait for nonexistent programmes.
-    if (nextGuide.country !== settingsViewPending.country ||
-        (settingsViewPending.waitForRefresh && nextGuide.refresh_running)) {
+    const ids = channelView === "custom" ? nextGuide.custom_channel_ids : nextGuide.main_channel_ids;
+    const selected = new Set(ids || []);
+    const target = at ? Date.parse(at) : Date.now();
+    const usable = nextGuide.channels?.some(channel => selected.has(channel.id) &&
+      channel.programs?.some(program => Date.parse(program.end) > target));
+    // Old requests are rejected by guideRequest above. A current response can
+    // reflect a later save from another HA client and is authoritative too.
+    // Keep the previous view only while the requested country has no usable data.
+    if (settingsViewPending.waitForRefresh && nextGuide.country === settingsViewPending.country &&
+        nextGuide.refresh_running && selected.size && !usable) {
       scheduleGuideReload();
       return;
     }
   }
+
   const countryChanged = guide && guide.country !== nextGuide.country;
   guide = nextGuide;
   lastGuideLoadedAt = nextGuide._preview ? 0 : Date.now();
   saveFirstPaintGuide(nextGuide);
-  const languageChanged = i18n?.configure({...guide.ui, country:guide.country});
+  const languageChanged = configureLanguage({...guide.ui, country:guide.country});
   if (languageChanged) {
     renderBookmarks();
     if (activeDetail) updateDetailControls();
@@ -1058,7 +1075,7 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 setInterval(() => { if (!document.hidden && !guidePageSuspended && mode === "now") render(); }, 60 * 1000);
 
-const preparation = createPreparation({root, request:requestAction, scope, render:()=>{if (guide) render(true);}});
+preparation = createPreparation({root, request:requestAction, scope, i18n, render:()=>{if (guide) render(true);}});
 function suspend() {
   guidePageSuspended = true;
   ++lifecycleRevision;
@@ -1083,7 +1100,7 @@ return {
   suspend, resume,
   updateTheme() {
     syncHomeAssistantTheme();
-    if (guide && i18n.configure({...guide.ui,country:guide.country})) {
+    if (guide && configureLanguage({...guide.ui,country:guide.country})) {
       render(); renderBookmarks(); if(activeDetail)updateDetailControls();
     }
   },

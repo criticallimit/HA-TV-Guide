@@ -1,4 +1,4 @@
-import {createGuideApp} from './app/app.js?v=native-24';
+import {createGuideApp} from './app/app.js?v=native-25';
 import {viewMarkup, viewStyles} from './app/view-template.js?v=native-16';
 
 let fontsRegistered = false;

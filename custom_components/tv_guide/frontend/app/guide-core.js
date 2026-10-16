@@ -3,6 +3,10 @@ export function createGuideCore(i18n) {
   const fmt = {format:value => i18n?.formatTime(value) || new Intl.DateTimeFormat("de-DE", {hour:"2-digit", minute:"2-digit"}).format(value)};
   const dateFmt = {format:value => i18n?.formatDate(value) || new Intl.DateTimeFormat("de-DE", {weekday:"short", day:"2-digit", month:"2-digit"}).format(value)};
 
+  function programTitle(program) {
+    return String(program.title || "").trim() ? program.title : t("Ohne Titel");
+  }
+
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, c => ({
       "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -125,9 +129,9 @@ export function createGuideCore(i18n) {
         ? '<div class="program-time-wrapper">' + time + '</div>'
         : index === 1 ? '<div class="program-time-label-wrapper">' + time + '</div>' : time;
       return '<div class="program' + rowClass + (isCurrent ? ' current' : '') + '">' +
-        '<button type="button" class="program-link" title="' + escapeHtml(program.title) +
+        '<button type="button" class="program-link" title="' + escapeHtml(programTitle(program)) +
         '" data-program-start="' + escapeHtml(program.start) + '">' +
-        timeMarkup + '<div class="program-main"><strong>' + escapeHtml(program.title) + '</strong>' +
+        timeMarkup + '<div class="program-main"><strong>' + escapeHtml(programTitle(program)) + '</strong>' +
         meta + '</div></button>' +
         (isCurrent ? '<div class="progress-track"><div class="progress-fill" style="width:' +
           (showProgressValue ? pct(program.start, program.end) : 0) + '%"></div></div>' : '') + '</div>';
@@ -136,7 +140,7 @@ export function createGuideCore(i18n) {
 
   return {
     fmt, dateFmt, startOfDay, dateKey, targetForMode, modeIndex,
-    pct, escapeHtml,
+    pct, escapeHtml, programTitle,
     channelHeader, renderPrograms
   };
 }

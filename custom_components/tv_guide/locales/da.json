@@ -177,7 +177,19 @@
     "Ansicht wird aktualisiert …": "Visningen opdateres …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Forbindelsen blev afbrudt. Prøver igen …",
     "Spanien": "Spanien",
-    "Español": "Spansk"
+    "Español": "Spansk",
+    "TV Guide wird vorbereitet": "TV Guide klargøres",
+    "Senderlisten verfügbar": "Kanallister er tilgængelige",
+    "Programmdaten": "Programdata",
+    "Logo-Bibliothek": "Logobibliotek",
+    "Wird geladen …": "Indlæser …",
+    "Verfügbar": "Tilgængelig",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "Du kan lukke vinduet. Klargøringen fortsætter i baggrunden.",
+    "Erneut versuchen": "Prøv igen",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download mislykkedes. Guiden kan stadig bruges.",
+    "Vorbereitung abgeschlossen": "Klargøring fuldført",
+    "Quellen geprüft": "kilder kontrolleret",
+    "Ohne Titel": "Uden titel"
   },
   "home_assistant": {
     "config": {

@@ -177,7 +177,19 @@
     "Ansicht wird aktualisiert …": "Updating view …",
     "Verbindung unterbrochen. Erneuter Versuch …": "Connection interrupted. Retrying …",
     "Spanien": "Spain",
-    "Español": "Spanish"
+    "Español": "Spanish",
+    "TV Guide wird vorbereitet": "Preparing TV Guide",
+    "Senderlisten verfügbar": "Channel lists available",
+    "Programmdaten": "Programme data",
+    "Logo-Bibliothek": "Logo library",
+    "Wird geladen …": "Loading …",
+    "Verfügbar": "Available",
+    "Du kannst dieses Fenster schließen. Die Vorbereitung läuft im Hintergrund weiter.": "You can close this window. Preparation continues in the background.",
+    "Erneut versuchen": "Retry",
+    "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Download failed. You can still use the guide.",
+    "Vorbereitung abgeschlossen": "Preparation complete",
+    "Quellen geprüft": "sources checked",
+    "Ohne Titel": "Untitled"
   },
   "home_assistant": {
     "config": {

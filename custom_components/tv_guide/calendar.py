@@ -6,6 +6,7 @@ from homeassistant.components.calendar import CalendarEntity, CalendarEvent
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+from .languages import LANGUAGES, messages, normalize_language
 from .channel_selection import filter_programmes
 from .channel_mapping import resolved_selection, channel_labels
 
@@ -14,7 +15,11 @@ async def async_setup_entry(hass, entry, async_add_entities):
     """Create a programme calendar when the native EPG coordinator is loaded."""
     coordinator = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if coordinator is not None:
-        async_add_entities([TVGuideProgrammeCalendar(coordinator, entry)])
+        def title_labels():
+            return {code: messages(code)["Ohne Titel"] for code in LANGUAGES}
+
+        untitled = await hass.async_add_executor_job(title_labels)
+        async_add_entities([TVGuideProgrammeCalendar(coordinator, entry, untitled)])
 
 
 class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
@@ -24,9 +29,10 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
     _attr_translation_key = "programmes"
     _attr_unique_id = "tv_guide_xmltv_programmes_calendar"
 
-    def __init__(self, coordinator, entry):
+    def __init__(self, coordinator, entry, untitled=None):
         super().__init__(coordinator)
         self._entry = entry
+        self._untitled = untitled or {}
 
     @property
     def _selected_channels(self):
@@ -48,7 +54,10 @@ class TVGuideProgrammeCalendar(CoordinatorEntity, CalendarEntity):
             return CalendarEvent(
                 start=start,
                 end=end,
-                summary=programme["title"],
+                summary=programme.get("title") or self._untitled.get(
+                    normalize_language(getattr(getattr(getattr(self, "hass", None), "config", None), "language", "en")),
+                    "Untitled",
+                ),
                 description=programme.get("description", ""),
                 location=(labels if labels is not None else channel_labels(
                     self.coordinator.canonical_channels, self.coordinator.channels

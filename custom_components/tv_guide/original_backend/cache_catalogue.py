@@ -5,7 +5,7 @@ import tempfile
 
 from .json_files import read_json_file
 
-CACHE_SCHEMA_VERSION = 10
+CACHE_SCHEMA_VERSION = 11
 
 
 def _write_index(path, value):

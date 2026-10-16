@@ -260,11 +260,52 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('#grid').getAttribute('aria-busy'),null);
     }finally{await page.close();}
   });
+  await check('cached country programmes appear without waiting for background refresh',async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{model.refresh_running=true;card.shadowRoot.querySelector('#settingCountry').value='es';});
+      await page.locator('#saveAppSettings').click();
+      await page.waitForFunction(()=>card._app.guide.country==='es');
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'hidden'});
+      assert.ok(await page.locator('.program-link').count()>0);
+      assert.equal(await page.evaluate(()=>card._app.guide.refresh_running),true);
+    }finally{await page.close();}
+  });
+  await check('a later country save by another client releases the pending view',async()=>{
+    const page=await mount('switching');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{model.refresh_running=true;model.channels.forEach(ch=>ch.programs=[]);card.shadowRoot.querySelector('#settingCountry').value='it';});
+      await page.locator('#saveAppSettings').click();
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'visible'});
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'de');
+      await page.evaluate(async()=>{model.country='fr';model.ui.country='fr';model.ui.language='fr';model.refresh_running=false;await card._app.loadGuide();});
+      await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'hidden'});
+      assert.equal(await page.evaluate(()=>card._app.guide.country),'fr');
+    }finally{await page.close();}
+  });
+  await check('preparation and missing programme titles follow the registered UI language',async()=>{
+    const page=await mount('preparation');try{
+      await page.locator('#preparationDialog').waitFor({state:'visible'});
+      await page.evaluate(async()=>{model.ui.language='es';model.channels.forEach(ch=>ch.programs.forEach(p=>p.title=''));await card._app.loadGuide();});
+      assert.equal(await page.locator('#preparationTitle').textContent(),'Preparando TV Guide');
+      assert.equal(await page.locator('#preparationClose').textContent(),'Cerrar');
+      assert.equal(await page.locator('.program-link').first().getAttribute('title'),'Sin título');
+      await page.locator('#preparationClose').click();
+      await page.locator('.program-link').first().click();
+      assert.equal(await page.locator('#detail h2').textContent(),'Sin título');
+      await page.evaluate(async()=>{model.ui.language='en';await card._app.loadGuide();});
+      assert.equal(await page.locator('#preparationTitle').textContent(),'Preparing TV Guide');
+      assert.equal(await page.locator('.program-link').first().getAttribute('title'),'Untitled');
+      assert.equal(await page.locator('#detail h2').textContent(),'Untitled');
+    }finally{await page.close();}
+  });
   await check('country preparation keeps the old view and recovers after a failed guide request',async()=>{
     const page=await mount('switching');try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
       await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
-      await page.evaluate(()=>{model.refresh_running=true;card.shadowRoot.querySelector('#settingCountry').value='it';});
+      await page.evaluate(()=>{model.refresh_running=true;model.channels.forEach(ch=>ch.programs=[]);card.shadowRoot.querySelector('#settingCountry').value='it';});
       await page.locator('#saveAppSettings').click();
       await page.locator('#appSettingsDialog').waitFor({state:'hidden'});
       await page.locator('#settingsLoading .settings-loading-scrim').waitFor({state:'visible'});
@@ -459,7 +500,7 @@ const server=http.createServer((req,res)=>{
         assert.equal(await page.evaluate(()=>settings.language),code);
       }
       const values=await page.evaluate(async()=>{
-        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-23');
+        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-24');
         return ['FR_ca','no_NO','nb-no','EN-us','unknown'].map(value=>normalizeLanguage(value));
       });
       assert.deepEqual(values,['fr','nb','nb','en','en']);
@@ -474,7 +515,7 @@ const server=http.createServer((req,res)=>{
       await page.locator('#settingLanguage').selectOption('pt');await page.locator('#saveAppSettings').click();
       await page.waitForFunction(()=>card.shadowRoot.querySelector('.guide-root').lang==='pt');
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-23');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-24');
         const locale=createI18n({},()=>({locale:{language:'pt_BR'}}));
         return {language:locale.language,translated:locale.t('Einstellungen'),fallback:locale.t('Speichern')};
       });
@@ -503,7 +544,7 @@ const server=http.createServer((req,res)=>{
   await check('registered country language fallback works without country branches and respects HA profile',async()=>{
     const page=await mount('settings');try{
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-23');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-24');
         const profile={locale:{}};
         const locale=createI18n({},()=>profile);
         locale.configure({language:'auto',country:'zz',countries:[{code:'zz',language:'fr'}]});
