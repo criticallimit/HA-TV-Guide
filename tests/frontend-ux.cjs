@@ -97,7 +97,27 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('.channel-card').count(),45);
       for(const theme of ['light','dark']){
         const decoded=await page.evaluate(async({ids,theme})=>Promise.all(ids.map(async id=>{
-          const image=new Image();image.src='/tv_guide/frontend/app/logos/it-'+id+'-'+theme+'.svg';await image.decode();return image.naturalWidth>0;
+          const image=new Image();image.src='/tv_guide/frontend/app/logos/it-'+id+'-'+theme+'.svg';await image.decode();
+          if(theme==='dark'){
+            const canvas=document.createElement('canvas');canvas.width=260;canvas.height=64;
+            const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const pixels=ctx.getImageData(0,0,260,64).data;
+            // A full-width light plate used to reach these padding rows.
+            for(let y=0;y<4;y++)for(let x=0;x<260;x++)if(pixels[(y*260+x)*4+3]!==0)throw Error(id+' has an opaque background');
+            let ink=0;
+            for(let i=3;i<pixels.length;i+=4)if(pixels[i]>200)ink++;
+            if(ink<20)throw Error(id+' lost its visible artwork');
+            if(id==='it_rai1'){
+              let white=0,coloured=0;
+              for(let y=4;y<60;y++)for(let x=147;x<174;x++){
+                const i=(y*260+x)*4;if(pixels[i+3]>220){if(Math.min(...pixels.slice(i,i+3))>240)white++;else coloured++;}
+              }
+              if(white<15||coloured)throw Error('Rai 1 digit must use white ink');
+              const brand=ctx.getImageData(100,10,1,1).data;
+              if(brand[3]<220||brand[2]<=brand[0])throw Error('Rai 1 coloured brand panel was lost');
+            }
+            if(id==='it_tv2000')for(let i=0;i<pixels.length;i+=4)if(pixels[i+3]>200&&Math.min(...pixels.slice(i,i+3))<240)throw Error('TV2000 must use white ink');
+          }
+          return image.naturalWidth>0;
         })),{ids:italyChannels.map(c=>c.id),theme});
         assert.ok(decoded.every(Boolean));
       }

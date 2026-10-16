@@ -1,5 +1,7 @@
 """Italian source identities, provider cleanup, logo coverage and publication."""
 import io
+import subprocess
+import sys
 import json
 from pathlib import Path
 import tempfile
@@ -38,6 +40,10 @@ class ItalyTests(unittest.TestCase):
                     self.assertEqual(extra['source_name'],'Rai 1')
             finally:
                 backend.close()
+
+    def test_dark_variants_are_reproducible_from_verified_originals(self):
+        result=subprocess.run([sys.executable,str(ROOT/'tools/build_channel_logo_variants.py'),str(COMPONENT/'catalogs/italy_logo_sources.json'),'--check'],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
 
     def test_complete_theme_assets_and_documented_country(self):
         catalog=json.loads((COMPONENT/'catalogs/channels_it.json').read_text())['channels']
