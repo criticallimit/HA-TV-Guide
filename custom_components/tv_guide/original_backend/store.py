@@ -10,7 +10,6 @@ import os
 import threading
 import time
 from datetime import timedelta, timezone
-from urllib.parse import urlparse
 from urllib.request import Request
 from zoneinfo import ZoneInfo
 
@@ -85,20 +84,15 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
     def _load_parsed_cache(self):
         try:
             payload = json.loads(self.parsed_cache_file.read_text(encoding="utf-8"))
-            if payload.get("country", "de") != self.country:
+            if payload.get("country") != self.country:
                 return False
             cache_version = int(payload.get("schema_version") or 0)
             self.cache_schema_current = cache_version == self.runtime.PARSED_CACHE_SCHEMA_VERSION
-            if cache_version in {5, 6, 7}:
-                print(f"[TV Guide] Cache-Schema {cache_version} wird mit bestätigten Senderquellen neu aufgebaut.", flush=True)
-                return False
             if not self.cache_schema_current:
-                print(
-                    f"[TV Guide] EPG-Cache-Version {cache_version} ist veraltet; "
-                    f"vorhandene Daten bleiben sichtbar und werden im Hintergrund "
-                    f"mit Version {self.runtime.PARSED_CACHE_SCHEMA_VERSION} neu aufgebaut.",
-                    flush=True,
-                )
+                # Derived data is replaceable; do not keep historical migration paths.
+                self.parsed_cache_file.unlink(missing_ok=True)
+                self.parsed_cache_file.with_suffix('.catalogue.json').unlink(missing_ok=True)
+                return False
             latest_end_raw = payload.get("feed_latest_end")
 
             cached_channels = [
@@ -133,20 +127,6 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                     latest.astimezone(timezone.utc)
             except (TypeError, ValueError, OverflowError):
                 latest_end_raw = None
-            if cache_version < 10:
-                # Old RTL records can contain reversed series/episode fields.
-                # Keep other source data while these records are fetched again.
-                for item in cached_channels:
-                    programmes = item.get("programs") or []
-                    retained = []
-                    for programme in programmes:
-                        source = urlparse(str(programme.get("_source_url") or ""))
-                        if source.hostname in {"rtl.de", "www.rtl.de"} and source.path.startswith("/fernsehprogramm/"):
-                            continue
-                        retained.append(programme)
-                    if len(retained) != len(programmes):
-                        item["programs"] = retained
-                        item["available"] = bool(retained)
             configured_by_id = {ch["id"]: ch for ch in self.catalog["channels"]}
 
             excluded = set(self.runtime.COUNTRIES[self.country].get("excluded_xmltv_ids", []))

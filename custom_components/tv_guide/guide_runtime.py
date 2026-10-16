@@ -9,7 +9,6 @@ from time import monotonic, perf_counter
 import threading
 from uuid import uuid4
 from urllib.parse import quote
-import zipfile
 from .logo_assets import bundled_logo_library
 from .logo_download import LogoDownload
 from .logo_updates import LogoUpdates
@@ -19,6 +18,7 @@ from .countries import COUNTRIES, ROOT as COUNTRY_ROOT
 from .provider_transport import ProviderTransport
 from .work_scheduler import WorkScheduler
 from .settings_state import SettingsState
+from .storage_cleanup import remove_legacy_storage
 from .programme_repository import ProgrammeRepository, compact_guide
 from .original_backend.services import ProgrammeEngine
 
@@ -35,22 +35,6 @@ class GuideRuntime:
         self._preparation_marker = storage / 'preparation-complete.json'
         self._first_install = not self._preparation_marker.exists()
         self._installation_id = storage.name
-        assets = storage / "reference"
-        with zipfile.ZipFile(Path(__file__).parent / "original_backend" / "reference-data.zip") as archive:
-            for name in archive.namelist():
-                # Notification catalogues are read lazily from the archive;
-                # the native UI ships its own translations.
-                if name.startswith("www/"):
-                    continue
-                target = (assets / name).resolve()
-                if assets.resolve() not in target.parents:
-                    raise ValueError("Invalid bundled reference path")
-                target.parent.mkdir(parents=True, exist_ok=True)
-                data = archive.read(name)
-                if not target.exists() or target.read_bytes() != data:
-                    temporary = target.with_suffix(target.suffix + '.tmp')
-                    temporary.write_bytes(data)
-                    temporary.replace(target)
         self.closed = False
         self._logos = bundled_logo_library()
         self._logos.configure_cache(storage / 'logos')
@@ -75,8 +59,9 @@ class GuideRuntime:
         self.settings = SettingsState(storage / "options.json", {**options, "country":options.get("country") or "de"}, persistent=persist_settings)
         catalogs = {code:json.loads((COUNTRY_ROOT / "catalogs" / item["catalog"]).read_text(encoding="utf-8"))
                     for code,item in COUNTRIES.items()}
-        runtime = ProgrammeEngine(assets, storage, COUNTRIES, catalogs, locale, self.settings, self._backend_changed)
+        runtime = ProgrammeEngine(storage, COUNTRIES, catalogs, locale, self.settings, self._backend_changed)
         self.runtime = runtime
+        remove_legacy_storage(storage, native_settings=not persist_settings)
         self._pool = WorkScheduler(2)
         try:
             self._cache_pool = WorkScheduler(1, "tv-guide-cache")

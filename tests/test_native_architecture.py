@@ -166,3 +166,29 @@ class ConditionalProviderTests(unittest.TestCase):
         transport=ProviderTransport(open)
         with transport.open('https://example.org/guide') as response:response.read()
         self.assertFalse(transport._entries)
+
+
+class LegacyStorageCleanupTests(unittest.TestCase):
+    def test_native_cleanup_preserves_user_data_and_never_follows_reference_symlink(self):
+        cleanup=module('storage_cleanup').remove_legacy_storage
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)/'entry';root.mkdir()
+            external=Path(folder)/'outside';external.mkdir()
+            (external/'keep').write_text('keep')
+            (root/'reference').symlink_to(external,target_is_directory=True)
+            (root/'options.json').write_text('{}')
+            for name in ('tv_guide_personal_channels.json','tv_guide_channel_order.json','preparation-complete.json'):
+                (root/name).write_text('preserve')
+            cleanup(root,native_settings=True)
+            self.assertFalse((root/'options.json').exists())
+            self.assertFalse((root/'reference').is_symlink())
+            self.assertEqual((external/'keep').read_text(),'keep')
+            for name in ('tv_guide_personal_channels.json','tv_guide_channel_order.json','preparation-complete.json'):
+                self.assertEqual((root/name).read_text(),'preserve')
+            cleanup(root,native_settings=True)
+
+    def test_standalone_settings_file_is_retained(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);path=root/'options.json';path.write_text('{}')
+            module('storage_cleanup').remove_legacy_storage(root,native_settings=False)
+            self.assertTrue(path.exists())

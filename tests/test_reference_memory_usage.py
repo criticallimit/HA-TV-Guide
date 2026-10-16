@@ -111,10 +111,10 @@ class MemoryTests(unittest.TestCase):
     def test_malformed_inactive_country_catalogue_does_not_break_sender_picker(self):
         path=app.country_file(app.PARSED_CACHE_FILE,'at')
         valid={'id':'epg_extra','name':'Extra','programs':[{'title':'Do not retain'}]}
-        path.write_text(json.dumps({'country':'at','channels':[valid]}),encoding='utf-8')
+        path.write_text(json.dumps({'schema_version':app.PARSED_CACHE_SCHEMA_VERSION,'country':'at','channels':[valid]}),encoding='utf-8')
         damaged=[{'id':['invalid'],'name':'Broken'},{'id':{'bad':True}},valid,{'id':'epg_nameless','name':None}]
         index=path.with_suffix('.catalogue.json')
-        index.write_text(json.dumps({'country':'at','cache_mtime_ns':path.stat().st_mtime_ns,'channels':damaged}),encoding='utf-8')
+        index.write_text(json.dumps({'schema_version':app.PARSED_CACHE_SCHEMA_VERSION,'country':'at','cache_mtime_ns':path.stat().st_mtime_ns,'channels':damaged}),encoding='utf-8')
         with patch.object(app,'EPGStore',side_effect=AssertionError('Inactive catalogue loaded a programme store')):
             catalogue=app.PERSONAL_CHANNELS.catalogue(self.active)
         self.assertEqual(catalogue['at:epg_extra']['name'],'Extra')
@@ -122,9 +122,17 @@ class MemoryTests(unittest.TestCase):
         self.assertEqual(catalogue['at:epg_nameless']['name'],'epg_nameless')
         self.assertNotIn('at:invalid',catalogue)
 
-    def test_legacy_catalogue_upgrade_does_not_keep_programmes_or_load_a_store(self):
+    def test_obsolete_cache_and_index_do_not_offer_unusable_stations(self):
+        path=app.country_file(app.PARSED_CACHE_FILE,'at')
+        channels=[{'id':'obsolete','name':'Obsolete station'}]
+        path.write_text(json.dumps({'schema_version':9,'country':'at','channels':channels}),encoding='utf-8')
+        path.with_suffix('.catalogue.json').write_text(json.dumps({
+            'schema_version':9,'country':'at','cache_mtime_ns':path.stat().st_mtime_ns,'channels':channels}),encoding='utf-8')
+        self.assertNotIn('at:obsolete',app.PERSONAL_CHANNELS.catalogue(self.active))
+
+    def test_missing_catalogue_index_rebuild_does_not_keep_programmes_or_load_a_store(self):
         path = app.country_file(app.PARSED_CACHE_FILE, "at")
-        path.write_text(json.dumps({"country": "at", "channels": [{
+        path.write_text(json.dumps({"schema_version": app.PARSED_CACHE_SCHEMA_VERSION, "country": "at", "channels": [{
             "id": "epg_extra", "name": "Extra", "programs": [{"title": "Programme"}],
         }]}), encoding="utf-8")
         with patch.object(app, "EPGStore", side_effect=AssertionError("Catalogue loaded a full store")):
@@ -140,7 +148,7 @@ class MemoryTests(unittest.TestCase):
             return original(candidate, *args, **kwargs)
         with patch.object(Path, "read_text", read_text):
             self.assertIn("at:epg_extra", app.PERSONAL_CHANNELS.catalogue(self.active))
-        path.write_text(json.dumps({"country": "at", "channels": [{"id": "new", "name": "New"}]}), encoding="utf-8")
+        path.write_text(json.dumps({"schema_version": app.PARSED_CACHE_SCHEMA_VERSION, "country": "at", "channels": [{"id": "new", "name": "New"}]}), encoding="utf-8")
         self.assertIn("at:new", app.PERSONAL_CHANNELS.catalogue(self.active))
         self.assertNotIn("at:epg_extra", app.PERSONAL_CHANNELS.catalogue(self.active))
 

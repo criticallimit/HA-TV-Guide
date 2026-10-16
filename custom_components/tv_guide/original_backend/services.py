@@ -1,6 +1,5 @@
 """Entry-owned programme engine, metadata and persistence adapters."""
 import html
-import json
 import re
 import threading
 from datetime import datetime
@@ -19,10 +18,12 @@ from .providers import SR_PROGRAM_URL as SR_PROGRAM_URL
 from .providers import SWR_PROGRAM_URL as SWR_PROGRAM_URL
 from .providers import ZDF_PROGRAM_URL as ZDF_PROGRAM_URL
 from .store import GuideStore
+from .bundled_metadata import load_logo_metadata
+from .cache_catalogue import CACHE_SCHEMA_VERSION
 
 class ProgrammeEngine:
 
-    def __init__(self, assets, storage, countries, catalogs, locale, settings, wake):
+    def __init__(self, storage, countries, catalogs, locale, settings, wake):
         self.ARD_PROGRAM_URL = ARD_PROGRAM_URL
         self.ARD_RB_PROGRAM_URL = ARD_RB_PROGRAM_URL
         self.EPG_TIMEZONE = EPG_TIMEZONE
@@ -38,22 +39,13 @@ class ProgrammeEngine:
         self.settings = settings
         self.locale = locale
         self.wake = wake
-        self.BASE = assets
         self.COUNTRIES = countries
         self.COUNTRY_CATALOGS = catalogs
-        self.LOGO_LIBRARY = json.loads((self.BASE / 'data' / 'logo_library.json').read_text(encoding='utf-8'))
-        self.LOGO_UPDATES_FILE = self.BASE / 'data' / 'logo_updates.json'
-        if self.LOGO_UPDATES_FILE.is_file():
-            for logo_part in json.loads(self.LOGO_UPDATES_FILE.read_text(encoding='utf-8'))['library_parts']:
-                logo_additions = json.loads((self.BASE / 'data' / logo_part).read_text(encoding='utf-8'))
-                self.LOGO_LIBRARY['channels'].update(logo_additions['channels'])
-                self.LOGO_LIBRARY['assets'].update(logo_additions['assets'])
-        self.EUROPE_LOGO_LIBRARY_FILE = self.BASE / 'data' / 'europe_logo_library.json'
-        self.EUROPE_LOGO_LIBRARY = json.loads(self.EUROPE_LOGO_LIBRARY_FILE.read_text(encoding='utf-8')) if self.EUROPE_LOGO_LIBRARY_FILE.is_file() else {'assets': {}, 'aliases': {}}
+        self.LOGO_LIBRARY, self.EUROPE_LOGO_LIBRARY = load_logo_metadata()
         self.OPTIONS_FILE = storage / 'options.json'
         self.CACHE_FILE = storage / 'tv_guide_epg.xml.gz'
         self.PARSED_CACHE_FILE = storage / 'tv_guide_epg_parsed.json'
-        self.PARSED_CACHE_SCHEMA_VERSION = 10
+        self.PARSED_CACHE_SCHEMA_VERSION = CACHE_SCHEMA_VERSION
         self.CHANNEL_PREFS_FILE = storage / 'tv_guide_channel_order.json'
         self.DEFAULT_REFRESH_MINUTES = 180
         self.LANGUAGES = {'da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'}

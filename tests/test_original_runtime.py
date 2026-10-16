@@ -898,16 +898,18 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertTrue(self.backend.closed)
         self.assertIsNone(self.submit(lambda: self.fail('Must not run after unload')))
 
-    def test_reference_data_is_repaired_on_restart(self):
-        path=self.runtime.BASE/'data/logo_library.json'
-        original=path.read_bytes()
-        path.write_text('{}',encoding='utf-8')
+    def test_package_metadata_needs_no_extracted_copy_and_removes_old_reference_tree(self):
+        root = self.runtime.OPTIONS_FILE.parent
+        old = root/'reference'/'www'
+        old.mkdir(parents=True)
+        (old/'app.js').write_text('obsolete iframe code',encoding='utf-8')
+        original = self.runtime.LOGO_LIBRARY
         self.backend.close()
-        replacement=type(self.backend)(self.runtime.OPTIONS_FILE.parent,{'country':'de'},{'language':'de'},lambda:None)
-        try:self.assertEqual(path.read_bytes(),original)
+        replacement=type(self.backend)(root,{'country':'de'},{'language':'de'},lambda:None)
+        try:
+            self.assertEqual(replacement.runtime.LOGO_LIBRARY,original)
+            self.assertFalse((root/'reference').exists())
         finally:replacement.close()
-
-
 
     def test_state_snapshot_reports_only_active_country_refresh(self):
         inactive=self.runtime.EPGStore('at')
