@@ -33,7 +33,8 @@ def validate(root=ROOT):
             values=item.get('aliases',[])
             if not isinstance(values,list):fail(label+'.'+code,'aliases must be a list');continue
             for alias in values:
-                if not isinstance(alias,str) or alias in seen or alias != alias.lower():
+                pattern=r'[a-z]{2,3}(?:-[a-z0-9]{2,8})*' if label=='languages' else r'[a-z]{2}'
+                if not isinstance(alias,str) or not re.fullmatch(pattern,alias) or alias in seen:
                     fail(label+'.'+code,'invalid or duplicate alias '+str(alias))
                 else:seen.add(alias)
     def url(value):
