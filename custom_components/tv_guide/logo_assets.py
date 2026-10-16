@@ -46,6 +46,9 @@ class LogoLibrary:
             self.revision = index['revision']
             self.archive_root = Path(archive_root)
             self.download_manifest = manifest
+            # The bundled fallback stays on disk; retain only the active index
+            # once an independently published library has been activated.
+            self._bundled_index = index if self.revision == self.bundled_revision else None
             self._render_cached.cache_clear()
 
     def contains(self, source):
@@ -53,7 +56,10 @@ class LogoLibrary:
             return source in self.entries
 
     def configure_cache(self, path):
-        self.activate(self._bundled_index, Path(path) / self.bundled_revision)
+        index = self._bundled_index
+        if index is None:
+            index = json.loads((self.root/'index.json').read_text(encoding='utf-8'))
+        self.activate(index, Path(path) / self.bundled_revision)
 
     def read(self, source):
         with self._lock:

@@ -139,6 +139,15 @@ class LogoUpdateTests(unittest.TestCase):
         downloader.run(lambda:False, lambda *a,**k:self.fail('Redownloaded installed update'))
         self.assertTrue(downloader.status()['ready'])
 
+    def test_entry_reload_reuses_the_active_update_without_retaining_a_second_index(self):
+        self.assertIsNotNone(self.check())
+        calls = list(self.calls)
+        self.library.configure_cache(self.cache)
+        self.assertEqual(self.library.render('logos/library/0.svg')[0], self.old_bytes)
+        updates.LogoUpdates(self.library, self.cache)
+        self.assertEqual(self.library.render('logos/library/0.svg')[0], self.new_bytes)
+        self.assertEqual(self.calls, calls)
+
     def test_revision_only_update_reuses_all_archives(self):
         self.remote = version('b'*16, self.old_bytes)
         self.assertIsNotNone(self.check())
