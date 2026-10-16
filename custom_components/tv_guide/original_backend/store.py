@@ -51,7 +51,7 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
     def parsed_cache_file(self):
         return self.runtime.country_file(self.runtime.PARSED_CACHE_FILE, self.country)
 
-    def __init__(self, country=None):
+    def __init__(self, country=None, *, load_cache=True):
         self._country = self.runtime.country_code(country or self.runtime.load_options().get("country"))
         self.country_config = self.runtime.COUNTRIES[self.country]
         self.timezone = ZoneInfo(self.country_config["timezone"])
@@ -78,7 +78,9 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             "teletext_channels": 0,
             "missing_official": [],
         }
-        self._load_parsed_cache()
+        self._cache_pending = not load_cache
+        if load_cache:
+            self._load_parsed_cache()
 
     def _load_parsed_cache(self):
         try:
@@ -340,6 +342,14 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             errors = []
 
             try:
+                if self.runtime.worker_stopped():
+                    return
+                if self._cache_pending:
+                    self._load_parsed_cache()
+                    self._cache_pending = False
+                    self.runtime.wake_sensors()
+                if self.runtime.worker_stopped():
+                    return
                 if not force and self._cache_fresh():
                     self.last_error = None
                     return
@@ -457,15 +467,17 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                 self.runtime.wake_sensors()
 
     def ensure_fresh_async(self):
+        def eligible():
+            return ((self is self.runtime.STORE or self.runtime.COUNTRY_STORES.get(self.country) is self)
+                    and not self.refresh_running and time.time() - self.last_refresh_attempt >= 300)
         with self.runtime.SETTINGS_LOCK:
-            # An HTTP request may still hold a store evicted during a country
-            # switch. It can serve its snapshot but must not refresh it again.
-            if self is not self.runtime.STORE and self.runtime.COUNTRY_STORES.get(self.country) is not self:
+            if not eligible():
                 return
-            retry_due = (time.time() - self.last_refresh_attempt) >= 300
-            # Avoid scanning programme data while a refresh is already running
-            # or while the retry backoff has not elapsed.
-            if self.refresh_running or not retry_due or self._cache_fresh():
+        # Programme scans can be large; never hold the settings lock across them.
+        if self._cache_fresh():
+            return
+        with self.runtime.SETTINGS_LOCK:
+            if not eligible():
                 return
             self.refresh_running = True
         self.runtime.start_background(self.refresh)

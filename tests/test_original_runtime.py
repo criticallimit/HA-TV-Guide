@@ -100,6 +100,95 @@ class GuideRuntimeTests(unittest.TestCase):
                 finally:
                     backend.close()
 
+    def test_settings_save_does_not_wait_for_a_slow_personal_sender_catalogue(self):
+        entered, release = threading.Event(), threading.Event()
+        original = self.runtime.PERSONAL_CHANNELS.settings
+        def slow(store):
+            entered.set()
+            if not release.wait(5): raise RuntimeError('Test catalogue release missing')
+            return original(store)
+        settings = self.backend.request('settings', 'GET')
+        with patch.object(self.runtime.PERSONAL_CHANNELS, 'settings', slow), ThreadPoolExecutor(max_workers=2) as pool:
+            catalogue = pool.submit(self.backend.request, 'personal-channels', 'GET')
+            self.assertTrue(entered.wait(2))
+            save = pool.submit(self.backend.request, 'settings', 'POST', {**settings, 'country':'at'})
+            try:
+                self.assertTrue(save.result(timeout=1)['ok'])
+            finally:
+                release.set()
+                catalogue.result(timeout=5)
+
+    def test_rapid_country_commits_do_not_read_full_programme_caches(self):
+        reads = []
+        def slow(store):
+            reads.append(store.country)
+            raise AssertionError('Full programme cache must not be loaded by settings commit')
+        settings = self.backend.request('settings', 'GET')
+        with patch.object(self.runtime.EPGStore, '_load_parsed_cache', slow):
+            for country in ['at', 'fr', 'de', 'gb', 'at']:
+                result = self.backend.request('settings', 'POST', {**settings, 'country':country})
+                self.assertTrue(result['ok'])
+                self.assertEqual(result['country'],country)
+                self.assertEqual(self.backend.request('settings','GET')['country'],country)
+        self.assertEqual(reads, [])
+
+    def test_settings_save_does_not_wait_for_programme_freshness_scan(self):
+        entered, release = threading.Event(), threading.Event()
+        store = self.runtime.STORE
+        def slow():
+            entered.set()
+            if not release.wait(5): raise RuntimeError('Test freshness release missing')
+            return True
+        settings = self.backend.request('settings', 'GET')
+        with patch.object(store, '_cache_fresh', slow), ThreadPoolExecutor(max_workers=2) as pool:
+            freshness = pool.submit(store.ensure_fresh_async)
+            self.assertTrue(entered.wait(2))
+            save = pool.submit(self.backend.request, 'settings', 'POST', {**settings, 'language':'en'})
+            try:
+                self.assertTrue(save.result(timeout=1)['ok'])
+            finally:
+                release.set()
+                freshness.result(timeout=5)
+
+    def test_country_worker_restores_fresh_cache_without_downloading_again(self):
+        store = self.runtime.EPGStore('at')
+        now = datetime.now(timezone.utc)
+        store.channels[0].update(available=True, programs=[{'title':'Cached programme',
+            'start':(now-timedelta(minutes=15)).isoformat(), 'end':(now+timedelta(hours=3)).isoformat()}])
+        store.feed_latest_end=(now+timedelta(hours=3)).isoformat()
+        store.last_loaded=now.isoformat()
+        store.source_metrics=[{'ok':True}]
+        store._save_parsed_cache('fixture')
+        settings=self.backend.request('settings','GET')
+        self.backend.request('settings','POST',{**settings,'country':'at'})
+        selected=self.runtime.STORE
+        self.assertTrue(selected._cache_pending)
+        with patch.object(selected,'_download',side_effect=AssertionError('Fresh cache must not download')) as download:
+            selected.refresh()
+        self.assertFalse(selected._cache_pending)
+        download.assert_not_called()
+        self.assertEqual(selected.channels[0]['programs'][0]['title'],'Cached programme')
+        self.assertFalse(selected.refresh_running)
+
+    def test_settings_do_not_wait_for_inactive_country_cache_restore(self):
+        entered, release = threading.Event(), threading.Event()
+        original=self.runtime.EPGStore._load_parsed_cache
+        def slow(store):
+            entered.set()
+            if not release.wait(5): raise RuntimeError('Cache restore test release missing')
+            return original(store)
+        settings=self.backend.request('settings','GET')
+        with patch.object(self.runtime.EPGStore,'_load_parsed_cache',slow), ThreadPoolExecutor(max_workers=2) as pool:
+            restore=pool.submit(self.runtime.PERSONAL_CHANNELS.country_store,'at')
+            self.assertTrue(entered.wait(2))
+            save=pool.submit(self.backend.request,'settings','POST',{**settings,'country':'fr'})
+            try:
+                self.assertTrue(save.result(timeout=1)['ok'])
+            finally:
+                release.set()
+                restore.result(timeout=5)
+        self.assertEqual(self.runtime.STORE.country,'fr')
+
     def test_startup_is_isolated_from_addon_paths_and_supervisor(self):
         self.assertTrue(self.runtime.OPTIONS_FILE.is_relative_to(Path(self.temp.name)))
         self.assertEqual(self.runtime.home_assistant_locale()['language'],'de')
