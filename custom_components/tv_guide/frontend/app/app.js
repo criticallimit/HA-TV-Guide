@@ -1,7 +1,7 @@
 import {createI18n} from './i18n.js';
 import {createGuideCore} from './guide-core.js?v=native-10';
 import {TVGuideChannelPicker} from './channel-picker.js';
-import {createPreparation} from './preparation.js';
+import {createPreparation} from './preparation.js?v=native-11';
 import {createScope} from './lifecycle.js';
 
 export function createGuideApp({root, request:requestAction, getHass, getTheme}) {
@@ -129,12 +129,11 @@ function showCachedGuide() {
     const initialMode = ["now","1800","2015","2200"].includes(cached.guide.ui.default_view)
       ? cached.guide.ui.default_view : "now";
     const target = TVGuideCore.targetForMode(initialMode,startOfDay(new Date()),null).getTime();
-    // Do not paint expired schedules or mistake a trimmed window for missing EPG.
-    if (cached.guide.channels.some(channel => {
-      const entries = channel.programs || [];
-      return entries.length && !entries.some(item =>
-        new Date(item.start).getTime() <= target && target < new Date(item.end).getTime());
-    })) return;
+    // A gap on one sender must not hide useful schedules on all the others.
+    // Reject a wholly expired window; render still-useful upcoming rows now.
+    const populated = cached.guide.channels.filter(channel => channel.programs?.length);
+    if (populated.length && !populated.some(channel => channel.programs.some(item =>
+      new Date(item.end).getTime() > target))) return;
     guide = cached.guide;
     i18n?.configure({...guide.ui, country:guide.country});
     const columns = Number(guide.ui.columns_desktop || 5);
@@ -502,21 +501,30 @@ async function persistAppSettings() {
   const isCurrent = () => request === appSettingsRequest && appSettingsDialog.open;
   appSettingsStatus.textContent = t("Wird gespeichert …");
   saveAppSettings.disabled = true;
+  let saved = false;
+  const changes = {
+    country:settingCountry.value, language:settingLanguage.value,
+    default_view:settingDefaultView.value, columns_desktop:Number(settingColumns.value),
+    max_channels:Number(settingMaxChannels.value), theme_mode:settingTheme.value,
+    refresh_minutes:Number(settingRefresh.value), notification_service:settingNotificationService.value.trim()
+  };
   try {
     const payload = await requestAction({endpoint:"settings",
       method:"POST",
-      body:{
-        country:settingCountry.value,
-        language:settingLanguage.value,
-        default_view:settingDefaultView.value,
-        columns_desktop:Number(settingColumns.value),
-        max_channels:Number(settingMaxChannels.value),
-        theme_mode:settingTheme.value,
-        refresh_minutes:Number(settingRefresh.value),
-        notification_service:settingNotificationService.value.trim(),
-      }
+      body:changes
     });
     if (!payload.ok) throw new Error(t(payload.error) || t("Einstellungen konnten nicht gespeichert werden."));
+    saved = true;
+    const committed = payload.settings || changes;
+    if (guide && committed.country === guide.country) {
+      // Apply persisted appearance locally; do not wait for EPG transfer.
+      guide = {...guide, ui:{...guide.ui, ...committed}};
+      i18n.configure({...guide.ui,country:guide.country});
+      root.style.setProperty("--desktop-columns", String(Math.max(3,Math.min(6,Number(guide.ui.columns_desktop)||5))));
+      syncHomeAssistantTheme();
+      render(); renderBookmarks(); if (activeDetail) updateDetailControls();
+      saveFirstPaintGuide(guide);
+    }
     // The settings action has committed. Refresh programmes independently so
     // a slow guide response cannot turn a successful save into a timeout.
     loadGuide().catch(() => {});
@@ -528,7 +536,7 @@ async function persistAppSettings() {
   } catch (err) {
     if (isCurrent()) appSettingsStatus.textContent = t(err.message);
   } finally {
-    if (isCurrent()) saveAppSettings.disabled = false;
+    if (isCurrent() && !saved) saveAppSettings.disabled = false;
   }
 }
 
@@ -570,7 +578,7 @@ async function persistChannelSettings(reset = false) {
           channelSettingsStatus.textContent = t("Standardsortierung wiederhergestellt.");
         }
       }
-      await loadGuide();
+      loadGuide().catch(() => {});
       return;
     }
 
@@ -580,7 +588,7 @@ async function persistChannelSettings(reset = false) {
       root.querySelectorAll("[data-channel-view]").forEach(button =>
         button.classList.toggle("active", button.dataset.channelView === channelView));
     }
-    await loadGuide();
+    loadGuide().catch(() => {});
   } catch (err) {
     if (isCurrent()) channelSettingsStatus.textContent = t(err.message);
   } finally {
@@ -880,7 +888,7 @@ channelSettingsDialog.addEventListener("click", e => { if (e.target === channelS
 syncHomeAssistantTheme();
 showCachedGuide();
 const startupRevision = lifecycleRevision;
-Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(true).catch(() => {
+Promise.all([loadBookmarksRemote(), loadReminders(), loadGuide(!guide).catch(() => {
   if (startupRevision === lifecycleRevision && !guidePageSuspended) return loadGuide();
 })]).catch(() => {
   if (startupRevision !== lifecycleRevision || guidePageSuspended) return;

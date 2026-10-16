@@ -1,5 +1,5 @@
-import {createGuideApp} from './app/app.js?v=native-10';
-import {viewMarkup, viewStyles} from './app/view-template.js?v=native-10';
+import {createGuideApp} from './app/app.js?v=native-11';
+import {viewMarkup, viewStyles} from './app/view-template.js?v=native-11';
 
 let fontsRegistered = false;
 function registerGuideFonts() {

@@ -1,0 +1,114 @@
+/* Perceived startup and save latency with deliberately delayed guide responses. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const {chromium,webkit}=require('playwright');
+const root=path.resolve('custom_components/tv_guide/frontend');
+const engine=process.env.TVG_ENGINE||'chromium';
+const server=http.createServer((req,res)=>{
+  const url=new URL(req.url,'http://localhost');
+  if(url.pathname==='/'){res.setHeader('Content-Type','text/html');res.end('<style>body{margin:0}</style>');return;}
+  const file=path.resolve(root,url.pathname.slice('/tv_guide/frontend/'.length));
+  if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);res.end();return;}
+  res.setHeader('Content-Type',({'.js':'application/javascript','.svg':'image/svg+xml','.ttf':'font/ttf'})[path.extname(file)]||'text/plain');res.end(fs.readFileSync(file));
+});
+(async()=>{
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const base=`http://127.0.0.1:${server.address().port}`;
+  const browser=await({chromium,webkit}[engine]).launch({headless:true,...(process.env.TVG_BROWSER_PATH?{executablePath:process.env.TVG_BROWSER_PATH}:{})});
+  const errors=[],failures=[];
+  async function mount(scenario){
+    const page=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
+    page.on('pageerror',e=>errors.push(e.message));page.on('crash',()=>errors.push('Page crashed'));
+    await page.goto(base);await page.clock.setFixedTime(new Date('2026-10-14T18:00:00Z'));
+    await page.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-card.js',type:'module'});
+    await page.evaluate(scenario=>{
+      const now=Date.now();
+      window.settings={country:'de',language:'de',default_view:'now',theme_mode:'auto',columns_desktop:5,max_channels:0,refresh_minutes:180,notification_service:'persistent_notification.create'};
+      const channels=['a','b'].map((id,index)=>({id,name:'Station '+id,source_country:'de',country_name:'Deutschland',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:Array.from({length:7},(_,i)=>({id:id+i,title:'Programme '+id+i,start:new Date(now+(i+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString(),end:new Date(now+(i+1+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString()}))}));
+      window.model={revision:'ux',country:'de',channels,main_channel_ids:['a','b'],custom_channel_ids:['a','b'],ui:{...settings},refresh_running:false};
+      window.order=['a','b'];window.settingsSaved=false;window.resetSaved=false;
+      window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];
+      if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
+      window.preparation=scenario==='preparation'?{installation_id:'ux-first',first_install:true,complete:false,logos:{completed:1,total:2,running:true,ready:false,error:false},programmes:{ready:true,running:false,sources_completed:1,error:false}}:{complete:true};
+      window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
+        if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+        if(message.service==='get_preparation_status')return {response:structuredClone(preparation)};
+        if(message.service!=='guide_request')throw Error('Unexpected UX service');
+        const {endpoint,method,body}=message.service_data;
+        if(endpoint==='settings'){
+          if(method==='POST'){Object.assign(settings,body);model.ui={...settings};settingsSaved=true;delayGuide=true;return {response:{ok:true,settings:structuredClone(settings)}};}
+          return {response:structuredClone(settings)};
+        }
+        if(endpoint==='personal-channels'){
+          if(method==='POST'){order=['a'];resetSaved=true;delayGuide=true;return {response:{ok:true,order,countries:['de']}};}
+          return {response:{channels:structuredClone(channels),order:[...order],countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]}};
+        }
+        if(endpoint!=='guide')throw Error('Unexpected UX endpoint');
+        guideRequests.push(message.service_data);
+        if(delayGuide)await new Promise(resolve=>window.releaseGuide=resolve);
+        return {response:structuredClone(model)};
+      }};
+      window.card=document.createElement('tv-guide-card');card.hass=hass;document.body.append(card);
+    },scenario);
+    return page;
+  }
+  async function check(name,test){try{await test();console.log('PASS',engine,name);}catch(error){failures.push(name+': '+error.message);console.error('FAIL',engine,name,error.message);}}
+  await check('useful cached guide with one schedule gap',async()=>{
+    const page=await mount('cache');try{
+      await page.waitForFunction(()=>typeof releaseGuide==='function');
+      assert.equal(await page.locator('.channel-card').count(),2,'A programme gap on one sender must not discard the useful first paint');
+      await page.evaluate(()=>{window.firstCards=[...card.shadowRoot.querySelectorAll('.channel-card')];delayGuide=false;releaseGuide();});
+      await page.waitForFunction(()=>card._app.lastGuideLoadedAt>0);
+      assert.equal(await page.evaluate(()=>firstCards.every((node,i)=>card.shadowRoot.querySelectorAll('.channel-card')[i]===node)),true,'The matching live guide must retain cached station DOM');
+    }finally{await page.close();}
+  });
+  await check('cached first paint skips redundant preview request',async()=>{
+    const page=await mount('cache-contiguous');try{
+      await page.waitForFunction(()=>typeof releaseGuide==='function');
+      assert.equal(await page.locator('.channel-card').count(),2);
+      assert.notEqual(await page.evaluate(()=>guideRequests[0].body?.preview),true,'An already visible cache must fetch full timelines directly');
+      await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+    }finally{await page.close();}
+  });
+  await check('saved display settings apply before delayed guide',async()=>{
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{card.shadowRoot.querySelector('#settingLanguage').value='en';card.shadowRoot.querySelector('#settingColumns').value='4';});
+      await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved&&typeof releaseGuide==='function');
+      const state=await page.evaluate(()=>({language:card.shadowRoot.querySelector('.guide-root').lang,columns:card.shadowRoot.querySelector('.guide-root').style.getPropertyValue('--desktop-columns'),saveDisabled:card.shadowRoot.querySelector('#saveAppSettings').disabled}));
+      assert.deepEqual(state,{language:'en',columns:'4',saveDisabled:true},'Persisted settings must apply immediately and prevent duplicate saves');
+      await page.locator('#appSettingsDialog').waitFor({state:'hidden',timeout:2000});
+      await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+    }finally{await page.close();}
+  });
+  await check('reset controls recover before delayed guide',async()=>{
+    const page=await mount('reset');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showChannelSettings').click();await page.locator('#resetChannelSettings:not([disabled])').waitFor();
+      await page.locator('#resetChannelSettings').click();await page.waitForFunction(()=>resetSaved&&typeof releaseGuide==='function');
+      assert.equal(await page.locator('#resetChannelSettings').isEnabled(),true,'A committed reset must not lock the dialogue until guide loading finishes');
+      assert.match(await page.locator('#channelSettingsStatus').textContent(),/wiederhergestellt/);
+      await page.evaluate(()=>{delayGuide=false;releaseGuide();});
+    }finally{await page.close();}
+  });
+  await check('first installation completes without an extra close action',async()=>{
+    const page=await mount('preparation');try{
+      await page.locator('#preparationDialog').waitFor({state:'visible'});
+      await page.evaluate(()=>{preparation.complete=true;preparation.logos={completed:2,total:2,running:false,ready:true,error:false};document.dispatchEvent(new Event('visibilitychange'));});
+      await page.locator('#preparationDialog').waitFor({state:'hidden',timeout:2500});
+      assert.equal(await page.locator('#preparationBadge').isVisible(),false);
+    }finally{await page.close();}
+  });
+  await check('failed initial download stays open with retry',async()=>{
+    const page=await mount('preparation');try{
+      await page.locator('#preparationDialog').waitFor({state:'visible'});
+      await page.evaluate(()=>{preparation.logos.error='download_failed';preparation.logos.running=false;document.dispatchEvent(new Event('visibilitychange'));});
+      await page.locator('#preparationRetry').waitFor({state:'visible'});
+      await page.waitForTimeout(1200);
+      assert.equal(await page.locator('#preparationDialog').isVisible(),true);
+      assert.equal(await page.locator('#preparationRetry').isEnabled(),true);
+    }finally{await page.close();}
+  });
+  await browser.close();server.close();assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
+})().catch(error=>{console.error(error);server.close();process.exit(1);});

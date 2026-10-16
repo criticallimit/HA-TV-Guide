@@ -22,7 +22,7 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   badge.id = 'preparationBadge'; badge.hidden = true; badge.type = 'button';
   root.append(dialog, badge);
   const node = id => dialog.querySelector('#preparation' + id);
-  let timer, stopped = false, current, shown = false, lastLogos = 0, key = '', sequence = 0, repairPending = false;
+  let completionTimer, timer, stopped = false, current, shown = false, lastLogos = 0, key = '', sequence = 0, repairPending = false;
   const text = () => messages[root.lang] || messages.en;
   const dismissed = () => { try { return sessionStorage.getItem(key) === '1'; } catch { return shown; } };
   dialog.addEventListener('close', () => { try { sessionStorage.setItem(key, '1'); } catch {} });
@@ -55,6 +55,12 @@ export function createPreparation({root, request:requestAction, scope, render}) 
       node('Retry').textContent = m[8]; node('Retry').hidden = !error;
       badge.textContent = error ? m[9] : m[0] + ' · ' + logos.completed + '/' + logos.total;
       badge.hidden = current.complete && !error;
+      if (current.complete && !error && dialog.open && !completionTimer) {
+        completionTimer = setTimeout(() => {
+          completionTimer = null;
+          if (!stopped && current?.complete && !current.logos?.error && !current.programmes?.error && dialog.open) dialog.close();
+        }, 1000);
+      }
       if (!shown && current.first_install && !current.complete && !dismissed() && !root.querySelector('dialog[open]')) {
         shown = true; dialog.showModal();
       }
@@ -81,7 +87,7 @@ export function createPreparation({root, request:requestAction, scope, render}) 
   });
   void poll();
   return {
-    suspend(){stopped=true; ++sequence; clearTimeout(timer);},
+    suspend(){stopped=true; ++sequence; clearTimeout(timer); clearTimeout(completionTimer); completionTimer=null;},
     resume(){stopped=false; if(!current?.complete || current?.logos?.error || current?.programmes?.error)void poll();}
   };
 }
