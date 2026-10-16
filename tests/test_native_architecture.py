@@ -4,6 +4,8 @@ from io import BytesIO
 import json
 from pathlib import Path
 import tempfile
+import subprocess
+import sys
 import threading
 import unittest
 from unittest.mock import patch
@@ -65,6 +67,11 @@ class WorkPriorityTests(unittest.TestCase):
             for future in [first,a,b,logo]:future.result(timeout=2)
             self.assertEqual(order,['b','a','logo'])
         finally:release.set();scheduler.shutdown(cancel_futures=True)
+
+    def test_interpreter_exit_can_run_its_registered_scheduler_cleanup(self):
+        code="import sys,atexit;sys.path.insert(0,"+repr(str(Path(__file__).parent))+ ");from native_support import module;scheduler=module('work_scheduler').WorkScheduler(1);atexit.register(scheduler.shutdown)"
+        result=subprocess.run([sys.executable,'-c',code],capture_output=True,text=True,timeout=5)
+        self.assertEqual(result.returncode,0,result.stderr)
 
     def test_shutdown_cancels_queued_jobs_and_drains_owned_workers(self):
         scheduler=WorkScheduler(1)

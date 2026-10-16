@@ -9,7 +9,9 @@ class WorkScheduler:
         self._queue = []
         self._closed = False
         self._sequence = 0
-        self._threads = [threading.Thread(target=self._run, name=f'{name}-{i}') for i in range(workers)]
+        # Runtime unload explicitly drains these threads. Daemon status lets
+        # interpreter atexit cleanup run even for a standalone engine owner.
+        self._threads = [threading.Thread(target=self._run, name=f'{name}-{i}', daemon=True) for i in range(workers)]
         started = []
         try:
             for thread in self._threads:

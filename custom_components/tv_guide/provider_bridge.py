@@ -43,8 +43,8 @@ class ProviderBridge:
         try:
             async with self.session.request(request.get_method(), request.full_url,
                     headers=dict(request.header_items()),data=request.data,
-                    timeout=ClientTimeout(total=timeout),auto_decompress=False,
-                    allow_redirects=True,max_redirects=5) as response:
+                    timeout=ClientTimeout(total=None,connect=timeout,sock_connect=timeout,sock_read=timeout),auto_decompress=False,
+                    allow_redirects=True,max_redirects=10) as response:
                 stream.headers = Message()
                 for key,value in response.headers.items():
                     stream.headers[key] = value
