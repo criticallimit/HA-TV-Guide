@@ -88,9 +88,13 @@ class ProgrammeTimeline:
         return channels
 
     def _programme_priority(self, item):
+        try:
+            rank = int(item.get("_source_rank") or 0)
+        except (TypeError, ValueError, OverflowError):
+            rank = 0
         return (
             self._source_trust(item),
-            int(item.get("_source_rank") or 0),
+            rank,
             self._programme_score(item),
             len(str(item.get("desc") or "")),
         )
@@ -196,43 +200,48 @@ class ProgrammeTimeline:
 
     def _merge_program_lists(self, existing, incoming):
         merged = [dict(item) for item in (existing or []) if item.get("start")]
+        buckets, locations = {}, {}
 
+        def time_bucket(item):
+            try:
+                start = self.runtime.datetime.fromisoformat(item.get("start") or "")
+                if start.utcoffset() is not None:
+                    return int(start.timestamp() // 240)
+            except (TypeError, ValueError, OverflowError, OSError):
+                pass
+            return None
+
+        def index_programme(index):
+            old = locations.pop(index, None)
+            if old is not None:
+                buckets[old].discard(index)
+            bucket = time_bucket(merged[index])
+            if bucket is not None:
+                locations[index] = bucket
+                buckets.setdefault(bucket, set()).add(index)
+
+        for index in range(len(merged)):
+            index_programme(index)
         for item in incoming or []:
             if not item.get("start"):
                 continue
-
-            same_index = next(
-                (
-                    index
-                    for index, current in enumerate(merged)
-                    if self._same_programme(current, item)
-                ),
-                None,
-            )
-            if same_index is not None:
-                merged[same_index] = self._prefer_programme(
-                    merged[same_index],
-                    item,
-                )
-                continue
-
-            slot_index = next(
-                (
-                    index
-                    for index, current in enumerate(merged)
-                    if self._slot_conflict(current, item)
-                ),
-                None,
-            )
-            if slot_index is not None:
-                merged[slot_index] = self._prefer_programme(
-                    merged[slot_index],
-                    item,
-                )
-                continue
-
-            merged.append(dict(item))
-
+            bucket = time_bucket(item)
+            # Matching permits at most four minutes between starts. Search
+            # adjacent UTC buckets, retaining original first-match ordering.
+            candidates = sorted(index for key in (bucket-1, bucket, bucket+1)
+                                for index in buckets.get(key, ())) if bucket is not None else []
+            match = next((index for index in candidates
+                          if self._same_programme(merged[index], item)), None)
+            if match is None:
+                match = next((index for index in candidates
+                              if self._slot_conflict(merged[index], item)), None)
+            if match is not None:
+                merged[match] = self._prefer_programme(merged[match], item)
+                # A better source can shift the start into a different bucket.
+                index_programme(match)
+            else:
+                merged.append(dict(item))
+                index_programme(len(merged)-1)
         return self._validate_program_timeline(merged)
 
     def _validate_program_timeline(self, programmes):

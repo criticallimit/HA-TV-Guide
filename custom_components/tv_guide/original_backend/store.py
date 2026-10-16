@@ -151,8 +151,10 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
                 channel_id = item["id"]
                 if channel_id in configured_by_id:
                     restored.append({
-                        **configured_by_id[channel_id],
                         **item,
+                        # Current curated identity, ordering and artwork win
+                        # over metadata left in an older programme cache.
+                        **configured_by_id[channel_id],
                         "preset": True,
                         "catalog_group": "Hauptsender",
                     })

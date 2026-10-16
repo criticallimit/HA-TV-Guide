@@ -112,9 +112,10 @@ def load_options():
     ).strip().lower()
     if not re.match(r"^[a-z0-9_]+\.[a-z0-9_]+$", notification_service):
         notification_service = "persistent_notification.create"
+    language = data.get("language")
     return {
         "country": country_code(data.get("country")),
-        "language": data.get("language") if data.get("language") in LANGUAGES | {"auto"} else "auto",
+        "language": language if isinstance(language, str) and language in LANGUAGES | {"auto"} else "auto",
         "refresh_minutes": max(30, min(1440, refresh)),
         "notification_service": notification_service,
     }
