@@ -1,5 +1,4 @@
 """A single downloaded logo database for main channels, legacy clients and extras."""
-from copy import deepcopy
 from hashlib import sha256
 import json
 from pathlib import Path
