@@ -1,4 +1,4 @@
-import {createI18n} from './i18n.js?v=native-17';
+import {createI18n} from './i18n.js?v=native-18';
 import {createGuideCore} from './guide-core.js?v=native-13';
 import {TVGuideChannelPicker} from './channel-picker.js?v=native-14';
 import {createPreparation} from './preparation.js?v=native-11';
@@ -503,9 +503,12 @@ async function openAppSettings() {
     if (!isCurrent()) return;
     i18n?.configure(settings);
     settingLanguage.value = settings.language || "auto";
+    // Remove unsupported sources: hidden options can still appear in native pickers.
+    settingCountry.querySelector('option[value=""]')?.remove();
+    if (!Array.isArray(settings.countries) || !settings.countries.length) {
+      settingCountry.prepend(new Option(t("Alle Sender des eigenen Feeds"), ""));
+    }
     settingCountry.value = settings.country ?? "";
-    const xmltvOption = settingCountry.querySelector('option[value=""]');
-    xmltvOption.hidden = xmltvOption.disabled = Array.isArray(settings.countries) && settings.countries.length > 0;
     settingDefaultView.value = settings.default_view || "now";
     settingColumns.value = String(settings.columns_desktop || 5);
     settingMaxChannels.value = String(settings.max_channels ?? 0);

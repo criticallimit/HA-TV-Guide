@@ -1,4 +1,4 @@
-import "./tv-guide-card.js?v=37";
+import "./tv-guide-card.js?v=38";
 
 class TVGuidePanel extends HTMLElement {
   constructor() {

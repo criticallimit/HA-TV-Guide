@@ -307,11 +307,19 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('#settingTheme').inputValue(),'auto');
     }finally{await page.close();}
   });
-  for(const [scenario,disabled] of [['settings',true],['xmltv-menu',false]])await check('XMLTV country option capability: '+scenario,async()=>{
+  for(const [scenario,unsupported] of [['settings',true],['xmltv-menu',false]])await check('XMLTV country option capability: '+scenario,async()=>{
     const page=await mount(scenario);try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
       await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
-      assert.equal(await page.locator('#settingCountry option[value=""]').evaluate(option=>option.disabled),disabled);
+      const feedOption=page.locator('#settingCountry option[value=""]');
+      assert.equal(await feedOption.count(),unsupported?0:1);
+      if(!unsupported){
+        assert.equal(await feedOption.textContent(),'Alle Sender des eigenen Feeds');
+        await page.locator('#settingCountry').evaluate(select=>select.closest('details').open=true);
+        await page.selectOption('#settingCountry','');
+        await page.locator('#saveAppSettings').click();await page.waitForFunction(()=>settingsSaved);
+        assert.equal(await page.evaluate(()=>settings.country),'');
+      }
     }finally{await page.close();}
   });
   await check('existing custom refresh interval survives unrelated settings saves',async()=>{
