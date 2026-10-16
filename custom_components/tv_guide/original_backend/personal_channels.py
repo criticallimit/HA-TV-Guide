@@ -62,16 +62,6 @@ class PersonalChannels:
                 }
         return result
 
-    def logo_channel(self, key):
-        country, separator, channel_id = key.partition(":")
-        if not separator or country not in self.runtime.COUNTRIES:
-            return None
-        catalog = self.runtime.CHANNELS if country == "de" else self.runtime.COUNTRY_CATALOGS[country]
-        channel = next((item for item in catalog["channels"] if item["id"] == channel_id), None)
-        if channel is None:
-            channel = next((item for item in self.country_store(country).channels if item["id"] == channel_id), None)
-        return {**channel, "id": key, "source_channel_id": channel_id} if channel else None
-
     def settings(self, store):
         prefs = self.load(store)
         channels = self.catalogue(store)

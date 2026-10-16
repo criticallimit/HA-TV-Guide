@@ -208,9 +208,9 @@ def _logo_source_for_channel(channel, theme):
             channel.get("logo_file_light"),
             channel.get("logo_dark"),
         ]
-    # Runtime logo downloads are intentionally disabled. The shipped country
-    # library and Europe pack are authoritative; unmatched stations use the
-    # generated local text fallback instead of fetching a feed/broadcaster URL.
+    # Resolve indexed library artwork, including verified background updates.
+    # Do not fetch individual feed/broadcaster URLs for unmatched stations;
+    # the native runtime supplies their local text fallback.
     return next(
         (
             str(value).strip()

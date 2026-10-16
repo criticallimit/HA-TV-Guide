@@ -36,6 +36,11 @@ def validate_descriptor(value):
         raise ValueError('Invalid logo update descriptor')
 
 
+def _valid_etag(value):
+    """Only retain bounded printable HTTP header values from disk or responses."""
+    return isinstance(value, str) and 0 < len(value) <= 512 and all(32 <= ord(char) < 127 for char in value)
+
+
 def _write_json(path, value):
     temporary = path.with_suffix('.tmp')
     try:
@@ -62,6 +67,8 @@ class LogoUpdates:
         generation = self._state.get('generation', 0)
         if type(generation) is not int or not 0 <= generation < 2**53:
             self._state.pop('generation', None)
+        if not _valid_etag(self._state.get('etag')):
+            self._state.pop('etag', None)
         self._bundled = _read_json(library.root / 'updates.json')
         self._restore()
         if self._state and self._state.get('revision') != self.library.revision:
@@ -172,7 +179,7 @@ class LogoUpdates:
                 self._state['generation'] = descriptor['generation']
                 self._prune()
                 self._state['revision'] = self.library.revision
-                if isinstance(etag, str) and len(etag) <= 512:
+                if _valid_etag(etag):
                     self._state['etag'] = etag
                 else:
                     self._state.pop('etag', None)
