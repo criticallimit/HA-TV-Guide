@@ -263,6 +263,13 @@ async def main():
                 await asyncio.wait_for(request('settings', 'POST', menu_settings), 2)
                 menu_keys = ('country','language','default_view','theme_mode','columns_desktop',
                              'max_channels','refresh_minutes','notification_service')
+                legacy_root = coordinator.backend.settings.path.parent
+                def seed_legacy_storage():
+                    old_frontend = legacy_root / 'reference' / 'www'
+                    old_frontend.mkdir(parents=True,exist_ok=True)
+                    (old_frontend / 'app.js').write_text('obsolete iframe code',encoding='utf-8')
+                    (legacy_root / 'options.json').write_text('{"country":"de","language":"fr"}',encoding='utf-8')
+                await hass.async_add_executor_job(seed_legacy_storage)
                 for cycle in range(3):
                     previous_backend = hass.data['tv_guide'][entry.entry_id].backend
                     previous_scheduler = hass.data['tv_guide_reminder_schedulers'][entry.entry_id]
@@ -277,6 +284,9 @@ async def main():
                     assert all(restored_settings[key] == menu_settings[key] for key in menu_keys)
                     current_coordinator = hass.data['tv_guide'][entry.entry_id]
                     assert current_coordinator.update_interval.total_seconds() == 720*60
+                    def legacy_storage_removed():
+                        return not (legacy_root / 'reference').exists() and not (legacy_root / 'options.json').exists()
+                    assert await hass.async_add_executor_job(legacy_storage_removed)
                     assert hass.data['tv_guide_reminder_schedulers'][entry.entry_id].notification_service == menu_settings['notification_service']
                 print('PASS HA complete settings persistence and runtime application through three reloads', flush=True)
                 print('PASS HA acceptance: version-one migration and three reload cycles without entity duplication or surviving old workers/timers',flush=True)
