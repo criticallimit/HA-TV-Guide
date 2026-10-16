@@ -42,9 +42,25 @@ class CentralLogoTests(unittest.TestCase):
                 for country,catalog in backend.runtime.COUNTRY_CATALOGS.items():
                     for channel in catalog['channels']:
                         themes=self.library.channels[country+':'+channel['id']]
+                        # New catalogues already reference the canonical database.
+                        # Older clients never registered these stations, so only
+                        # inherited catalogue paths require compatibility aliases.
+                        if channel.get('logo_file')==themes['dark'] and channel.get('logo_file_light')==themes['light']:
+                            continue
                         for theme,source in themes.items():
                             legacy=backend.runtime._logo_source_for_channel({**channel,'source_country':country},theme)
                             self.assertEqual(self.library.entries[legacy]['sha256'],self.library.entries[source]['sha256'],(country,channel['id'],theme))
+            finally:backend.close()
+
+    def test_new_catalogue_artwork_precedes_legacy_name_matches_for_main_and_personal_channels(self):
+        catalog=json.loads((COMPONENT/'catalogs/channels_es.json').read_text())['channels']
+        with tempfile.TemporaryDirectory() as folder:
+            backend=module('guide_runtime').GuideRuntime(Path(folder),{'country':'es'},{'language':'es'},lambda:None)
+            try:
+                for original in catalog:
+                    expected=self.library.channel_urls('es',original['id'])
+                    for channel in (original,{**original,'id':'es:'+original['id'],'source_channel_id':original['id'],'source_country':'es'}):
+                        self.assertEqual(backend.logo_urls(channel),(expected['logo_normalized_light'],expected['logo_normalized_dark']))
             finally:backend.close()
 
     def test_invalid_channel_mapping_is_rejected_before_activation(self):

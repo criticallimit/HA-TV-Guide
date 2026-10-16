@@ -1,0 +1,895 @@
+{
+  "iptv-epg": [
+    {
+      "id": "es_la1",
+      "source_id": "LA1.es",
+      "name": "ES - LA 1"
+    },
+    {
+      "id": "es_la2",
+      "source_id": "LA2.es",
+      "name": "ES - LA 2"
+    },
+    {
+      "id": "es_antena3",
+      "source_id": "Antena3.es",
+      "name": "ES - Antena 3"
+    },
+    {
+      "id": "es_cuatro",
+      "source_id": "Cuatro.es",
+      "name": "ES - Cuatro"
+    },
+    {
+      "id": "es_telecinco",
+      "source_id": "Telecinco.es",
+      "name": "ES - Telecinco"
+    },
+    {
+      "id": "es_lasexta",
+      "source_id": "LaSexta.es",
+      "name": "ES - La Sexta"
+    },
+    {
+      "id": "es_neox",
+      "source_id": "Neox.es",
+      "name": "ES - Neox"
+    },
+    {
+      "id": "es_nova",
+      "source_id": "Nova.es",
+      "name": "ES - Nova"
+    },
+    {
+      "id": "es_energy",
+      "source_id": "Energy.es",
+      "name": "ES - Energy"
+    },
+    {
+      "id": "es_divinity",
+      "source_id": "Divinity.es",
+      "name": "ES - Divinity"
+    },
+    {
+      "id": "es_dkiss",
+      "source_id": "DKISS.es",
+      "name": "ES - DKISS"
+    },
+    {
+      "id": "es_ten",
+      "source_id": "Ten.es",
+      "name": "ES - Ten"
+    },
+    {
+      "id": "es_atreseries",
+      "source_id": "Atreseries.es",
+      "name": "ES - Atreseries"
+    },
+    {
+      "id": "es_mega",
+      "source_id": "Mega.es",
+      "name": "ES - Mega"
+    },
+    {
+      "id": "es_clan",
+      "source_id": "ClanTVE.es",
+      "name": "ES - Clan TVE"
+    },
+    {
+      "id": "es_boing",
+      "source_id": "Boing.es",
+      "name": "ES - Boing"
+    },
+    {
+      "id": "es_24h",
+      "source_id": "24Horas.es",
+      "name": "ES - 24 Horas"
+    },
+    {
+      "id": "es_teledeporte",
+      "source_id": "Teledeporte.es",
+      "name": "ES - Teledeporte"
+    },
+    {
+      "id": "es_trece",
+      "source_id": "13TV.es",
+      "name": "ES - 13 TV"
+    },
+    {
+      "id": "es_realmadrid",
+      "source_id": "RealMadridTV.es",
+      "name": "ES - Real Madrid TV"
+    },
+    {
+      "id": "es_squirrel",
+      "source_id": "Squirrel.es",
+      "name": "ES - Squirrel"
+    },
+    {
+      "id": "es_squirrel2",
+      "source_id": "Squirrel2.es",
+      "name": "ES - Squirrel 2"
+    },
+    {
+      "id": "es_veo7",
+      "source_id": "Veo7.es",
+      "name": "ES - Veo7"
+    },
+    {
+      "id": "es_tv3",
+      "source_id": "TV3.es",
+      "name": "ES - TV3"
+    },
+    {
+      "id": "es_3catinfo",
+      "source_id": "3CatInfo.es",
+      "name": "ES - 3CatInfo"
+    },
+    {
+      "id": "es_esport3",
+      "source_id": "Esport3.es",
+      "name": "ES - Esport 3"
+    },
+    {
+      "id": "es_33",
+      "source_id": "Canal33.es",
+      "name": "ES - Canal 33"
+    },
+    {
+      "id": "es_canalsur",
+      "source_id": "CanalSur.es",
+      "name": "ES - Canal Sur"
+    },
+    {
+      "id": "es_andaluciatv",
+      "source_id": "AndaluciaTV.es",
+      "name": "ES - Andalucía TV"
+    },
+    {
+      "id": "es_telemadrid",
+      "source_id": "Telemadrid.es",
+      "name": "ES - Telemadrid"
+    },
+    {
+      "id": "es_laotra",
+      "source_id": "LaOtra.es",
+      "name": "ES - La Otra"
+    },
+    {
+      "id": "es_etb1",
+      "source_id": "ETB1.es",
+      "name": "ES - ETB 1"
+    },
+    {
+      "id": "es_etb2",
+      "source_id": "ETB2.es",
+      "name": "ES - ETB 2"
+    },
+    {
+      "id": "es_tvg2",
+      "source_id": "TVG2.es",
+      "name": "ES - TVG 2"
+    },
+    {
+      "id": "es_apunt",
+      "source_id": "APunt.es",
+      "name": "ES - À Punt"
+    },
+    {
+      "id": "es_aragontv",
+      "source_id": "AragonTV.es",
+      "name": "ES - Aragón TV"
+    },
+    {
+      "id": "es_cmm",
+      "source_id": "CastillalaManchaTV.es",
+      "name": "ES - Castilla la Mancha TV"
+    },
+    {
+      "id": "es_ib3",
+      "source_id": "IB3.es",
+      "name": "ES - IB3"
+    },
+    {
+      "id": "es_tpa",
+      "source_id": "TPA.es",
+      "name": "ES - TPA"
+    },
+    {
+      "id": "es_canaria",
+      "source_id": "TVCanaria.es",
+      "name": "ES - TV Canaria"
+    },
+    {
+      "id": "es_extremadura",
+      "source_id": "CanalExtremadura.es",
+      "name": "ES - Canal Extremadura"
+    },
+    {
+      "id": "es_navarra",
+      "source_id": "NavarraTelevision.es",
+      "name": "ES - Navarra Televisión"
+    },
+    {
+      "id": "es_la7murcia",
+      "source_id": "7TVRegionMurcia.es",
+      "name": "ES - 7 TV Región Murcia"
+    }
+  ],
+  "open-epg": [
+    {
+      "id": "es_la1",
+      "source_id": "LA1.es",
+      "name": "LA 1.es"
+    },
+    {
+      "id": "es_la2",
+      "source_id": "La2.es",
+      "name": "La 2.es"
+    },
+    {
+      "id": "es_antena3",
+      "source_id": "Antena3.es",
+      "name": "Antena 3.es"
+    },
+    {
+      "id": "es_cuatro",
+      "source_id": "Cuatro.es",
+      "name": "Cuatro.es"
+    },
+    {
+      "id": "es_telecinco",
+      "source_id": "Telecinco.es",
+      "name": "Telecinco.es"
+    },
+    {
+      "id": "es_lasexta",
+      "source_id": "LaSexta.es",
+      "name": "La Sexta.es"
+    },
+    {
+      "id": "es_neox",
+      "source_id": "Neox.es",
+      "name": "Neox.es"
+    },
+    {
+      "id": "es_nova",
+      "source_id": "Nova.es",
+      "name": "Nova.es"
+    },
+    {
+      "id": "es_fdf",
+      "source_id": "FDF.es",
+      "name": "FDF.es"
+    },
+    {
+      "id": "es_energy",
+      "source_id": "Energy.es",
+      "name": "Energy.es"
+    },
+    {
+      "id": "es_divinity",
+      "source_id": "Divinity.es",
+      "name": "Divinity.es"
+    },
+    {
+      "id": "es_bemad",
+      "source_id": "BeMad.es",
+      "name": "Be Mad.es"
+    },
+    {
+      "id": "es_dmax",
+      "source_id": "DMAX.es",
+      "name": "DMAX.es"
+    },
+    {
+      "id": "es_dkiss",
+      "source_id": "DKISS.es",
+      "name": "DKISS.es"
+    },
+    {
+      "id": "es_ten",
+      "source_id": "Ten.es",
+      "name": "Ten.es"
+    },
+    {
+      "id": "es_atreseries",
+      "source_id": "Atreseries.es",
+      "name": "Atreseries.es"
+    },
+    {
+      "id": "es_mega",
+      "source_id": "Mega.es",
+      "name": "Mega.es"
+    },
+    {
+      "id": "es_clan",
+      "source_id": "Clan.es",
+      "name": "Clan.es"
+    },
+    {
+      "id": "es_boing",
+      "source_id": "Boing.es",
+      "name": "Boing.es"
+    },
+    {
+      "id": "es_24h",
+      "source_id": "24Horas.es",
+      "name": "24 Horas.es"
+    },
+    {
+      "id": "es_teledeporte",
+      "source_id": "Teledeporte.es",
+      "name": "Teledeporte.es"
+    },
+    {
+      "id": "es_trece",
+      "source_id": "TRECE.es",
+      "name": "TRECE.es"
+    },
+    {
+      "id": "es_realmadrid",
+      "source_id": "RealMadridTV.es",
+      "name": "Real Madrid TV.es"
+    },
+    {
+      "id": "es_squirrel",
+      "source_id": "Squirrel.es",
+      "name": "Squirrel.es"
+    },
+    {
+      "id": "es_veo7",
+      "source_id": "Veo7.es",
+      "name": "Veo7.es"
+    },
+    {
+      "id": "es_tv3",
+      "source_id": "TV3.es",
+      "name": "TV3.es"
+    },
+    {
+      "id": "es_3catinfo",
+      "source_id": "3CatInfo.es",
+      "name": "3CatInfo.es"
+    },
+    {
+      "id": "es_esport3",
+      "source_id": "Esport3.es",
+      "name": "Esport 3.es"
+    },
+    {
+      "id": "es_sx3",
+      "source_id": "SX3.es",
+      "name": "SX3.es"
+    },
+    {
+      "id": "es_33",
+      "source_id": "33.es",
+      "name": "33.es"
+    },
+    {
+      "id": "es_canalsur",
+      "source_id": "CanalSur.es",
+      "name": "Canal Sur.es"
+    },
+    {
+      "id": "es_andaluciatv",
+      "source_id": "AndaluciaTV.es",
+      "name": "Andalucía TV.es"
+    },
+    {
+      "id": "es_telemadrid",
+      "source_id": "Telemadrid.es",
+      "name": "Telemadrid.es"
+    },
+    {
+      "id": "es_laotra",
+      "source_id": "LaOtra.es",
+      "name": "La Otra.es"
+    },
+    {
+      "id": "es_etb1",
+      "source_id": "ETB1.es",
+      "name": "ETB 1.es"
+    },
+    {
+      "id": "es_etb2",
+      "source_id": "ETB2.es",
+      "name": "ETB 2.es"
+    },
+    {
+      "id": "es_tvg",
+      "source_id": "TVG.es",
+      "name": "TVG.es"
+    },
+    {
+      "id": "es_tvg2",
+      "source_id": "TVG2.es",
+      "name": "TVG 2.es"
+    },
+    {
+      "id": "es_apunt",
+      "source_id": "APunt.es",
+      "name": "À Punt.es"
+    },
+    {
+      "id": "es_aragontv",
+      "source_id": "AragonTV.es",
+      "name": "Aragón TV.es"
+    },
+    {
+      "id": "es_cmm",
+      "source_id": "CastillaLaManchaTV.es",
+      "name": "Castilla-La Mancha TV.es"
+    },
+    {
+      "id": "es_ib3",
+      "source_id": "IB3.es",
+      "name": "IB3.es"
+    },
+    {
+      "id": "es_tpa",
+      "source_id": "TPA.es",
+      "name": "TPA.es"
+    },
+    {
+      "id": "es_canaria",
+      "source_id": "TVCanaria.es",
+      "name": "TV Canaria.es"
+    },
+    {
+      "id": "es_extremadura",
+      "source_id": "CanalExtremadura.es",
+      "name": "Canal Extremadura.es"
+    },
+    {
+      "id": "es_navarra",
+      "source_id": "NavarraTV.es",
+      "name": "Navarra TV.es"
+    },
+    {
+      "id": "es_la7murcia",
+      "source_id": "7TVRegionMurcia.es",
+      "name": "7 TV Región Murcia.es"
+    }
+  ],
+  "epgshare": [
+    {
+      "id": "es_la1",
+      "source_id": "La.1.es",
+      "name": "La 1"
+    },
+    {
+      "id": "es_la2",
+      "source_id": "La.2.es",
+      "name": "La 2"
+    },
+    {
+      "id": "es_antena3",
+      "source_id": "Antena.3.es",
+      "name": "Antena 3"
+    },
+    {
+      "id": "es_cuatro",
+      "source_id": "Cuatro.es",
+      "name": "Cuatro"
+    },
+    {
+      "id": "es_telecinco",
+      "source_id": "Telecinco.es",
+      "name": "Telecinco"
+    },
+    {
+      "id": "es_lasexta",
+      "source_id": "laSexta.es",
+      "name": "laSexta"
+    },
+    {
+      "id": "es_neox",
+      "source_id": "Neox.es",
+      "name": "Neox"
+    },
+    {
+      "id": "es_nova",
+      "source_id": "Nova.es",
+      "name": "Nova"
+    },
+    {
+      "id": "es_fdf",
+      "source_id": "FDF.Telecinco.es",
+      "name": "FDF Telecinco"
+    },
+    {
+      "id": "es_energy",
+      "source_id": "Energy.es",
+      "name": "Energy"
+    },
+    {
+      "id": "es_divinity",
+      "source_id": "Divinity.es",
+      "name": "Divinity"
+    },
+    {
+      "id": "es_bemad",
+      "source_id": "Be.Mad.es",
+      "name": "Be Mad"
+    },
+    {
+      "id": "es_dmax",
+      "source_id": "DMAX.es",
+      "name": "DMAX"
+    },
+    {
+      "id": "es_dkiss",
+      "source_id": "DKISS.es",
+      "name": "DKISS"
+    },
+    {
+      "id": "es_ten",
+      "source_id": "TEN.es",
+      "name": "TEN"
+    },
+    {
+      "id": "es_atreseries",
+      "source_id": "Atreseries.es",
+      "name": "Atreseries"
+    },
+    {
+      "id": "es_mega",
+      "source_id": "Mega.es",
+      "name": "Mega"
+    },
+    {
+      "id": "es_clan",
+      "source_id": "Clan.TVE.es",
+      "name": "Clan TVE"
+    },
+    {
+      "id": "es_boing",
+      "source_id": "Boing.es",
+      "name": "Boing"
+    },
+    {
+      "id": "es_teledeporte",
+      "source_id": "Teledeporte.es",
+      "name": "Teledeporte"
+    },
+    {
+      "id": "es_trece",
+      "source_id": "TRECE.es",
+      "name": "TRECE"
+    },
+    {
+      "id": "es_realmadrid",
+      "source_id": "Real.Madrid.TV.es",
+      "name": "Real Madrid TV"
+    },
+    {
+      "id": "es_squirrel",
+      "source_id": "Squirrel.es",
+      "name": "Squirrel"
+    },
+    {
+      "id": "es_squirrel2",
+      "source_id": "Squirrel.2.es",
+      "name": "Squirrel 2"
+    },
+    {
+      "id": "es_veo7",
+      "source_id": "Veo7.es",
+      "name": "Veo7"
+    },
+    {
+      "id": "es_tv3",
+      "source_id": "TV3.es",
+      "name": "TV3"
+    },
+    {
+      "id": "es_3catinfo",
+      "source_id": "3CatInfo.es",
+      "name": "3CatInfo"
+    },
+    {
+      "id": "es_esport3",
+      "source_id": "Esport.3.es",
+      "name": "Esport 3"
+    },
+    {
+      "id": "es_33",
+      "source_id": "33.es",
+      "name": "33"
+    },
+    {
+      "id": "es_canalsur",
+      "source_id": "Canal.Sur.es",
+      "name": "Canal Sur"
+    },
+    {
+      "id": "es_andaluciatv",
+      "source_id": "Andalucía.Televisión.es",
+      "name": "Andalucía Televisión"
+    },
+    {
+      "id": "es_telemadrid",
+      "source_id": "Telemadrid.es",
+      "name": "Telemadrid"
+    },
+    {
+      "id": "es_laotra",
+      "source_id": "La.Otra.es",
+      "name": "La Otra"
+    },
+    {
+      "id": "es_etb1",
+      "source_id": "ETB1.es",
+      "name": "ETB1"
+    },
+    {
+      "id": "es_etb2",
+      "source_id": "ETB2.es",
+      "name": "ETB2"
+    },
+    {
+      "id": "es_tvg",
+      "source_id": "TVG.es",
+      "name": "TVG"
+    },
+    {
+      "id": "es_tvg2",
+      "source_id": "tvG2.es",
+      "name": "tvG2"
+    },
+    {
+      "id": "es_apunt",
+      "source_id": "À.Punt.es",
+      "name": "À Punt"
+    },
+    {
+      "id": "es_aragontv",
+      "source_id": "Aragón.Televisión.es",
+      "name": "Aragón Televisión"
+    },
+    {
+      "id": "es_cmm",
+      "source_id": "CMM.TV.es",
+      "name": "CMM TV"
+    },
+    {
+      "id": "es_ib3",
+      "source_id": "IB3.es",
+      "name": "IB3"
+    },
+    {
+      "id": "es_tpa",
+      "source_id": "TPA.es",
+      "name": "TPA"
+    },
+    {
+      "id": "es_canaria",
+      "source_id": "TelevisiónCanaria.es",
+      "name": "TelevisiónCanaria"
+    },
+    {
+      "id": "es_extremadura",
+      "source_id": "Canal.Extremadura.TV.es",
+      "name": "Canal Extremadura TV"
+    },
+    {
+      "id": "es_navarra",
+      "source_id": "Navarra.Televisión.es",
+      "name": "Navarra Televisión"
+    },
+    {
+      "id": "es_la7murcia",
+      "source_id": "7.Región.de.Murcia.es",
+      "name": "7 Región de Murcia"
+    }
+  ],
+  "tdtchannels": [
+    {
+      "id": "es_la1",
+      "source_id": "La1.TV",
+      "name": "La1.TV"
+    },
+    {
+      "id": "es_la2",
+      "source_id": "La2.TV",
+      "name": "La2.TV"
+    },
+    {
+      "id": "es_cuatro",
+      "source_id": "Cuatro.TV",
+      "name": "Cuatro.TV"
+    },
+    {
+      "id": "es_telecinco",
+      "source_id": "Telecinco.TV",
+      "name": "Telecinco.TV"
+    },
+    {
+      "id": "es_fdf",
+      "source_id": "FDF.TV",
+      "name": "FDF.TV"
+    },
+    {
+      "id": "es_energy",
+      "source_id": "Energy.TV",
+      "name": "Energy.TV"
+    },
+    {
+      "id": "es_divinity",
+      "source_id": "Divinity.TV",
+      "name": "Divinity.TV"
+    },
+    {
+      "id": "es_bemad",
+      "source_id": "Bemad.TV",
+      "name": "Bemad.TV"
+    },
+    {
+      "id": "es_dmax",
+      "source_id": "DMax.TV",
+      "name": "DMax.TV"
+    },
+    {
+      "id": "es_dkiss",
+      "source_id": "DKISS.TV",
+      "name": "DKISS.TV"
+    },
+    {
+      "id": "es_ten",
+      "source_id": "TEN.TV",
+      "name": "TEN.TV"
+    },
+    {
+      "id": "es_clan",
+      "source_id": "Clan.TV",
+      "name": "Clan.TV"
+    },
+    {
+      "id": "es_boing",
+      "source_id": "Boing.TV",
+      "name": "Boing.TV"
+    },
+    {
+      "id": "es_24h",
+      "source_id": "24Horas.TV",
+      "name": "24Horas.TV"
+    },
+    {
+      "id": "es_teledeporte",
+      "source_id": "TDP.TV",
+      "name": "TDP.TV"
+    },
+    {
+      "id": "es_trece",
+      "source_id": "13.TV",
+      "name": "13.TV"
+    },
+    {
+      "id": "es_realmadrid",
+      "source_id": "RMTV.TV",
+      "name": "RMTV.TV"
+    },
+    {
+      "id": "es_squirrel",
+      "source_id": "Squirrel.TV",
+      "name": "Squirrel.TV"
+    },
+    {
+      "id": "es_squirrel2",
+      "source_id": "Squirrel2.TV",
+      "name": "Squirrel2.TV"
+    },
+    {
+      "id": "es_veo7",
+      "source_id": "Veo7.TV",
+      "name": "Veo7.TV"
+    },
+    {
+      "id": "es_tv3",
+      "source_id": "TV3.TV",
+      "name": "TV3.TV"
+    },
+    {
+      "id": "es_3catinfo",
+      "source_id": "324.TV",
+      "name": "324.TV"
+    },
+    {
+      "id": "es_esport3",
+      "source_id": "E3.TV",
+      "name": "E3.TV"
+    },
+    {
+      "id": "es_sx3",
+      "source_id": "SX3.TV",
+      "name": "SX3.TV"
+    },
+    {
+      "id": "es_33",
+      "source_id": "C33.TV",
+      "name": "C33.TV"
+    },
+    {
+      "id": "es_canalsur",
+      "source_id": "CanalSurA.TV",
+      "name": "CanalSurA.TV"
+    },
+    {
+      "id": "es_telemadrid",
+      "source_id": "Telemadrid.TV",
+      "name": "Telemadrid.TV"
+    },
+    {
+      "id": "es_laotra",
+      "source_id": "LaOtra.TV",
+      "name": "LaOtra.TV"
+    },
+    {
+      "id": "es_etb1",
+      "source_id": "ETB1.TV",
+      "name": "ETB1.TV"
+    },
+    {
+      "id": "es_etb2",
+      "source_id": "ETB2.TV",
+      "name": "ETB2.TV"
+    },
+    {
+      "id": "es_tvg",
+      "source_id": "TVGAL.TV",
+      "name": "TVGAL.TV"
+    },
+    {
+      "id": "es_tvg2",
+      "source_id": "TVG2.TV",
+      "name": "TVG2.TV"
+    },
+    {
+      "id": "es_apunt",
+      "source_id": "APUNT.TV",
+      "name": "APUNT.TV"
+    },
+    {
+      "id": "es_aragontv",
+      "source_id": "AragonTV.TV",
+      "name": "AragonTV.TV"
+    },
+    {
+      "id": "es_cmm",
+      "source_id": "CMM.TV",
+      "name": "CMM.TV"
+    },
+    {
+      "id": "es_ib3",
+      "source_id": "IB3.TV",
+      "name": "IB3.TV"
+    },
+    {
+      "id": "es_tpa",
+      "source_id": "TPA.TV",
+      "name": "TPA.TV"
+    },
+    {
+      "id": "es_canaria",
+      "source_id": "Canarias.TV",
+      "name": "Canarias.TV"
+    },
+    {
+      "id": "es_extremadura",
+      "source_id": "Extremadura.TV",
+      "name": "Extremadura.TV"
+    },
+    {
+      "id": "es_navarra",
+      "source_id": "NaTV.TV",
+      "name": "NaTV.TV"
+    },
+    {
+      "id": "es_la7murcia",
+      "source_id": "7RM.TV",
+      "name": "7RM.TV"
+    }
+  ]
+}

@@ -1,0 +1,667 @@
+{
+  "profile": "standard_es",
+  "group": "Hauptsender",
+  "note": "National general-interest order follows Spanish programme guides. National thematic and regional public channels extend the main list. All additional available national, regional, international and subscription channels remain selectable from the feeds. Exact XMLTV aliases distinguish regional and international variants. 3CatInfo retains 324 as a source alias, not a duplicate main channel.",
+  "sources": [
+    "https://www.formulatv.com/programacion/",
+    "https://www.3cat.cat/corporatiu/es/oferta-audiovisual/televisio/",
+    "https://tdtchannels.com/listas/"
+  ],
+  "channels": [
+    {
+      "id": "es_la1",
+      "name": "La 1",
+      "order": 1,
+      "xmltv_ids": [
+        "LA1.es",
+        "La.1.es",
+        "La1.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_la1-dark.svg",
+      "logo_file_light": "logos/channels/es/es_la1-light.svg"
+    },
+    {
+      "id": "es_la2",
+      "name": "La 2",
+      "order": 2,
+      "xmltv_ids": [
+        "LA2.es",
+        "La2.es",
+        "La.2.es",
+        "La2.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_la2-dark.svg",
+      "logo_file_light": "logos/channels/es/es_la2-light.svg"
+    },
+    {
+      "id": "es_antena3",
+      "name": "Antena 3",
+      "order": 3,
+      "xmltv_ids": [
+        "Antena3.es",
+        "Antena.3.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_antena3-dark.svg",
+      "logo_file_light": "logos/channels/es/es_antena3-light.svg"
+    },
+    {
+      "id": "es_cuatro",
+      "name": "Cuatro",
+      "order": 4,
+      "xmltv_ids": [
+        "Cuatro.es",
+        "Cuatro.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_cuatro-dark.svg",
+      "logo_file_light": "logos/channels/es/es_cuatro-light.svg"
+    },
+    {
+      "id": "es_telecinco",
+      "name": "Telecinco",
+      "order": 5,
+      "xmltv_ids": [
+        "Telecinco.es",
+        "Telecinco.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_telecinco-dark.svg",
+      "logo_file_light": "logos/channels/es/es_telecinco-light.svg"
+    },
+    {
+      "id": "es_lasexta",
+      "name": "laSexta",
+      "order": 6,
+      "xmltv_ids": [
+        "LaSexta.es",
+        "laSexta.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_lasexta-dark.svg",
+      "logo_file_light": "logos/channels/es/es_lasexta-light.svg"
+    },
+    {
+      "id": "es_neox",
+      "name": "Neox",
+      "order": 7,
+      "xmltv_ids": [
+        "Neox.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_neox-dark.svg",
+      "logo_file_light": "logos/channels/es/es_neox-light.svg"
+    },
+    {
+      "id": "es_nova",
+      "name": "Nova",
+      "order": 8,
+      "xmltv_ids": [
+        "Nova.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_nova-dark.svg",
+      "logo_file_light": "logos/channels/es/es_nova-light.svg"
+    },
+    {
+      "id": "es_fdf",
+      "name": "FDF",
+      "order": 9,
+      "xmltv_ids": [
+        "FDF.es",
+        "FDF.Telecinco.es",
+        "FDF.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_fdf-dark.svg",
+      "logo_file_light": "logos/channels/es/es_fdf-light.svg"
+    },
+    {
+      "id": "es_energy",
+      "name": "Energy",
+      "order": 10,
+      "xmltv_ids": [
+        "Energy.es",
+        "Energy.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_energy-dark.svg",
+      "logo_file_light": "logos/channels/es/es_energy-light.svg"
+    },
+    {
+      "id": "es_divinity",
+      "name": "Divinity",
+      "order": 11,
+      "xmltv_ids": [
+        "Divinity.es",
+        "Divinity.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_divinity-dark.svg",
+      "logo_file_light": "logos/channels/es/es_divinity-light.svg"
+    },
+    {
+      "id": "es_bemad",
+      "name": "Be Mad",
+      "order": 12,
+      "xmltv_ids": [
+        "BeMad.es",
+        "Be.Mad.es",
+        "Bemad.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_bemad-dark.svg",
+      "logo_file_light": "logos/channels/es/es_bemad-light.svg"
+    },
+    {
+      "id": "es_dmax",
+      "name": "DMAX",
+      "order": 13,
+      "xmltv_ids": [
+        "DMAX.es",
+        "DMax.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_dmax-dark.svg",
+      "logo_file_light": "logos/channels/es/es_dmax-light.svg"
+    },
+    {
+      "id": "es_dkiss",
+      "name": "DKISS",
+      "order": 14,
+      "xmltv_ids": [
+        "DKISS.es",
+        "DKISS.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_dkiss-dark.svg",
+      "logo_file_light": "logos/channels/es/es_dkiss-light.svg"
+    },
+    {
+      "id": "es_ten",
+      "name": "TEN",
+      "order": 15,
+      "xmltv_ids": [
+        "Ten.es",
+        "TEN.es",
+        "TEN.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_ten-dark.svg",
+      "logo_file_light": "logos/channels/es/es_ten-light.svg"
+    },
+    {
+      "id": "es_atreseries",
+      "name": "Atreseries",
+      "order": 16,
+      "xmltv_ids": [
+        "Atreseries.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_atreseries-dark.svg",
+      "logo_file_light": "logos/channels/es/es_atreseries-light.svg"
+    },
+    {
+      "id": "es_mega",
+      "name": "Mega",
+      "order": 17,
+      "xmltv_ids": [
+        "Mega.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_mega-dark.svg",
+      "logo_file_light": "logos/channels/es/es_mega-light.svg"
+    },
+    {
+      "id": "es_clan",
+      "name": "Clan",
+      "order": 18,
+      "xmltv_ids": [
+        "ClanTVE.es",
+        "Clan.es",
+        "Clan.TVE.es",
+        "Clan.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_clan-dark.svg",
+      "logo_file_light": "logos/channels/es/es_clan-light.svg"
+    },
+    {
+      "id": "es_boing",
+      "name": "Boing",
+      "order": 19,
+      "xmltv_ids": [
+        "Boing.es",
+        "Boing.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_boing-dark.svg",
+      "logo_file_light": "logos/channels/es/es_boing-light.svg"
+    },
+    {
+      "id": "es_24h",
+      "name": "24h",
+      "order": 20,
+      "xmltv_ids": [
+        "24Horas.es",
+        "24h.es",
+        "24.Horas.es",
+        "24Horas.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_24h-dark.svg",
+      "logo_file_light": "logos/channels/es/es_24h-light.svg"
+    },
+    {
+      "id": "es_teledeporte",
+      "name": "Teledeporte",
+      "order": 21,
+      "xmltv_ids": [
+        "Teledeporte.es",
+        "TDP.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_teledeporte-dark.svg",
+      "logo_file_light": "logos/channels/es/es_teledeporte-light.svg"
+    },
+    {
+      "id": "es_trece",
+      "name": "TRECE",
+      "order": 22,
+      "xmltv_ids": [
+        "13TV.es",
+        "TRECE.es",
+        "13.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_trece-dark.svg",
+      "logo_file_light": "logos/channels/es/es_trece-light.svg"
+    },
+    {
+      "id": "es_realmadrid",
+      "name": "Real Madrid TV",
+      "order": 23,
+      "xmltv_ids": [
+        "RealMadridTV.es",
+        "Real.Madrid.TV.es",
+        "RMTV.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_realmadrid-dark.svg",
+      "logo_file_light": "logos/channels/es/es_realmadrid-light.svg"
+    },
+    {
+      "id": "es_squirrel",
+      "name": "Squirrel",
+      "order": 24,
+      "xmltv_ids": [
+        "Squirrel.es",
+        "Squirrel.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_squirrel-dark.svg",
+      "logo_file_light": "logos/channels/es/es_squirrel-light.svg"
+    },
+    {
+      "id": "es_squirrel2",
+      "name": "Squirrel 2",
+      "order": 25,
+      "xmltv_ids": [
+        "Squirrel2.es",
+        "Squirrel.2.es",
+        "Squirrel2.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_squirrel2-dark.svg",
+      "logo_file_light": "logos/channels/es/es_squirrel2-light.svg"
+    },
+    {
+      "id": "es_veo7",
+      "name": "Veo7",
+      "order": 26,
+      "xmltv_ids": [
+        "Veo7.es",
+        "Veo7.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_veo7-dark.svg",
+      "logo_file_light": "logos/channels/es/es_veo7-light.svg"
+    },
+    {
+      "id": "es_tv3",
+      "name": "TV3",
+      "order": 27,
+      "xmltv_ids": [
+        "TV3.es",
+        "TV3.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_tv3-dark.svg",
+      "logo_file_light": "logos/channels/es/es_tv3-light.svg"
+    },
+    {
+      "id": "es_3catinfo",
+      "name": "3CatInfo",
+      "order": 28,
+      "xmltv_ids": [
+        "3CatInfo.es",
+        "324.es",
+        "324.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_3catinfo-dark.svg",
+      "logo_file_light": "logos/channels/es/es_3catinfo-light.svg"
+    },
+    {
+      "id": "es_esport3",
+      "name": "Esport3",
+      "order": 29,
+      "xmltv_ids": [
+        "Esport3.es",
+        "Esport.3.es",
+        "E3.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_esport3-dark.svg",
+      "logo_file_light": "logos/channels/es/es_esport3-light.svg"
+    },
+    {
+      "id": "es_sx3",
+      "name": "SX3",
+      "order": 30,
+      "xmltv_ids": [
+        "SX3.es",
+        "SX3.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_sx3-dark.svg",
+      "logo_file_light": "logos/channels/es/es_sx3-light.svg"
+    },
+    {
+      "id": "es_33",
+      "name": "33",
+      "order": 31,
+      "xmltv_ids": [
+        "Canal33.es",
+        "33.es",
+        "Canal.33.es",
+        "C33.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_33-dark.svg",
+      "logo_file_light": "logos/channels/es/es_33-light.svg"
+    },
+    {
+      "id": "es_canalsur",
+      "name": "Canal Sur",
+      "order": 32,
+      "xmltv_ids": [
+        "CanalSur.es",
+        "Canal.Sur.es",
+        "CanalSurA.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_canalsur-dark.svg",
+      "logo_file_light": "logos/channels/es/es_canalsur-light.svg"
+    },
+    {
+      "id": "es_andaluciatv",
+      "name": "Andalucía TV",
+      "order": 33,
+      "xmltv_ids": [
+        "AndaluciaTV.es",
+        "Andalucía.Televisión.es"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_andaluciatv-dark.svg",
+      "logo_file_light": "logos/channels/es/es_andaluciatv-light.svg"
+    },
+    {
+      "id": "es_telemadrid",
+      "name": "Telemadrid",
+      "order": 34,
+      "xmltv_ids": [
+        "Telemadrid.es",
+        "Telemadrid.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_telemadrid-dark.svg",
+      "logo_file_light": "logos/channels/es/es_telemadrid-light.svg"
+    },
+    {
+      "id": "es_laotra",
+      "name": "La Otra",
+      "order": 35,
+      "xmltv_ids": [
+        "LaOtra.es",
+        "La.Otra.es",
+        "LaOtra.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_laotra-dark.svg",
+      "logo_file_light": "logos/channels/es/es_laotra-light.svg"
+    },
+    {
+      "id": "es_etb1",
+      "name": "ETB1",
+      "order": 36,
+      "xmltv_ids": [
+        "ETB1.es",
+        "ETB.1.es",
+        "ETB1.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_etb1-dark.svg",
+      "logo_file_light": "logos/channels/es/es_etb1-light.svg"
+    },
+    {
+      "id": "es_etb2",
+      "name": "ETB2",
+      "order": 37,
+      "xmltv_ids": [
+        "ETB2.es",
+        "ETB.2.es",
+        "ETB2.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_etb2-dark.svg",
+      "logo_file_light": "logos/channels/es/es_etb2-light.svg"
+    },
+    {
+      "id": "es_tvg",
+      "name": "TVG",
+      "order": 38,
+      "xmltv_ids": [
+        "TVG.es",
+        "TVGAL.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_tvg-dark.svg",
+      "logo_file_light": "logos/channels/es/es_tvg-light.svg"
+    },
+    {
+      "id": "es_tvg2",
+      "name": "TVG2",
+      "order": 39,
+      "xmltv_ids": [
+        "TVG2.es",
+        "tvG2.es",
+        "TVG2.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_tvg2-dark.svg",
+      "logo_file_light": "logos/channels/es/es_tvg2-light.svg"
+    },
+    {
+      "id": "es_apunt",
+      "name": "À Punt",
+      "order": 40,
+      "xmltv_ids": [
+        "APunt.es",
+        "À.Punt.es",
+        "APUNT.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_apunt-dark.svg",
+      "logo_file_light": "logos/channels/es/es_apunt-light.svg"
+    },
+    {
+      "id": "es_aragontv",
+      "name": "Aragón TV",
+      "order": 41,
+      "xmltv_ids": [
+        "AragonTV.es",
+        "Aragón.Televisión.es",
+        "AragonTV.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_aragontv-dark.svg",
+      "logo_file_light": "logos/channels/es/es_aragontv-light.svg"
+    },
+    {
+      "id": "es_cmm",
+      "name": "CMM",
+      "order": 42,
+      "xmltv_ids": [
+        "CastillalaManchaTV.es",
+        "CastillaLaManchaTV.es",
+        "CMMTV.es",
+        "CMM.TV.es",
+        "Castilla-La.Mancha.Media.es",
+        "CMM.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_cmm-dark.svg",
+      "logo_file_light": "logos/channels/es/es_cmm-light.svg"
+    },
+    {
+      "id": "es_ib3",
+      "name": "IB3",
+      "order": 43,
+      "xmltv_ids": [
+        "IB3.es",
+        "IB3.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_ib3-dark.svg",
+      "logo_file_light": "logos/channels/es/es_ib3-light.svg"
+    },
+    {
+      "id": "es_tpa",
+      "name": "TPA",
+      "order": 44,
+      "xmltv_ids": [
+        "TPA.es",
+        "TPA7.es",
+        "TPA.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_tpa-dark.svg",
+      "logo_file_light": "logos/channels/es/es_tpa-light.svg"
+    },
+    {
+      "id": "es_canaria",
+      "name": "Televisión Canaria",
+      "order": 45,
+      "xmltv_ids": [
+        "TVCanaria.es",
+        "TelevisionCanaria.es",
+        "TelevisiónCanaria.es",
+        "Canarias.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_canaria-dark.svg",
+      "logo_file_light": "logos/channels/es/es_canaria-light.svg"
+    },
+    {
+      "id": "es_extremadura",
+      "name": "Canal Extremadura",
+      "order": 46,
+      "xmltv_ids": [
+        "CanalExtremadura.es",
+        "Canal.Extremadura.TV.es",
+        "Extremadura.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_extremadura-dark.svg",
+      "logo_file_light": "logos/channels/es/es_extremadura-light.svg"
+    },
+    {
+      "id": "es_navarra",
+      "name": "Navarra TV",
+      "order": 47,
+      "xmltv_ids": [
+        "NavarraTelevision.es",
+        "NavarraTV.es",
+        "Navarra.Televisión.es",
+        "NaTV.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_navarra-dark.svg",
+      "logo_file_light": "logos/channels/es/es_navarra-light.svg"
+    },
+    {
+      "id": "es_la7murcia",
+      "name": "La 7 Murcia",
+      "order": 48,
+      "xmltv_ids": [
+        "7TVRegionMurcia.es",
+        "7.Región.de.Murcia.es",
+        "7RM.TV"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/channels/es/es_la7murcia-dark.svg",
+      "logo_file_light": "logos/channels/es/es_la7murcia-light.svg"
+    }
+  ]
+}

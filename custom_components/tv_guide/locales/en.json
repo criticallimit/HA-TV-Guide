@@ -175,7 +175,9 @@
     "Großbritannien": "United Kingdom",
     "Italien": "Italy",
     "Ansicht wird aktualisiert …": "Updating view …",
-    "Verbindung unterbrochen. Erneuter Versuch …": "Connection interrupted. Retrying …"
+    "Verbindung unterbrochen. Erneuter Versuch …": "Connection interrupted. Retrying …",
+    "Spanien": "Spain",
+    "Español": "Spanish"
   },
   "home_assistant": {
     "config": {
