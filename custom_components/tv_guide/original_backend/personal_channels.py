@@ -75,16 +75,19 @@ class PersonalChannels:
     def settings(self, store):
         prefs = self.load(store)
         channels = self.catalogue(store)
+        available = []
+        for item in channels.values():
+            light, dark = self.runtime.normalized_logo_urls(item)
+            available.append({
+                "id": item["id"], "name": item["name"],
+                "source_country": item["source_country"], "country_name": item["country_name"],
+                "logo_normalized_light": light, "logo_normalized_dark": dark,
+            })
         return {
             **prefs,
             "country": store.country,
             "supported_countries": [{"code": code, "name": item["name"]} for code, item in self.runtime.COUNTRIES.items()],
-            "channels": [{
-                "id": item["id"], "name": item["name"],
-                "source_country": item["source_country"], "country_name": item["country_name"],
-                "logo_normalized_light": self.runtime.normalized_logo_urls(item)[0],
-                "logo_normalized_dark": self.runtime.normalized_logo_urls(item)[1],
-            } for item in channels.values()],
+            "channels": available,
         }
 
     def save(self, order, countries, store):

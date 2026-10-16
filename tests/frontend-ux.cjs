@@ -31,12 +31,12 @@ const server=http.createServer((req,res)=>{
         channels.push({...structuredClone(channels[0]),id:'at:a',name:'Austria station',source_country:'at',country_name:'Österreich'});
         model.main_channel_ids=['de:a','de:b'];model.custom_channel_ids=['de:a'];
       }
-      window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
+      window.savedReads=0;window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
       window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];
       if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
       window.preparation=scenario==='preparation'?{installation_id:'ux-first',first_install:true,complete:false,logos:{completed:1,total:2,running:true,ready:false,error:false},programmes:{ready:true,running:false,sources_completed:1,error:false}}:{complete:true};
       window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){
-        if(message.service==='get_saved_programmes')return {response:{bookmarks:[],reminders:[]}};
+        if(message.service==='get_saved_programmes'){savedReads++;if(scenario==='saved-read')await new Promise(resolve=>window.releaseSaved=resolve);return {response:{bookmarks:[],reminders:[]}};}
         if(message.service==='get_preparation_status')return {response:structuredClone(preparation)};
         if(message.service!=='guide_request')throw Error('Unexpected UX service');
         const {endpoint,method,body}=message.service_data;
@@ -207,6 +207,70 @@ const server=http.createServer((req,res)=>{
       await page.locator(save).click();await page.waitForFunction(()=>typeof releaseSave==='function');
       await page.evaluate(()=>releaseSave());
       await page.locator(dialog).waitFor({state:'hidden'});
+    }finally{await page.close();}
+  });
+  await check('bookmark and reminder refresh share one saved-state request',async()=>{
+    const page=await mount('saved-read');try{
+      await page.waitForFunction(()=>typeof releaseSaved==='function');
+      assert.equal(await page.evaluate(()=>savedReads),1);
+      await page.evaluate(()=>releaseSaved());
+    }finally{await page.close();}
+  });
+  await check('reordering retains catalogue rows and decoded logos',async()=>{
+    const page=await mount('personal');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showChannelSettings').click();await page.locator('#saveChannelSettings:not([disabled])').waitFor();
+      await page.locator('#channelCountryFilters input[value="at"]').check();
+      await page.locator('#availableChannelsList [data-channel-id="at:a"] input').check();
+      await page.evaluate(()=>window.catalogueRows=[...card.shadowRoot.querySelector('#availableChannelsList').children]);
+      await page.locator('#channelSettingsList [data-channel-id="at:a"] .move-up').click();
+      assert.equal(await page.evaluate(()=>catalogueRows.every((row,i)=>card.shadowRoot.querySelector('#availableChannelsList').children[i]===row)),true);
+    }finally{await page.close();}
+  });
+  await check('post-save state does not reuse an older in-flight read',async()=>{
+    const page=await mount('personal');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      const result=await page.evaluate(async()=>{
+        let reads=0,release;
+        const original=hass.callWS;
+        hass.callWS=async message=>{
+          if(message.service!=='get_saved_programmes')return original(message);
+          reads++;
+          if(reads===1)return await new Promise(resolve=>release=()=>resolve({response:{bookmarks:[],reminders:[]}}));
+          return {response:{bookmarks:[{id:'new'}],reminders:[]}};
+        };
+        hass.callService=async()=>{};
+        const first=card._request({endpoint:'bookmarks',method:'GET'});
+        const saved=await card._request({endpoint:'bookmarks',method:'POST',body:{action:'upsert',id:'new',channelId:'de:a',title:'New',channel:'Station',start:'2026-10-14T19:00:00Z',end:'2026-10-14T20:00:00Z'}});
+        const later=card._request({endpoint:'reminders',method:'GET'});
+        release();await first;const refreshed=await later;
+        return {reads,ids:saved.bookmarks.map(item=>item.id),refreshed:refreshed.bookmarks.map(item=>item.id)};
+      });
+      assert.deepEqual(result,{reads:3,ids:['new'],refreshed:['new']});
+    }finally{await page.close();}
+  });
+  await check('saved-state refresh recovers after a shared read times out',async()=>{
+    const page=await mount('personal');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0&&card._pending.size===0);
+      const result=await page.evaluate(async()=>{
+        let reads=0,release;
+        const original=hass.callWS,nativeTimeout=window.setTimeout,callbacks=[];
+        hass.callWS=async message=>{
+          if(message.service!=='get_saved_programmes')return original(message);
+          reads++;
+          if(reads===1)return await new Promise(resolve=>release=()=>resolve({response:{bookmarks:[],reminders:[]}}));
+          return {response:{bookmarks:[{id:'recovered'}],reminders:[]}};
+        };
+        window.setTimeout=(callback,delay,...args)=>{if(delay===15000)callbacks.push(callback);return nativeTimeout(callback,delay,...args);};
+        try{
+          const first=card._request({endpoint:'bookmarks',method:'GET'}).then(()=>false,()=>true);
+          callbacks[0]();const timedOut=await first;
+          const next=card._request({endpoint:'reminders',method:'GET'});
+          release();const response=await next;
+          return {reads,timedOut,ids:response.bookmarks.map(item=>item.id)};
+        }finally{window.setTimeout=nativeTimeout;}
+      });
+      assert.deepEqual(result,{reads:2,timedOut:true,ids:['recovered']});
     }finally{await page.close();}
   });
   await browser.close();server.close();assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);

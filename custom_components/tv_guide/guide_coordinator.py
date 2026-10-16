@@ -27,7 +27,7 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         self._sync_requested = False
         self._sync_lock = asyncio.Lock()
         self._last_refresh_notification = None
-        self._cancel_preload = None
+        self._cancel_maintenance = None
         self._loop = asyncio.get_running_loop()
         entry.async_on_unload(hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_stop_on_shutdown))
 
@@ -105,9 +105,9 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
         if not self._closed:
             await self.hass.async_add_executor_job(self.backend.start_logo_download)
         if not self._closed:
-            self._cancel_preload = async_track_time_interval(self.hass, self._async_preload, timedelta(minutes=5))
+            self._cancel_maintenance = async_track_time_interval(self.hass, self._async_maintenance, timedelta(minutes=5))
 
-    async def _async_preload(self, _now):
+    async def _async_maintenance(self, _now):
         if not self._closed and self.backend is not None:
             await self.hass.async_add_executor_job(self.backend.maintain_caches)
 
@@ -123,11 +123,15 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
             self.update_interval = timedelta(minutes=body["refresh_minutes"])
             self._schedule_sync()
             return result
+        # Personal selection changes only the guide, not the shared EPG records.
+        if endpoint == "personal-channels":
+            return result
         # Pure reads must not rebuild the entire HA coordinator snapshot before
         # the already prepared EPG response reaches the frontend. Provider
-        # refreshes still notify through _wake; writes retain synchronous updates.
+        # refreshes still notify through _wake. Writes schedule synchronization
+        # independently instead of holding their committed response behind it.
         if method != "GET" or endpoint == "refresh":
-            await self._async_sync()
+            self._schedule_sync()
         return result
 
     async def _async_stop_on_shutdown(self, event):
@@ -145,8 +149,8 @@ class TVGuideCoordinator(TVGuideEPGCoordinator):
     async def _async_close_resources(self):
         if self._startup_task is not None:
             await asyncio.gather(asyncio.shield(self._startup_task), return_exceptions=True)
-        if self._cancel_preload is not None:
-            self._cancel_preload()
-            self._cancel_preload = None
+        if self._cancel_maintenance is not None:
+            self._cancel_maintenance()
+            self._cancel_maintenance = None
         if self.backend is not None:
             await self.hass.async_add_executor_job(self.backend.close)

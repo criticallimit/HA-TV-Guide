@@ -29,6 +29,7 @@
     "Validate restored native programme cache records and metadata",
     "Reject unrepresentable datetime instants in native XMLTV/cache/timeline validation without changing valid schedules",
     "Recover valid sender preferences when stored order/hidden fields contain malformed types",
-    "Validate inactive-country catalogue metadata and discard embedded programme timelines"
+    "Validate inactive-country catalogue metadata and discard embedded programme timelines",
+    "Removed unused standalone backend translations; native UI and HA notifications retain their own lazy translations"
   ]
 }

@@ -63,6 +63,49 @@ class GuideRuntimeTests(unittest.TestCase):
         finally:
             replacement.close()
 
+    def test_runtime_does_not_load_unused_backend_translation_catalogues(self):
+        reads = []
+        original = Path.read_text
+        def read(path, *args, **kwargs):
+            if 'www/locales/' in str(path):
+                reads.append(str(path))
+            return original(path, *args, **kwargs)
+        with patch.object(Path, 'read_text', read):
+            replacement = type(self.backend)(Path(self.temp.name) / 'other', {'country':'de'}, {'language':'de'}, lambda:None)
+        try:
+            self.assertEqual(reads, [], 'Native UI translations and notification translations are loaded independently')
+        finally:
+            replacement.close()
+
+    def test_logo_maintenance_keeps_programme_revision_and_snapshot(self):
+        from concurrent.futures import Future
+        guide = self.backend.request('guide', 'GET')
+        snapshot = self.backend.state_snapshot()
+        def immediate(function):
+            result = Future()
+            try:
+                result.set_result(function())
+            except Exception as exc:
+                result.set_exception(exc)
+            return result
+        with patch.object(self.backend._pool, 'submit', side_effect=immediate):
+            self.backend.start_logo_download().result()
+        self.assertEqual(self.backend.request('guide', 'GET', {'known_revision':guide['revision']}),
+                         {'unchanged':True, 'revision':guide['revision']})
+        self.assertIs(self.backend.state_snapshot()[0], snapshot[0])
+
+    def test_personal_selection_keeps_shared_programme_snapshot(self):
+        snapshot = self.backend.state_snapshot()
+        order = self.backend.request('personal-channels', 'GET')['order'][:2][::-1]
+        self.backend.request('personal-channels', 'POST', {'order':order, 'countries':['de']})
+        self.assertIs(self.backend.state_snapshot()[0], snapshot[0],
+                      'Changing selection does not change the shared programme records')
+
+    def test_sender_catalogue_resolves_each_logo_pair_once(self):
+        with patch.object(self.runtime, 'normalized_logo_urls', wraps=self.runtime.normalized_logo_urls) as logos:
+            picker = self.backend.request('personal-channels', 'GET')
+        self.assertEqual(logos.call_count, len(picker['channels']))
+
     def test_coordinator_snapshot_is_reused_until_backend_changes(self):
         first = self.backend.state_snapshot()
         second = self.backend.state_snapshot()
@@ -129,15 +172,6 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertEqual(len(picker['supported_countries']),10)
         self.assertTrue(any(item['id'].startswith('gb:') for item in picker['channels']))
         self.assertTrue(any(item['id'].startswith('at:') for item in picker['channels']))
-
-    def test_multicountry_selection_roundtrip_and_restart(self):
-        prefs=self.backend.request('personal-channels','GET')
-        keys=[next(ch['id'] for ch in prefs['channels'] if ch['id'].startswith(code+':')) for code in ('de','at','gb')]
-        result=self.backend.request('personal-channels','POST',{'order':keys,'countries':['de','at','gb']})
-        self.assertEqual(result['order'],keys)
-        self.assertEqual(self.backend.request('personal-channels','GET')['order'],keys)
-        self.assertTrue(self.runtime.PERSONAL_CHANNELS.path.exists())
-        self.assertEqual(self.backend.request('guide','GET')['custom_channel_ids'],keys)
 
     def test_personal_selection_all_countries_survives_restart_and_filters(self):
         picker = self.backend.request('personal-channels', 'GET')

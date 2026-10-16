@@ -31,7 +31,6 @@ from .providers import ZDF_PROGRAM_URL as ZDF_PROGRAM_URL
 from .store import GuideStore
 
 BASE = GUIDE_ASSET_ROOT
-WWW = GUIDE_ASSET_ROOT / "www"
 CHANNELS = json.loads((BASE / "data" / "channels.json").read_text(encoding="utf-8"))
 COUNTRIES = json.loads((BASE / "data" / "countries.json").read_text(encoding="utf-8"))
 COUNTRY_CATALOGS = {
@@ -70,37 +69,8 @@ OFFICIAL_PROVIDER_AUDIT = {
 DEFAULT_REFRESH_MINUTES = 180
 
 LANGUAGES = {"da", "de", "en", "nl", "fr", "it", "nb", "sv"}
-TRANSLATIONS = {
-    code: json.loads((WWW / "locales" / f"{code}.json").read_text(encoding="utf-8"))
-    for code in LANGUAGES
-}
-
-
-def language_code(value):
-    value = str(value or "").lower().replace("_", "-").split("-")[0]
-    return "nb" if value == "no" else value if value in LANGUAGES else "en"
-
-
-def home_assistant_locale(wait=True):
+def home_assistant_locale():
     return dict(GUIDE_LOCALE)
-
-
-def effective_language(value=None):
-    options = load_options()
-    configured = value or options.get("language", "auto")
-    if configured != "auto":
-        return language_code(configured)
-    locale = home_assistant_locale()
-    if locale.get("language"):
-        return language_code(locale["language"])
-    country = str(locale.get("country") or options.get("country") or "de").lower()
-    return {"de": "de", "at": "de", "nl": "nl", "no": "nb", "fr": "fr", "dk": "da", "se": "sv", "gb": "en"}.get(country, "en")
-
-
-def translate(message, language, **values):
-    catalogue = TRANSLATIONS.get(language, TRANSLATIONS["en"])
-    message = catalogue.get(message, TRANSLATIONS["en"].get(message, message))
-    return re.sub(r"\{(\w+)\}", lambda match: str(values.get(match[1], match[0])), message)
 
 
 def save_options_file(options):

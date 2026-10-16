@@ -147,7 +147,8 @@ export class TVGuideChannelPicker {
             const next = index + (action === "up" ? -1 : 1);
             [this.order[index], this.order[next]] = [this.order[next], this.order[index]];
           }
-          this.render();
+          if (action === "remove") this.render();
+          else this.renderPersonal();
         });
         actions.append(button);
       }
@@ -162,7 +163,7 @@ export class TVGuideChannelPicker {
         const after = event.clientY >= row.getBoundingClientRect().top + row.offsetHeight / 2;
         this.order = this.order.filter(item => item !== dragged);
         this.order.splice(this.order.indexOf(id) + (after ? 1 : 0), 0, dragged);
-        this.render();
+        this.renderPersonal();
       });
       this.personal.append(row);
     });
