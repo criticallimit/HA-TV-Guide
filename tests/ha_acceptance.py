@@ -135,10 +135,10 @@ async def exercise_acceptance(hass, entry, coordinator):
                 guide=await client.service('get_guide')
                 assert guide['ui']['language']==language
                 reminder_id='registered-language-'+language
-                await client.service('save_reminder',{**valid,'id':reminder_id,'language':language})
+                await client.service('save_reminder',{**valid,'id':reminder_id,'language':language},response=False)
                 saved_languages=await client.service('get_saved_programmes')
                 assert next(item for item in saved_languages['reminders'] if item['id']==reminder_id)['language']==language
-                await client.service('remove_saved_programme',{'id':reminder_id,'kind':'reminder'})
+                await client.service('remove_saved_programme',{'id':reminder_id,'kind':'reminder'},response=False)
             print(f'PASS HA acceptance: all {len(LANGUAGES)} registered languages save and render through authenticated actions',flush=True)
 
             # Restore the original acceptance fixture before saved-item and reload tests.
