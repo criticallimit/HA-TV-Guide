@@ -1,5 +1,5 @@
-import {createGuideApp} from './app/app.js?v=native-9';
-import {viewMarkup, viewStyles} from './app/view-template.js?v=native-9';
+import {createGuideApp} from './app/app.js?v=native-10';
+import {viewMarkup, viewStyles} from './app/view-template.js?v=native-10';
 
 let fontsRegistered = false;
 function registerGuideFonts() {
@@ -101,6 +101,7 @@ class TVGuideCard extends HTMLElement {
     this._app = null;
     this._pending = new Set();
     this._savedWrites = Promise.resolve();
+    this._queuedSavedWrites = new Set();
     this._generation = 0;
     this._themeProperties = new Set();
     this._themeFingerprint = "";
@@ -281,6 +282,8 @@ class TVGuideCard extends HTMLElement {
       pending.reject(new Error("Card closed"));
     }
     this._pending.clear();
+    for (const queued of this._queuedSavedWrites) queued.reject(new Error("Card closed"));
+    this._queuedSavedWrites.clear();
   }
 
   getCardSize() {
@@ -313,7 +316,10 @@ class TVGuideCard extends HTMLElement {
     if (request.method === "POST" && ["bookmarks", "reminders"].includes(request.endpoint)) {
       const generation = this._generation;
       return new Promise((resolve, reject) => {
+        const queued = {reject};
+        this._queuedSavedWrites.add(queued);
         this._savedWrites = this._savedWrites.then(async () => {
+          this._queuedSavedWrites.delete(queued);
           if (generation !== this._generation || !this.isConnected) throw new Error("Card closed");
           const transport = this._dispatchGuideRequest(request);
           const response = this._performRequest(request, transport);

@@ -1,5 +1,5 @@
 import {createI18n} from './i18n.js';
-import {createGuideCore} from './guide-core.js';
+import {createGuideCore} from './guide-core.js?v=native-10';
 import {TVGuideChannelPicker} from './channel-picker.js';
 import {createPreparation} from './preparation.js';
 import {createScope} from './lifecycle.js';

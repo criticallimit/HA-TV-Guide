@@ -90,6 +90,17 @@ class TVGuideReminderScheduler:
         if checkpoints:
             self._schedule_cleanup(min(checkpoints))
 
+    def _track_timer(self, handler, when):
+        """Own future timers only; release fired handles before any retry."""
+        cancel = None
+        @callback
+        def on_timer(now):
+            if cancel in self._cancellations:
+                self._cancellations.remove(cancel)
+            handler(now)
+        cancel = async_track_point_in_utc_time(self.hass, on_timer, when)
+        self._cancellations.append(cancel)
+
     def _schedule_cleanup(self, when):
         generation = self._generation
         @callback
@@ -98,7 +109,7 @@ class TVGuideReminderScheduler:
                 task = self.hass.async_create_task(self._cleanup())
                 self._tasks.add(task)
                 task.add_done_callback(self._tasks.discard)
-        self._cancellations.append(async_track_point_in_utc_time(self.hass,on_expiry,when))
+        self._track_timer(on_expiry, when)
 
     async def _cleanup(self):
         """Expire saved records and notify timestamp/count entities at time boundaries."""
@@ -130,9 +141,7 @@ class TVGuideReminderScheduler:
                 self._tasks.add(task)
                 task.add_done_callback(self._tasks.discard)
 
-        self._cancellations.append(
-            async_track_point_in_utc_time(self.hass, on_due, when)
-        )
+        self._track_timer(on_due, when)
 
     async def _deliver(self, reminder_id: str):
         """Persist sent state after a successful Home Assistant notification."""

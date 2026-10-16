@@ -60,8 +60,8 @@ export function createGuideCore(i18n) {
 
     const rawLight = localLight || localDark || feedLight || feedDark || fallback;
     const rawDark = localDark || localLight || feedDark || feedLight || fallback;
-    const lightLogo = channel.logo_normalized_light || rawLight;
-    const darkLogo = channel.logo_normalized_dark || rawDark;
+    const lightLogo = channel.logo_normalized_light ? asset(channel.logo_normalized_light) : rawLight;
+    const darkLogo = channel.logo_normalized_dark ? asset(channel.logo_normalized_dark) : rawDark;
 
     function imageMarkup(themeClass, src, rawFallback) {
       const safeSrc = escapeHtml(src);
