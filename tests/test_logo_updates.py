@@ -305,6 +305,26 @@ class LogoUpdateTests(unittest.TestCase):
         self.assertIsNotNone(worker.check(lambda:False, self.opener, now=NOW))
         self.assertEqual(self.library.revision, 'b'*16)
 
+    def test_invalid_cached_etags_are_not_sent_to_the_update_server(self):
+        self.remote = self.old
+        for etag in ('\r\nInjected: header', 'x'*513, 'non-ascii-\u2603'):
+            with self.subTest(etag=etag):
+                (self.cache/'update-check.json').write_text(json.dumps({'revision':'a'*16,'etag':etag}))
+                worker = updates.LogoUpdates(self.library, self.cache)
+                self.calls.clear()
+                self.assertIsNone(worker.check(lambda:False, self.opener, now=NOW))
+                self.assertEqual(len(self.calls), 1)
+                self.assertNotIn('If-none-match', self.calls[0][1])
+
+    def test_invalid_response_etag_does_not_poison_future_checks(self):
+        self.remote = self.old
+        def opener(request, timeout):
+            return Response(json.dumps(self.remote[2]).encode(), 'invalid\r\nheader')
+        self.assertIsNone(self.worker.check(lambda:False, opener, now=NOW))
+        self.assertNotIn('etag', self.worker._state)
+        self.assertIsNone(self.worker.check(lambda:False, self.opener, now=NOW+updates.CHECK_INTERVAL))
+        self.assertNotIn('If-none-match', self.calls[0][1])
+
     def test_concurrent_check_does_not_open_a_second_connection(self):
         self.worker._lock.acquire()
         try:
