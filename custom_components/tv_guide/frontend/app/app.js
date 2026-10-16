@@ -466,11 +466,22 @@ async function loadNotificationServiceChoices(currentService, isCurrent = () => 
   settingNotificationService.value = fallback;
 }
 
+function setAppSettingsEditing(enabled) {
+  appSettingsDialog.querySelectorAll("input, select").forEach(control => control.disabled = !enabled);
+}
+function setChannelSettingsEditing(enabled) {
+  channelSettingsDialog.querySelector("#channelSearch").disabled = !enabled;
+  for (const id of ["channelCountryFilters", "availableChannelsList", "channelSettingsList"]) {
+    channelSettingsDialog.querySelector("#" + id).inert = !enabled;
+  }
+}
+
 async function openAppSettings() {
   const request = ++appSettingsRequest;
   const isCurrent = () => request === appSettingsRequest && appSettingsDialog.open;
   appSettingsStatus.textContent = t("Einstellungen werden geladen …");
   saveAppSettings.disabled = true;
+  setAppSettingsEditing(false);
   appSettingsDialog.querySelectorAll("details").forEach(section => section.open = false);
   appSettingsDialog.showModal();
   appSettingsDialog.scrollTop = 0;
@@ -490,6 +501,7 @@ async function openAppSettings() {
     );
     if (!isCurrent()) return;
     appSettingsStatus.textContent = "";
+    setAppSettingsEditing(true);
     saveAppSettings.disabled = false;
   } catch (err) {
     if (isCurrent()) appSettingsStatus.textContent = t(err.message);
@@ -501,6 +513,7 @@ async function persistAppSettings() {
   const isCurrent = () => request === appSettingsRequest && appSettingsDialog.open;
   appSettingsStatus.textContent = t("Wird gespeichert …");
   saveAppSettings.disabled = true;
+  setAppSettingsEditing(false);
   let saved = false;
   const changes = {
     country:settingCountry.value, language:settingLanguage.value,
@@ -536,13 +549,17 @@ async function persistAppSettings() {
   } catch (err) {
     if (isCurrent()) appSettingsStatus.textContent = t(err.message);
   } finally {
-    if (isCurrent() && !saved) saveAppSettings.disabled = false;
+    if (isCurrent() && !saved) {
+      setAppSettingsEditing(true);
+      saveAppSettings.disabled = false;
+    }
   }
 }
 
 async function openChannelSettings() {
   const request = ++channelSettingsRequest;
   channelPicker.beginLoading();
+  setChannelSettingsEditing(false);
   channelSettingsStatus.textContent = t("Senderliste wird geladen …");
   saveChannelSettings.disabled = true;
   resetChannelSettings.disabled = true;
@@ -551,6 +568,7 @@ async function openChannelSettings() {
     const settings = await requestAction({endpoint:"personal-channels",method:"GET"});
     if (request !== channelSettingsRequest || !channelSettingsDialog.open) return;
     channelPicker.setData(settings);
+    setChannelSettingsEditing(true);
     saveChannelSettings.disabled = false;
     resetChannelSettings.disabled = false;
     channelSettingsStatus.textContent = "";
@@ -563,6 +581,7 @@ async function persistChannelSettings(reset = false) {
   const request = channelSettingsRequest;
   const isCurrent = () => request === channelSettingsRequest && channelSettingsDialog.open;
   channelSettingsStatus.textContent = t("Wird gespeichert …");
+  setChannelSettingsEditing(false);
   saveChannelSettings.disabled = true;
   resetChannelSettings.disabled = true;
 
@@ -593,6 +612,7 @@ async function persistChannelSettings(reset = false) {
     if (isCurrent()) channelSettingsStatus.textContent = t(err.message);
   } finally {
     if (isCurrent()) {
+      setChannelSettingsEditing(true);
       saveChannelSettings.disabled = false;
       resetChannelSettings.disabled = false;
     }
