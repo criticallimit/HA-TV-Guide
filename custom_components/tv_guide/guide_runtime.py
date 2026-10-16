@@ -230,7 +230,7 @@ class GuideRuntime:
             raise ValueError("Request is too large")
         # Large guide rendering must not monopolize settings reads/writes or
         # worker notifications. Only cache bookkeeping uses the shared lock.
-        request_lock = self._settings_request_lock if endpoint == "settings" else self._request_lock
+        request_lock = self._settings_request_lock if endpoint in {"settings", "personal-channels"} else self._request_lock
         with request_lock:
             preview = method == "GET" and endpoint == "guide" and isinstance(body, dict) and body.get("preview") is True
             with self._lock:

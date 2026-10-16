@@ -26,7 +26,12 @@ const server=http.createServer((req,res)=>{
       window.settings={country:'de',language:'de',default_view:'now',theme_mode:'auto',columns_desktop:5,max_channels:0,refresh_minutes:180,notification_service:'persistent_notification.create'};
       const channels=['a','b'].map((id,index)=>({id,name:'Station '+id,source_country:'de',country_name:'Deutschland',logo_normalized_light:'/tv_guide/frontend/app/logos/de-ard-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/de-ard-dark.svg',programs:Array.from({length:7},(_,i)=>({id:id+i,title:'Programme '+id+i,start:new Date(now+(i+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString(),end:new Date(now+(i+1+(index===0&&scenario!=='cache-contiguous'?2:0))*3600000).toISOString()}))}));
       window.model={revision:'ux',country:'de',channels,main_channel_ids:['a','b'],custom_channel_ids:['a','b'],ui:{...settings},refresh_running:false};
-      window.order=['a','b'];window.settingsSaved=false;window.resetSaved=false;
+      if(scenario==='personal'){
+        channels.forEach(ch=>{ch.id='de:'+ch.id;ch.source_country='de';});
+        channels.push({...structuredClone(channels[0]),id:'at:a',name:'Austria station',source_country:'at',country_name:'Österreich'});
+        model.main_channel_ids=['de:a','de:b'];model.custom_channel_ids=['de:a'];
+      }
+      window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
       window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];
       if(scenario.startsWith('cache'))sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:now-60000,guide:{...structuredClone(model),_preview:true}}));
       window.preparation=scenario==='preparation'?{installation_id:'ux-first',first_install:true,complete:false,logos:{completed:1,total:2,running:true,ready:false,error:false},programmes:{ready:true,running:false,sources_completed:1,error:false}}:{complete:true};
@@ -40,6 +45,13 @@ const server=http.createServer((req,res)=>{
           return {response:structuredClone(settings)};
         }
         if(endpoint==='personal-channels'){
+          if(scenario==='personal'){
+            if(method==='POST'){
+              order=[...body.order];countries=[...body.countries];model.custom_channel_ids=[...order];
+              return {response:{ok:true,order:[...order],countries:[...countries]}};
+            }
+            return {response:{channels:structuredClone(channels),order:[...order],countries:[...countries],supported_countries:[{code:'de',name:'Deutschland'},{code:'at',name:'Österreich'}]}};
+          }
           if(method==='POST'){order=['a'];resetSaved=true;delayGuide=true;return {response:{ok:true,order,countries:['de']}};}
           return {response:{channels:structuredClone(channels),order:[...order],countries:['de'],supported_countries:[{code:'de',name:'Deutschland'}]}};
         }
@@ -108,6 +120,37 @@ const server=http.createServer((req,res)=>{
       await page.waitForTimeout(1200);
       assert.equal(await page.locator('#preparationDialog').isVisible(),true);
       assert.equal(await page.locator('#preparationRetry').isEnabled(),true);
+    }finally{await page.close();}
+  });
+  await check('mixed-country selection, buttons, drag order, save, reopen and removal',async()=>{
+    const page=await mount('personal');try{
+      await page.locator('.channel-card').first().waitFor();
+      await page.locator('#showChannelSettings').click();
+      await page.locator('#saveChannelSettings:not([disabled])').waitFor();
+      await page.locator('#channelCountryFilters input[value="at"]').check();
+      await page.locator('#availableChannelsList [data-channel-id="at:a"] input').check();
+      await page.locator('#availableChannelsList [data-channel-id="de:b"] input').check();
+      await page.locator('#channelSettingsList [data-channel-id="at:a"] .move-up').click();
+      assert.deepEqual(await page.locator('#channelSettingsList .channel-settings-row').evaluateAll(rows=>rows.map(row=>row.dataset.channelId)),['at:a','de:a','de:b']);
+      await page.evaluate(()=>{
+        const root=card.shadowRoot,source=root.querySelector('#channelSettingsList [data-channel-id="de:b"]'),target=root.querySelector('#channelSettingsList [data-channel-id="at:a"]');
+        const dataTransfer=new DataTransfer();dataTransfer.setData('text/plain',source.dataset.channelId);
+        target.dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer,clientY:target.getBoundingClientRect().top}));
+      });
+      await page.locator('#channelCountryFilters input[value="at"]').uncheck();
+      await page.locator('#saveChannelSettings').click();
+      await page.locator('#channelSettingsDialog').waitFor({state:'hidden'});
+      await page.waitForFunction(()=>card.shadowRoot.querySelectorAll('.channel-card').length===3);
+      assert.deepEqual(await page.locator('.channel-card').evaluateAll(rows=>rows.map(row=>row.dataset.channelId)),['de:b','at:a','de:a']);
+      await page.locator('#showChannelSettings').click();
+      await page.locator('#saveChannelSettings:not([disabled])').waitFor();
+      assert.deepEqual(await page.locator('#channelSettingsList .channel-settings-row').evaluateAll(rows=>rows.map(row=>row.dataset.channelId)),['de:b','at:a','de:a']);
+      assert.equal(await page.locator('#channelCountryFilters input[value="at"]').isChecked(),false);
+      await page.locator('#channelSettingsList [data-channel-id="de:a"] .move-remove').click();
+      await page.locator('#saveChannelSettings').click();
+      await page.locator('#channelSettingsDialog').waitFor({state:'hidden'});
+      await page.waitForFunction(()=>card.shadowRoot.querySelectorAll('.channel-card').length===2);
+      assert.deepEqual(await page.locator('.channel-card').evaluateAll(rows=>rows.map(row=>row.dataset.channelId)),['de:b','at:a']);
     }finally{await page.close();}
   });
   await browser.close();server.close();assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);

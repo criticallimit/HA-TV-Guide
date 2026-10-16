@@ -139,6 +139,65 @@ class GuideRuntimeTests(unittest.TestCase):
         self.assertTrue(self.runtime.PERSONAL_CHANNELS.path.exists())
         self.assertEqual(self.backend.request('guide','GET')['custom_channel_ids'],keys)
 
+    def test_personal_selection_all_countries_survives_restart_and_filters(self):
+        picker = self.backend.request('personal-channels', 'GET')
+        keys = [next(ch['id'] for ch in picker['channels'] if ch['source_country'] == code)
+                for code in self.runtime.COUNTRIES]
+        keys = keys[::2] + keys[1::2]
+        now = datetime.now(timezone.utc)
+        for key in keys:
+            country, _, channel_id = key.partition(':')
+            store = self.runtime.PERSONAL_CHANNELS.country_store(country)
+            channel = next(ch for ch in store.channels if ch['id'] == channel_id)
+            channel['programs'] = [{'title': 'Programme ' + key,
+                                    'start': (now - timedelta(minutes=10)).isoformat(),
+                                    'end': (now + timedelta(hours=1)).isoformat()}]
+            store._save_parsed_cache('test')
+        # Catalogue filters must never delete selected foreign stations.
+        self.backend.request('personal-channels', 'POST', {'order': keys, 'countries': ['de']})
+        self.assertEqual(self.backend.request('guide', 'GET')['custom_channel_ids'], keys)
+        self.backend.close()
+        replacement = type(self.backend)(self.runtime.OPTIONS_FILE.parent, {'country': 'de'}, {'language': 'de'}, lambda: None)
+        try:
+            replacement.runtime.start_background = lambda *args, **kwargs: None
+            restored = replacement.request('personal-channels', 'GET')
+            self.assertEqual(restored['order'], keys)
+            self.assertEqual(restored['countries'], ['de'])
+            guide = replacement.request('guide', 'GET')
+            self.assertEqual(guide['custom_channel_ids'], keys)
+            selected = {ch['id']: ch for ch in guide['channels']}
+            for key in keys:
+                self.assertEqual(selected[key]['source_country'], key.partition(':')[0])
+                self.assertEqual(selected[key]['programs'][0]['title'], 'Programme ' + key)
+            edited = list(reversed(keys[1:]))
+            replacement.request('personal-channels', 'POST', {'order': edited, 'countries': []})
+            self.assertEqual(replacement.request('guide', 'GET')['custom_channel_ids'], edited)
+            replacement.request('personal-channels', 'POST', {'order': [], 'countries': []})
+            self.assertEqual(replacement.request('guide', 'GET')['custom_channel_ids'], [])
+        finally:
+            replacement.close()
+
+    def test_personal_save_does_not_wait_for_guide_build(self):
+        picker = self.backend.request('personal-channels', 'GET')
+        keys = [ch['id'] for ch in picker['channels'][:2]][::-1]
+        entered, release = threading.Event(), threading.Event()
+        original = self.runtime.PERSONAL_CHANNELS.guide
+        def blocked(store):
+            entered.set()
+            release.wait(5)
+            return original(store)
+        with patch.object(self.runtime.PERSONAL_CHANNELS, 'guide', blocked), ThreadPoolExecutor(max_workers=2) as pool:
+            guide = pool.submit(self.backend.request, 'guide', 'GET')
+            self.assertTrue(entered.wait(2))
+            save = pool.submit(self.backend.request, 'personal-channels', 'POST', {'order': keys, 'countries': ['de']})
+            try:
+                self.assertTrue(save.result(timeout=1)['ok'])
+            finally:
+                release.set()
+                guide.result(timeout=5)
+        self.assertIsNone(self.backend._guide_cache)
+        self.assertEqual(self.backend.request('guide', 'GET')['custom_channel_ids'], keys)
+
     def test_original_provider_map_artwork_and_merge_engine_are_present(self):
         self.assertGreater(len(self.runtime.OFFICIAL_PROVIDER_BY_CHANNEL),10)
         self.assertTrue(callable(self.runtime.STORE._merge_program_lists))
