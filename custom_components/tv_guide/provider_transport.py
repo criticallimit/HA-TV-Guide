@@ -1,6 +1,7 @@
 """Bounded conditional HTTP cache shared by native provider adapters."""
 from collections import OrderedDict
 from io import BytesIO
+from email.message import Message
 import threading
 from urllib.error import HTTPError
 from urllib.request import Request
@@ -38,7 +39,7 @@ class RecordingResponse:
 
     def read(self, size=-1, *args, **kwargs):
         data = self.response.read(size,*args,**kwargs)
-        if self._complete:
+        if self._complete or size == 0:
             return data
         self._size += len(data)
         if self._size > self._maximum:
@@ -85,21 +86,32 @@ class ProviderTransport:
         except HTTPError as error:
             if error.code != 304 or cached is None:
                 raise
+            # A 304 can change validators and cache policy without sending a body.
+            merged = Message()
+            for source in (cached[1], error.headers or {}):
+                for name, value in source.items():
+                    if name in merged:
+                        del merged[name]
+                    merged[name] = value
             error.close()
-            return CachedResponse(cached[0],cached[1])
-        control = response.headers.get('Cache-Control','').lower()
-        cacheable = ('no-store' not in control and response.headers.get('Vary') != '*'
-                     and any(_header(response.headers.get(name)) for name in ('ETag','Last-Modified')))
-        if not cacheable:
             with self._lock:
-                previous = self._entries.pop(key,None)
-                if previous is not None:
-                    self._bytes -= len(previous[0])
+                if self._entries.get(key) is cached:
+                    if self._cacheable(merged):
+                        self._entries[key] = (cached[0],merged)
+                    else:
+                        self._entries.pop(key)
+                        self._bytes -= len(cached[0])
+            return CachedResponse(cached[0],merged)
+        # A new representation supersedes the old body even when its download
+        # is interrupted or exceeds the memory limit.
+        with self._lock:
+            previous = self._entries.pop(key,None)
+            if previous is not None:
+                self._bytes -= len(previous[0])
+        if getattr(response,'status',200) != 200 or not self._cacheable(response.headers):
             return response
         def commit(data, response_headers):
-            control = response_headers.get('Cache-Control','').lower()
-            if ('no-store' in control or response_headers.get('Vary') == '*'
-                    or not any(_header(response_headers.get(name)) for name in ('ETag','Last-Modified'))):
+            if not self._cacheable(response_headers):
                 return
             with self._lock:
                 previous = self._entries.pop(key,None)
@@ -111,3 +123,9 @@ class ProviderTransport:
                     _, old = self._entries.popitem(last=False)
                     self._bytes -= len(old[0])
         return RecordingResponse(response,commit,self.maximum_entry)
+
+    @staticmethod
+    def _cacheable(headers):
+        return ('no-store' not in headers.get('Cache-Control','').lower()
+                and headers.get('Vary','').strip() != '*'
+                and any(_header(headers.get(name)) for name in ('ETag','Last-Modified')))
