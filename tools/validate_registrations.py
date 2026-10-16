@@ -96,6 +96,9 @@ def validate(root=ROOT):
             if field in item and (not isinstance(item[field],str) or not re.fullmatch(r'[a-z0-9_-]*',item[field])):
                 fail(code,'invalid '+field)
         if item.get('language') and (not isinstance(item['language'],str) or item['language'] not in languages):fail(code,'unregistered fallback language')
+        prefixes=item.get('display_name_prefixes',[])
+        if not isinstance(prefixes,list) or any(not isinstance(value,str) or not value for value in prefixes):
+            fail(code,'invalid display name prefixes')
         sources=item.get('sources')
         if not isinstance(sources,list) or not sources or any(not url(source) for source in sources):fail(code,'sources must be HTTPS URLs')
         elif len(sources)!=len(set(sources)):fail(code,'duplicate source URL')

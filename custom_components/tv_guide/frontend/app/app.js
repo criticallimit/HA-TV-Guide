@@ -1,4 +1,4 @@
-import {createI18n} from './i18n.js?v=native-20';
+import {createI18n} from './i18n.js?v=native-21';
 import {createGuideCore} from './guide-core.js?v=native-13';
 import {TVGuideChannelPicker} from './channel-picker.js?v=native-14';
 import {createPreparation} from './preparation.js?v=native-11';

@@ -1,0 +1,320 @@
+{
+  "source": "Existing indexed broadcaster artwork; colours preserved with theme-specific contrast plates.",
+  "channels": {
+    "it_rai1": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-1-it.png",
+      "expected_sha256": "af4e7b66b70f233a6ac233c24b85974a1c1f2598d7eb39c90140cfb814dd453b",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/144f855a6af4fa1c1e55.svg",
+      "library_dark": "logos/europe/dark/144f855a6af4fa1c1e55.svg"
+    },
+    "it_rai2": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-2-it.png",
+      "expected_sha256": "77327a81b92f3a2b0ca5e4c22e6fd42baf52e14d5d0d92ba6c635ac4e3d1c2e9",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/7bb5e175e043dcdcabf7.svg",
+      "library_dark": "logos/europe/dark/7bb5e175e043dcdcabf7.svg"
+    },
+    "it_rai3": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-3-it.png",
+      "expected_sha256": "805fa291015627546dca81fb4cde5a3899d80c281155a48210669039c0e875f6",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/2d3f7ff369b0beef61ec.svg",
+      "library_dark": "logos/europe/dark/2d3f7ff369b0beef61ec.svg"
+    },
+    "it_rete4": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rete4-it.png",
+      "expected_sha256": "7384e307de698a8f7623d62f8bd6574198a5de68a8a1703235433d8393abe60c",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/84bba8a7bc87e52f39c0.svg",
+      "library_dark": "logos/europe/dark/84bba8a7bc87e52f39c0.svg"
+    },
+    "it_canale5": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/canale5-it.png",
+      "expected_sha256": "20dc7f740eab901ac166e0743f8c20469288ae75adb44428842411d0513aff8a",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/2e8ea85b6894a97a3d41.svg",
+      "library_dark": "logos/europe/dark/2e8ea85b6894a97a3d41.svg"
+    },
+    "it_italia1": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/italia1-it.png",
+      "expected_sha256": "0f545345e3dc6a8c0d3baa9d0cc275773b7d59aa2cce20cc2084f78025ebdf59",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/3d5db01c9264c68697b3.svg",
+      "library_dark": "logos/europe/dark/3d5db01c9264c68697b3.svg"
+    },
+    "it_la7": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/la7-it.png",
+      "expected_sha256": "f9ccc327c412030ba138a0ac5c049b7a23bcac86db1512dd0c85618f0b2c1dba",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/2ce8aa202b0cf857f84d.svg",
+      "library_dark": "logos/europe/dark/2ce8aa202b0cf857f84d.svg"
+    },
+    "it_tv8": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/tv8-it.png",
+      "expected_sha256": "a258d63fc87320c5308bb5939bd25133a5449922b34b7551256e4797e5f4ce9c",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/a87a99b8b1a7ef5a64b9.svg",
+      "library_dark": "logos/europe/dark/a87a99b8b1a7ef5a64b9.svg"
+    },
+    "it_nove": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/nove-it.png",
+      "expected_sha256": "db73ff4c4157fab16d81628ea84292deb429fbf688d1eba511258894a191b6d8",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/77530bf4ee8d84c4a30f.svg",
+      "library_dark": "logos/europe/dark/77530bf4ee8d84c4a30f.svg"
+    },
+    "it_mediaset20": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/20-it.png",
+      "expected_sha256": "a20c1d449d8982094e9765d4c583db28b6da3ca3f5b3b1cb0c0c8157518c3f34",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/27a70f3a9b8dd0176d66.svg",
+      "library_dark": "logos/europe/dark/27a70f3a9b8dd0176d66.svg"
+    },
+    "it_rai4": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-4-it.png",
+      "expected_sha256": "2e3a37f17aa7e74ad06ef4cfafb1bd1802c1bb9acc0d121c2eba50a0ffb69e5a",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/69d8cd62d006deb89c31.svg",
+      "library_dark": "logos/europe/dark/69d8cd62d006deb89c31.svg"
+    },
+    "it_iris": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/iris-it.png",
+      "expected_sha256": "d1aec9668de0e4ddab7924b01eb2251e2d98df38cfb034ede3d70a759481cdc8",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/e74c630822919b5bdfd8.svg",
+      "library_dark": "logos/europe/dark/e74c630822919b5bdfd8.svg"
+    },
+    "it_rai5": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-5-it.png",
+      "expected_sha256": "277a269215e3b4ea64a6932615c84bd851870edd33012df8e2e25c18eb20b738",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/d542a5d1b2332f23dce7.svg",
+      "library_dark": "logos/europe/dark/d542a5d1b2332f23dce7.svg"
+    },
+    "it_raimovie": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-movie-it.png",
+      "expected_sha256": "f32ff5377ff79828b5436de19750f59d9bffdf3cf22c7ca14a21c5ab679ec293",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/b887e87a47624d189c54.svg",
+      "library_dark": "logos/europe/dark/b887e87a47624d189c54.svg"
+    },
+    "it_raipremium": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-premium-it.png",
+      "expected_sha256": "aafb08b780fb878f1fedf686ed2f4166a8db19e9f09c7712b5f891b54ed15f5e",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/cb49dc1816c7f9fa9e27.svg",
+      "library_dark": "logos/europe/dark/cb49dc1816c7f9fa9e27.svg"
+    },
+    "it_cielo": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/cielo-it.png",
+      "expected_sha256": "302461cf7ae1660d4a7aaf6c169f40ee15d741fde6655989dcc561ed82d97f32",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/ceb874968c9964e693ff.svg",
+      "library_dark": "logos/europe/dark/ceb874968c9964e693ff.svg"
+    },
+    "it_twentyseven": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/twenty-seven-it.png",
+      "expected_sha256": "aa60c775c5cbab6d23fb341f90aed84a02b864b55ed294728cad586eae9e2ed5",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/3fecfd957528394e232e.svg",
+      "library_dark": "logos/europe/dark/3fecfd957528394e232e.svg"
+    },
+    "it_tv2000": {
+      "source_url": "https://www.tv2000.it/wp-content/themes/tv2000/assets/images/logo.svg",
+      "expected_sha256": "312dbbaca36f64ea5788eae8b8916540f3467cde33bab094e043a7b44939b2cb",
+      "mime": "image/svg+xml",
+      "library_light": "logos/library/light/312dbbaca36f64ea5788.svg",
+      "library_dark": "logos/library/dark/312dbbaca36f64ea5788.svg"
+    },
+    "it_la7cinema": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/la7-cinema-it.png",
+      "expected_sha256": "8249941ac7873a7a2bb48fdc029c863f743db03c7a0bdcd94b4563d1260c27fb",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/27b3d1f2198e199f1629.svg",
+      "library_dark": "logos/europe/dark/27b3d1f2198e199f1629.svg"
+    },
+    "it_la5": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/la5-it.png",
+      "expected_sha256": "b0e0becca4a6747ef569452d48b98bd05fde855c6df247602be974bddb74a1ca",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/78ad74b22f30d6c57c35.svg",
+      "library_dark": "logos/europe/dark/78ad74b22f30d6c57c35.svg"
+    },
+    "it_realtime": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/real-time-it.png",
+      "expected_sha256": "545f8711ec67c2d4e776f9b916d9be917cb65cd806a0688155aa877bec67b910",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/bbbc43f92fc600f16931.svg",
+      "library_dark": "logos/europe/dark/bbbc43f92fc600f16931.svg"
+    },
+    "it_foodnetwork": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/poland/food-network-pl.png",
+      "expected_sha256": "a5f01fcf2ad8626930fa9bbd184cd139b99fabf1e2f7fef59534625a0c3ae086",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/6738b083765d69a0afad.svg",
+      "library_dark": "logos/europe/dark/6738b083765d69a0afad.svg"
+    },
+    "it_cine34": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/cine34-it.png",
+      "expected_sha256": "c907c30f789d264247837afadb15ca17cb3f9e495f51b04527d2661d1092c110",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/c19440239fa1b6b0f452.svg",
+      "library_dark": "logos/europe/dark/c19440239fa1b6b0f452.svg"
+    },
+    "it_focus": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/focus-it.png",
+      "expected_sha256": "15a2494310db0db6eb2095faaa0e055b0760971344351a437135b491df874d44",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/3cbb3eb1fb7965f87350.svg",
+      "library_dark": "logos/europe/dark/3cbb3eb1fb7965f87350.svg"
+    },
+    "it_warnertv": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/czech-republic/warner-tv-ch.png",
+      "expected_sha256": "a38558de74f56462bf3e0e5e76664cf7aa3775b1fdf2307ab2dcfd67afe236f9",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/306725c3d0a7441e27d1.svg",
+      "library_dark": "logos/europe/dark/306725c3d0a7441e27d1.svg"
+    },
+    "it_giallo": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/giallo-it.png",
+      "expected_sha256": "d74e50c99b9d6a74e36a31fdea0fabbe33dec30c1a2dbd1cd2429dbdc2ab7a3d",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/93c3379600729b49ca65.svg",
+      "library_dark": "logos/europe/dark/93c3379600729b49ca65.svg"
+    },
+    "it_topcrime": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/top-crime-it.png",
+      "expected_sha256": "14f3f78ce8dc167514fffc490da12f6e057ad94e517f8a8dc6a4b438a55a3658",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/ca33ccb8b60b3e1a3939.svg",
+      "library_dark": "logos/europe/dark/ca33ccb8b60b3e1a3939.svg"
+    },
+    "it_boing": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/boing-it.png",
+      "expected_sha256": "1ac3b0bea882ae5afe17079f04cae628fb9563117744ac9c6b5788d1afa6c5e2",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/d40a9926453d20d1b72d.svg",
+      "library_dark": "logos/europe/dark/d40a9926453d20d1b72d.svg"
+    },
+    "it_raigulp": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-gulp-it.png",
+      "expected_sha256": "7493829a29625d77416d9a87ef385bf0988987b5d583849198e996634922ac6d",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/f9db96258af410f18b02.svg",
+      "library_dark": "logos/europe/dark/f9db96258af410f18b02.svg"
+    },
+    "it_raiyoyo": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-yoyo-it.png",
+      "expected_sha256": "ee21bce9e20f4084ff710bf007d9616ccdf6ad265ee74fe8bfd6b09912d98fa2",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/13ffa134b61c84aa3bf0.svg",
+      "library_dark": "logos/europe/dark/13ffa134b61c84aa3bf0.svg"
+    },
+    "it_italia2": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/italia2-it.png",
+      "expected_sha256": "b6b6ef45dc85af4e661a228f53c58702dad5ffac134552f876813899d2a69b13",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/cf22c71a73f6c871cb44.svg",
+      "library_dark": "logos/europe/dark/cf22c71a73f6c871cb44.svg"
+    },
+    "it_dmax": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/germany/dmax-de.png",
+      "expected_sha256": "313151549f7a993bb15b32ba60d4039f2870f0e36be94b88b48e40d8d530f6d6",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/1e7a084a9ae6cb57cd80.svg",
+      "library_dark": "logos/europe/dark/1e7a084a9ae6cb57cd80.svg"
+    },
+    "it_raistoria": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-storia-it.png",
+      "expected_sha256": "ad0131fc66559aad8e42b7d169fe09ab92ac638121ce34059aaf258cef05d7e4",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/143d7b3eb8b9bea8f3d5.svg",
+      "library_dark": "logos/europe/dark/143d7b3eb8b9bea8f3d5.svg"
+    },
+    "it_mediasetextra": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/mediaset-extra-it.png",
+      "expected_sha256": "c97bfb78f849ffe0f997c2a5cb204fec0e7e9724e2ea1c07ec5225e5edbea7f5",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/018e1ff712ab1ccf3ceb.svg",
+      "library_dark": "logos/europe/dark/018e1ff712ab1ccf3ceb.svg"
+    },
+    "it_raisport": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-sport-it.png",
+      "expected_sha256": "52437d13bf7221c83c8add5bd1c237c7f763b8c9d70514e1d6f14272f8c11568",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/274c0c29da1aaf92309d.svg",
+      "library_dark": "logos/europe/dark/274c0c29da1aaf92309d.svg"
+    },
+    "it_rainews24": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-news-24-it.png",
+      "expected_sha256": "d1b542f42fd11ac34d6f5bb15c53c2a2ce408347e169a8b44a338a58c157e5af",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/f2ea408e212acfb85772.svg",
+      "library_dark": "logos/europe/dark/f2ea408e212acfb85772.svg"
+    },
+    "it_tgcom24": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/tgcom24-it.png",
+      "expected_sha256": "f9085e6fb9c8c30c1cb0a23c2209cf134a83d1cc8be19923dd5679326cccc0c6",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/7a17cd413ae2c358badc.svg",
+      "library_dark": "logos/europe/dark/7a17cd413ae2c358badc.svg"
+    },
+    "it_skytg24": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/sky-tg24-it.png",
+      "expected_sha256": "9fb7b13eb2a283c52679cd3df953dde06a404b0b03fe70b27bf2491bd90f46d1",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/3b39a39c669915386c22.svg",
+      "library_dark": "logos/europe/dark/3b39a39c669915386c22.svg"
+    },
+    "it_k2": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/k2-it.png",
+      "expected_sha256": "160eb2075273fa4093364ae7576b064bfe73197b95c4b5bfc8ae00fcd3e729e1",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/a6f36501c25ef5175e2d.svg",
+      "library_dark": "logos/europe/dark/a6f36501c25ef5175e2d.svg"
+    },
+    "it_frisbee": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/frisbee-it.png",
+      "expected_sha256": "9524a985d3dffc1d24ad1a6725536866be31eb953e4c502299ad444f167322a1",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/fb07b79d4b40232ccf12.svg",
+      "library_dark": "logos/europe/dark/fb07b79d4b40232ccf12.svg"
+    },
+    "it_cartoonito": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/cartoonito-it.png",
+      "expected_sha256": "50b1da3c411854df13019e97faab5e455c6efe5194481bc78cc14a640df1075c",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/d4520e180061bd6788b0.svg",
+      "library_dark": "logos/europe/dark/d4520e180061bd6788b0.svg"
+    },
+    "it_super": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/super-it.png",
+      "expected_sha256": "af093916cb0126c62df83bcb6306ef65a87134aadbe449cb0809cd5ba99ea248",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/931e1fbcd4ff3dd3103a.svg",
+      "library_dark": "logos/europe/dark/931e1fbcd4ff3dd3103a.svg"
+    },
+    "it_raiscuola": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/rai-scuola-it.png",
+      "expected_sha256": "d6da742eefa43964b3dfb574c33e0ba3fcdbcfd73f1b6ce4170388c4095fbbd7",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/efbebb544d466e9cc58d.svg",
+      "library_dark": "logos/europe/dark/efbebb544d466e9cc58d.svg"
+    },
+    "it_sportitalia": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/hd/sportitalia-hd-it.png",
+      "expected_sha256": "40a142b3d6582b08c5eb83f1a3e8fb43bf5a5c89f86181cc522b0bd29cd3e19a",
+      "mime": "image/png",
+      "library_light": "logos/library/light/40a142b3d6582b08c5eb.svg",
+      "library_dark": "logos/library/dark/40a142b3d6582b08c5eb.svg"
+    },
+    "it_supertennis": {
+      "source_url": "https://raw.githubusercontent.com/tv-logo/tv-logos/d32e347bb7c4c640dceec23957802ad9182f58a6/countries/italy/super-tennis-it.png",
+      "expected_sha256": "3096a7ae94da80de3c272b79c39b8af938211440b15cd84b4a47c49306168afc",
+      "mime": "image/png",
+      "library_light": "logos/europe/light/c91da2edb49d056eb061.svg",
+      "library_dark": "logos/europe/dark/c91da2edb49d056eb061.svg"
+    }
+  }
+}

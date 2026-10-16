@@ -1,0 +1,771 @@
+{
+  "profile": "standard_it",
+  "group": "Hauptsender",
+  "note": "General-interest order follows the current TV Sorrisi e Canzoni free-channel guide. Film, documentary, news, sport and children channels extend the defaults. Other available national, regional, international and subscription channels remain selectable from the full feeds. LA7 Cinema is the current identity; LA7D remains a feed alias. XMLTV identities are exact to avoid matching unrelated regional or international variants.",
+  "sources": [
+    "https://www.sorrisi.com/guidatv/",
+    "https://www.intvstasera.it/"
+  ],
+  "channels": [
+    {
+      "id": "it_rai1",
+      "name": "Rai 1",
+      "order": 1,
+      "aliases": [
+        "rai-1"
+      ],
+      "xmltv_ids": [
+        "Rai1.it",
+        "Rai 1.it",
+        "Rai.1.HD..101.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/144f855a6af4fa1c1e55.svg",
+      "logo_file_light": "logos/europe/light/144f855a6af4fa1c1e55.svg"
+    },
+    {
+      "id": "it_rai2",
+      "name": "Rai 2",
+      "order": 2,
+      "aliases": [
+        "rai-2"
+      ],
+      "xmltv_ids": [
+        "Rai2.it",
+        "Rai 2.it",
+        "Rai.2.HD..102.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/7bb5e175e043dcdcabf7.svg",
+      "logo_file_light": "logos/europe/light/7bb5e175e043dcdcabf7.svg"
+    },
+    {
+      "id": "it_rai3",
+      "name": "Rai 3",
+      "order": 3,
+      "aliases": [
+        "rai-3"
+      ],
+      "xmltv_ids": [
+        "Rai3.it",
+        "Rai 3.it",
+        "Rai.3.HD..103.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/2d3f7ff369b0beef61ec.svg",
+      "logo_file_light": "logos/europe/light/2d3f7ff369b0beef61ec.svg"
+    },
+    {
+      "id": "it_rete4",
+      "name": "Rete 4",
+      "order": 4,
+      "aliases": [
+        "Retequattro",
+        "rete4"
+      ],
+      "xmltv_ids": [
+        "Rete4.it",
+        "Rete.4.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/84bba8a7bc87e52f39c0.svg",
+      "logo_file_light": "logos/europe/light/84bba8a7bc87e52f39c0.svg"
+    },
+    {
+      "id": "it_canale5",
+      "name": "Canale 5",
+      "order": 5,
+      "aliases": [
+        "canale5"
+      ],
+      "xmltv_ids": [
+        "Canale5.it",
+        "Canale 5.it",
+        "Canale.5.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/2e8ea85b6894a97a3d41.svg",
+      "logo_file_light": "logos/europe/light/2e8ea85b6894a97a3d41.svg"
+    },
+    {
+      "id": "it_italia1",
+      "name": "Italia 1",
+      "order": 6,
+      "aliases": [
+        "Italia Uno",
+        "italia1"
+      ],
+      "xmltv_ids": [
+        "Italia1.it",
+        "Italia Uno.it",
+        "Italia.1.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/3d5db01c9264c68697b3.svg",
+      "logo_file_light": "logos/europe/light/3d5db01c9264c68697b3.svg"
+    },
+    {
+      "id": "it_la7",
+      "name": "La7",
+      "order": 7,
+      "aliases": [
+        "La 7",
+        "la7"
+      ],
+      "xmltv_ids": [
+        "La7.it",
+        "LA7.it",
+        "LA7.HD.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/2ce8aa202b0cf857f84d.svg",
+      "logo_file_light": "logos/europe/light/2ce8aa202b0cf857f84d.svg"
+    },
+    {
+      "id": "it_tv8",
+      "name": "TV8",
+      "order": 8,
+      "aliases": [
+        "TV 8",
+        "tv8"
+      ],
+      "xmltv_ids": [
+        "TV8.it",
+        "TV8.HD.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/a87a99b8b1a7ef5a64b9.svg",
+      "logo_file_light": "logos/europe/light/a87a99b8b1a7ef5a64b9.svg"
+    },
+    {
+      "id": "it_nove",
+      "name": "Nove",
+      "order": 9,
+      "aliases": [
+        "nove"
+      ],
+      "xmltv_ids": [
+        "NOVE.it",
+        "Nove.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/77530bf4ee8d84c4a30f.svg",
+      "logo_file_light": "logos/europe/light/77530bf4ee8d84c4a30f.svg"
+    },
+    {
+      "id": "it_mediaset20",
+      "name": "20 Mediaset",
+      "order": 10,
+      "aliases": [
+        "Canale 20",
+        "Mediaset 20",
+        "20"
+      ],
+      "xmltv_ids": [
+        "Mediaset20.it",
+        "canale 20.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/27a70f3a9b8dd0176d66.svg",
+      "logo_file_light": "logos/europe/light/27a70f3a9b8dd0176d66.svg"
+    },
+    {
+      "id": "it_rai4",
+      "name": "Rai 4",
+      "order": 11,
+      "aliases": [
+        "rai-4"
+      ],
+      "xmltv_ids": [
+        "Rai4.it",
+        "Rai 4.it",
+        "Rai.4..5021.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/69d8cd62d006deb89c31.svg",
+      "logo_file_light": "logos/europe/light/69d8cd62d006deb89c31.svg"
+    },
+    {
+      "id": "it_iris",
+      "name": "Iris",
+      "order": 12,
+      "aliases": [
+        "iris"
+      ],
+      "xmltv_ids": [
+        "Iris.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/e74c630822919b5bdfd8.svg",
+      "logo_file_light": "logos/europe/light/e74c630822919b5bdfd8.svg"
+    },
+    {
+      "id": "it_rai5",
+      "name": "Rai 5",
+      "order": 13,
+      "aliases": [
+        "rai-5"
+      ],
+      "xmltv_ids": [
+        "Rai5.it",
+        "Rai 5.it",
+        "Rai.5..5023.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/d542a5d1b2332f23dce7.svg",
+      "logo_file_light": "logos/europe/light/d542a5d1b2332f23dce7.svg"
+    },
+    {
+      "id": "it_raimovie",
+      "name": "Rai Movie",
+      "order": 14,
+      "aliases": [
+        "rai-movie"
+      ],
+      "xmltv_ids": [
+        "RaiMovie.it",
+        "Rai Movie.it",
+        "Rai.Movie..5024.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/b887e87a47624d189c54.svg",
+      "logo_file_light": "logos/europe/light/b887e87a47624d189c54.svg"
+    },
+    {
+      "id": "it_raipremium",
+      "name": "Rai Premium",
+      "order": 15,
+      "aliases": [
+        "rai-premium"
+      ],
+      "xmltv_ids": [
+        "RaiPremium.it",
+        "Rai Premium.it",
+        "Rai.Premium..5025.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/cb49dc1816c7f9fa9e27.svg",
+      "logo_file_light": "logos/europe/light/cb49dc1816c7f9fa9e27.svg"
+    },
+    {
+      "id": "it_cielo",
+      "name": "Cielo",
+      "order": 16,
+      "aliases": [
+        "cielo"
+      ],
+      "xmltv_ids": [
+        "cielo.it",
+        "Cielo.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/ceb874968c9964e693ff.svg",
+      "logo_file_light": "logos/europe/light/ceb874968c9964e693ff.svg"
+    },
+    {
+      "id": "it_twentyseven",
+      "name": "27 Twentyseven",
+      "order": 17,
+      "aliases": [
+        "Twenty Seven",
+        "Mediaset 27",
+        "Mediaset 27 Twentyseven",
+        "twenty-seven"
+      ],
+      "xmltv_ids": [
+        "Mediaset27Twentyseven.it",
+        "Mediaset 27.it",
+        "27.Twentyseven.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/3fecfd957528394e232e.svg",
+      "logo_file_light": "logos/europe/light/3fecfd957528394e232e.svg"
+    },
+    {
+      "id": "it_tv2000",
+      "name": "TV2000",
+      "order": 18,
+      "aliases": [
+        "TV 2000",
+        "tv2000"
+      ],
+      "xmltv_ids": [
+        "TV2000.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/library/dark/312dbbaca36f64ea5788.svg",
+      "logo_file_light": "logos/library/light/312dbbaca36f64ea5788.svg"
+    },
+    {
+      "id": "it_la7cinema",
+      "name": "La7 Cinema",
+      "order": 19,
+      "aliases": [
+        "La7D",
+        "La 7D",
+        "la7-cinema"
+      ],
+      "xmltv_ids": [
+        "La7D.it",
+        "LA7 Cinema.it",
+        "LA7D.it",
+        "LA7.CINEMA.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/27b3d1f2198e199f1629.svg",
+      "logo_file_light": "logos/europe/light/27b3d1f2198e199f1629.svg"
+    },
+    {
+      "id": "it_la5",
+      "name": "La5",
+      "order": 20,
+      "aliases": [
+        "La 5",
+        "la5"
+      ],
+      "xmltv_ids": [
+        "La5.it",
+        "La 5.it",
+        "La.5.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/78ad74b22f30d6c57c35.svg",
+      "logo_file_light": "logos/europe/light/78ad74b22f30d6c57c35.svg"
+    },
+    {
+      "id": "it_realtime",
+      "name": "Real Time",
+      "order": 21,
+      "aliases": [
+        "real-time"
+      ],
+      "xmltv_ids": [
+        "RealTime.it",
+        "Real Time.it",
+        "Real.Time.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/bbbc43f92fc600f16931.svg",
+      "logo_file_light": "logos/europe/light/bbbc43f92fc600f16931.svg"
+    },
+    {
+      "id": "it_foodnetwork",
+      "name": "Food Network",
+      "order": 22,
+      "aliases": [
+        "foodnetwork",
+        "food-network"
+      ],
+      "xmltv_ids": [
+        "FoodNetwork.it",
+        "foodnetwork.it",
+        "Food.Network.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/6738b083765d69a0afad.svg",
+      "logo_file_light": "logos/europe/light/6738b083765d69a0afad.svg"
+    },
+    {
+      "id": "it_cine34",
+      "name": "Cine34",
+      "order": 23,
+      "aliases": [
+        "Cine 34",
+        "cine34"
+      ],
+      "xmltv_ids": [
+        "Cine34.it",
+        "Cine 34.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/c19440239fa1b6b0f452.svg",
+      "logo_file_light": "logos/europe/light/c19440239fa1b6b0f452.svg"
+    },
+    {
+      "id": "it_focus",
+      "name": "Focus",
+      "order": 24,
+      "aliases": [
+        "focus"
+      ],
+      "xmltv_ids": [
+        "Focus.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/3cbb3eb1fb7965f87350.svg",
+      "logo_file_light": "logos/europe/light/3cbb3eb1fb7965f87350.svg"
+    },
+    {
+      "id": "it_warnertv",
+      "name": "Warner TV",
+      "order": 25,
+      "aliases": [
+        "warner-tv"
+      ],
+      "xmltv_ids": [
+        "WarnerTV.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/306725c3d0a7441e27d1.svg",
+      "logo_file_light": "logos/europe/light/306725c3d0a7441e27d1.svg"
+    },
+    {
+      "id": "it_giallo",
+      "name": "Giallo",
+      "order": 26,
+      "aliases": [
+        "Giallo TV",
+        "giallo"
+      ],
+      "xmltv_ids": [
+        "GIALLO.it",
+        "Giallo.it",
+        "Giallo.TV.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/93c3379600729b49ca65.svg",
+      "logo_file_light": "logos/europe/light/93c3379600729b49ca65.svg"
+    },
+    {
+      "id": "it_topcrime",
+      "name": "Top Crime",
+      "order": 27,
+      "aliases": [
+        "top-crime"
+      ],
+      "xmltv_ids": [
+        "TOPcrime.it",
+        "TOPCrime.it",
+        "Top.Crime.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/ca33ccb8b60b3e1a3939.svg",
+      "logo_file_light": "logos/europe/light/ca33ccb8b60b3e1a3939.svg"
+    },
+    {
+      "id": "it_boing",
+      "name": "Boing",
+      "order": 28,
+      "aliases": [
+        "boing"
+      ],
+      "xmltv_ids": [
+        "Boing.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/d40a9926453d20d1b72d.svg",
+      "logo_file_light": "logos/europe/light/d40a9926453d20d1b72d.svg"
+    },
+    {
+      "id": "it_raigulp",
+      "name": "Rai Gulp",
+      "order": 29,
+      "aliases": [
+        "rai-gulp"
+      ],
+      "xmltv_ids": [
+        "RaiGulp.it",
+        "Rai Gulp.it",
+        "Rai.Gulp..5042.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/f9db96258af410f18b02.svg",
+      "logo_file_light": "logos/europe/light/f9db96258af410f18b02.svg"
+    },
+    {
+      "id": "it_raiyoyo",
+      "name": "Rai Yoyo",
+      "order": 30,
+      "aliases": [
+        "rai-yoyo"
+      ],
+      "xmltv_ids": [
+        "RaiYoyo.it",
+        "Rai YoYo.it",
+        "Rai.Yoyo..5043.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/13ffa134b61c84aa3bf0.svg",
+      "logo_file_light": "logos/europe/light/13ffa134b61c84aa3bf0.svg"
+    },
+    {
+      "id": "it_italia2",
+      "name": "Italia 2",
+      "order": 31,
+      "aliases": [
+        "Mediaset Italia Due",
+        "italia2"
+      ],
+      "xmltv_ids": [
+        "Italia2.it",
+        "Mediaset Italia Due.it",
+        "Italia.2.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/cf22c71a73f6c871cb44.svg",
+      "logo_file_light": "logos/europe/light/cf22c71a73f6c871cb44.svg"
+    },
+    {
+      "id": "it_dmax",
+      "name": "DMAX",
+      "order": 32,
+      "aliases": [
+        "D Max",
+        "dmax"
+      ],
+      "xmltv_ids": [
+        "DMAX.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/1e7a084a9ae6cb57cd80.svg",
+      "logo_file_light": "logos/europe/light/1e7a084a9ae6cb57cd80.svg"
+    },
+    {
+      "id": "it_raistoria",
+      "name": "Rai Storia",
+      "order": 33,
+      "aliases": [
+        "rai-storia"
+      ],
+      "xmltv_ids": [
+        "RaiStoria.it",
+        "Rai Storia.it",
+        "Rai.Storia..5054.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/143d7b3eb8b9bea8f3d5.svg",
+      "logo_file_light": "logos/europe/light/143d7b3eb8b9bea8f3d5.svg"
+    },
+    {
+      "id": "it_mediasetextra",
+      "name": "Mediaset Extra",
+      "order": 34,
+      "aliases": [
+        "mediaset-extra"
+      ],
+      "xmltv_ids": [
+        "MediasetExtra.it",
+        "Mediaset Extra.it",
+        "Mediaset.Extra.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/018e1ff712ab1ccf3ceb.svg",
+      "logo_file_light": "logos/europe/light/018e1ff712ab1ccf3ceb.svg"
+    },
+    {
+      "id": "it_raisport",
+      "name": "Rai Sport",
+      "order": 35,
+      "aliases": [
+        "rai-sport"
+      ],
+      "xmltv_ids": [
+        "RAISport.it",
+        "Rai Sport.it",
+        "RAI.Sport...227.it",
+        "RaiSport.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/274c0c29da1aaf92309d.svg",
+      "logo_file_light": "logos/europe/light/274c0c29da1aaf92309d.svg"
+    },
+    {
+      "id": "it_rainews24",
+      "name": "Rai News 24",
+      "order": 36,
+      "aliases": [
+        "Rai News",
+        "rai-news-24"
+      ],
+      "xmltv_ids": [
+        "RaiNews.it",
+        "Rai News 24.it",
+        "Rai.News.24..508.it",
+        "RaiNews24.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/f2ea408e212acfb85772.svg",
+      "logo_file_light": "logos/europe/light/f2ea408e212acfb85772.svg"
+    },
+    {
+      "id": "it_tgcom24",
+      "name": "TGcom24",
+      "order": 37,
+      "aliases": [
+        "TGCom",
+        "tgcom24"
+      ],
+      "xmltv_ids": [
+        "TgCom24.it",
+        "TGCom.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/7a17cd413ae2c358badc.svg",
+      "logo_file_light": "logos/europe/light/7a17cd413ae2c358badc.svg"
+    },
+    {
+      "id": "it_skytg24",
+      "name": "Sky TG24",
+      "order": 38,
+      "aliases": [
+        "sky-tg24"
+      ],
+      "xmltv_ids": [
+        "SkyTG24.it",
+        "SKY TG24.it",
+        "Sky.TG24.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/3b39a39c669915386c22.svg",
+      "logo_file_light": "logos/europe/light/3b39a39c669915386c22.svg"
+    },
+    {
+      "id": "it_k2",
+      "name": "K2",
+      "order": 39,
+      "aliases": [
+        "k2"
+      ],
+      "xmltv_ids": [
+        "K2.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/a6f36501c25ef5175e2d.svg",
+      "logo_file_light": "logos/europe/light/a6f36501c25ef5175e2d.svg"
+    },
+    {
+      "id": "it_frisbee",
+      "name": "Frisbee",
+      "order": 40,
+      "aliases": [
+        "frisbee"
+      ],
+      "xmltv_ids": [
+        "-frisbee-.it",
+        "FRISBEE.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/fb07b79d4b40232ccf12.svg",
+      "logo_file_light": "logos/europe/light/fb07b79d4b40232ccf12.svg"
+    },
+    {
+      "id": "it_cartoonito",
+      "name": "Cartoonito",
+      "order": 41,
+      "aliases": [
+        "cartoonito"
+      ],
+      "xmltv_ids": [
+        "CARTOONITO.it",
+        "Cartoonito.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/d4520e180061bd6788b0.svg",
+      "logo_file_light": "logos/europe/light/d4520e180061bd6788b0.svg"
+    },
+    {
+      "id": "it_super",
+      "name": "Super!",
+      "order": 42,
+      "aliases": [
+        "super"
+      ],
+      "xmltv_ids": [
+        "Super!.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/931e1fbcd4ff3dd3103a.svg",
+      "logo_file_light": "logos/europe/light/931e1fbcd4ff3dd3103a.svg"
+    },
+    {
+      "id": "it_raiscuola",
+      "name": "Rai Scuola",
+      "order": 43,
+      "aliases": [
+        "rai-scuola"
+      ],
+      "xmltv_ids": [
+        "RaiScuola.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/efbebb544d466e9cc58d.svg",
+      "logo_file_light": "logos/europe/light/efbebb544d466e9cc58d.svg"
+    },
+    {
+      "id": "it_sportitalia",
+      "name": "Sportitalia",
+      "order": 44,
+      "aliases": [
+        "sportitalia"
+      ],
+      "xmltv_ids": [
+        "Sportitalia.it",
+        "Sportitalia.HD.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/library/dark/40a142b3d6582b08c5eb.svg",
+      "logo_file_light": "logos/library/light/40a142b3d6582b08c5eb.svg"
+    },
+    {
+      "id": "it_supertennis",
+      "name": "SuperTennis",
+      "order": 45,
+      "aliases": [
+        "super-tennis"
+      ],
+      "xmltv_ids": [
+        "SuperTennis.it",
+        "Supertennis.it",
+        "SuperTennis.HD.it"
+      ],
+      "xmltv_id_only": true,
+      "xmltv_id_exact": true,
+      "logo_file": "logos/europe/dark/c91da2edb49d056eb061.svg",
+      "logo_file_light": "logos/europe/light/c91da2edb49d056eb061.svg"
+    }
+  ]
+}

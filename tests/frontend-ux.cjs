@@ -4,6 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium,webkit}=require('playwright');
 const root=path.resolve('custom_components/tv_guide/frontend');
 const countryOptions=Object.entries(JSON.parse(fs.readFileSync(path.join(root,'../countries.json'),'utf8'))).map(([code,item])=>({code,name:item.name,language:item.language}));
+const italyChannels=JSON.parse(fs.readFileSync(path.join(root,'../catalogs/channels_it.json'),'utf8')).channels;
 const engine=process.env.TVG_ENGINE||'chromium';
 const server=http.createServer((req,res)=>{
   const url=new URL(req.url,'http://localhost');
@@ -25,7 +26,7 @@ const server=http.createServer((req,res)=>{
       await page.route('**/translations.js?*',route=>route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'app/translations.js'),'utf8').replace('export const translations = {','export const translations = {"es":{"Einstellungen":"Ajustes"},').replace('export const languageRegistry = {','export const languageRegistry = {"es":{"name":"Español"},')}));
     }
     await page.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-card.js',type:'module'});
-    await page.evaluate(({scenario,countryOptions})=>{
+    await page.evaluate(({scenario,countryOptions,italyChannels})=>{
       if(scenario==='new-country')countryOptions.push({code:'zz',name:'New country',language:'en'});
       const now=Date.now();
       window.settings={country:'de',language:'de',default_view:'now',theme_mode:'auto',columns_desktop:5,max_channels:0,refresh_minutes:180,notification_service:'persistent_notification.create'};
@@ -36,6 +37,12 @@ const server=http.createServer((req,res)=>{
         channels.forEach(ch=>{ch.id='de:'+ch.id;ch.source_country='de';});
         channels.push({...structuredClone(channels[0]),id:'at:a',name:'Austria station',source_country:'at',country_name:'Österreich'});
         model.main_channel_ids=['de:a','de:b'];model.custom_channel_ids=['de:a'];
+      }
+      if(scenario==='italy'){
+        Object.assign(settings,{country:'it',language:'it'});
+        const template=structuredClone(channels[1]);
+        channels.splice(0,channels.length,...italyChannels.map(channel=>({...template,id:channel.id,name:channel.name,source_country:'it',country_name:'Italia',logo_normalized_light:'/tv_guide/frontend/app/logos/it-'+channel.id+'-light.svg',logo_normalized_dark:'/tv_guide/frontend/app/logos/it-'+channel.id+'-dark.svg'})));
+        Object.assign(model,{country:'it',ui:{...settings},main_channel_ids:channels.map(c=>c.id),custom_channel_ids:channels.map(c=>c.id)});
       }
       window.savedReads=0;window.order=scenario==='personal'?['de:a']:['a','b'];window.countries=['de'];window.settingsSaved=false;window.resetSaved=false;
       window.delayGuide=scenario.startsWith('cache');window.guideRequests=[];window.heldGuides=[];window.holdGuides=false;window.holdSettings=false;window.settingsPosts=0;window.notifications=[];window.holdNotification=false;window.holdSettingsReads=false;
@@ -80,10 +87,25 @@ const server=http.createServer((req,res)=>{
         return {response:structuredClone(model)};
       }};
       window.card=document.createElement('tv-guide-card');card.hass=hass;document.body.append(card);
-    },{scenario,countryOptions});
+    },{scenario,countryOptions,italyChannels});
     return page;
   }
   async function check(name,test){try{await test();console.log('PASS',engine,name);}catch(error){failures.push(name+': '+error.message);console.error('FAIL',engine,name,error.message);}}
+  await check('Italy renders all 45 main channels with decoded logos in both themes',async()=>{
+    const page=await mount('italy');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      assert.equal(await page.locator('.channel-card').count(),45);
+      for(const theme of ['light','dark']){
+        const decoded=await page.evaluate(async({ids,theme})=>Promise.all(ids.map(async id=>{
+          const image=new Image();image.src='/tv_guide/frontend/app/logos/it-'+id+'-'+theme+'.svg';await image.decode();return image.naturalWidth>0;
+        })),{ids:italyChannels.map(c=>c.id),theme});
+        assert.ok(decoded.every(Boolean));
+      }
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingCountry').inputValue(),'it');
+      assert.equal(await page.locator('#settingLanguage').inputValue(),'it');
+    }finally{await page.close();}
+  });
   await check('compact transport retains shared timelines, complete cards and local time navigation',async()=>{
     const page=await mount('compact');try{
       await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
@@ -348,7 +370,7 @@ const server=http.createServer((req,res)=>{
         assert.equal(await page.evaluate(()=>settings.language),code);
       }
       const values=await page.evaluate(async()=>{
-        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-20');
+        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-21');
         return ['FR_ca','no_NO','nb-no','EN-us','unknown'].map(value=>normalizeLanguage(value));
       });
       assert.deepEqual(values,['fr','nb','nb','en','en']);
@@ -363,7 +385,7 @@ const server=http.createServer((req,res)=>{
       await page.locator('#settingLanguage').selectOption('es');await page.locator('#saveAppSettings').click();
       await page.waitForFunction(()=>card.shadowRoot.querySelector('.guide-root').lang==='es');
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-20');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-21');
         const locale=createI18n({},()=>({locale:{language:'es_MX'}}));
         return {language:locale.language,translated:locale.t('Einstellungen'),fallback:locale.t('Speichern')};
       });
@@ -392,7 +414,7 @@ const server=http.createServer((req,res)=>{
   await check('registered country language fallback works without country branches and respects HA profile',async()=>{
     const page=await mount('settings');try{
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-20');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-21');
         const profile={locale:{}};
         const locale=createI18n({},()=>profile);
         locale.configure({language:'auto',country:'zz',countries:[{code:'zz',language:'fr'}]});

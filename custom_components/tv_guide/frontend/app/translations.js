@@ -212,7 +212,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "EPG-opdatering i gang",
     "Letzte EPG-Aktualisierung": "Seneste EPG-opdatering",
     "Nächste Erinnerung": "Næste påmindelse",
-    "Großbritannien": "Storbritannien"
+    "Großbritannien": "Storbritannien",
+    "Italien": "Italien"
   },
   "de": {
     "Alle Sender des eigenen Feeds": "Alle Sender des eigenen Feeds",
@@ -387,7 +388,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "EPG-Aktualisierung läuft",
     "Letzte EPG-Aktualisierung": "Letzte EPG-Aktualisierung",
     "Nächste Erinnerung": "Nächste Erinnerung",
-    "Großbritannien": "Großbritannien"
+    "Großbritannien": "Großbritannien",
+    "Italien": "Italien"
   },
   "en": {
     "Alle Sender des eigenen Feeds": "All channels from your feed",
@@ -562,7 +564,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "EPG update in progress",
     "Letzte EPG-Aktualisierung": "Last EPG update",
     "Nächste Erinnerung": "Next reminder",
-    "Großbritannien": "United Kingdom"
+    "Großbritannien": "United Kingdom",
+    "Italien": "Italy"
   },
   "nl": {
     "Alle Sender des eigenen Feeds": "Alle zenders uit je eigen feed",
@@ -737,7 +740,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "EPG-update bezig",
     "Letzte EPG-Aktualisierung": "Laatste EPG-update",
     "Nächste Erinnerung": "Volgende herinnering",
-    "Großbritannien": "Verenigd Koninkrijk"
+    "Großbritannien": "Verenigd Koninkrijk",
+    "Italien": "Italië"
   },
   "fr": {
     "Alle Sender des eigenen Feeds": "Toutes les chaînes de votre flux",
@@ -912,7 +916,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "Mise à jour EPG en cours",
     "Letzte EPG-Aktualisierung": "Dernière mise à jour EPG",
     "Nächste Erinnerung": "Prochain rappel",
-    "Großbritannien": "Royaume-Uni"
+    "Großbritannien": "Royaume-Uni",
+    "Italien": "Italie"
   },
   "it": {
     "Alle Sender des eigenen Feeds": "Tutti i canali del proprio feed",
@@ -1087,7 +1092,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "Aggiornamento EPG in corso",
     "Letzte EPG-Aktualisierung": "Ultimo aggiornamento EPG",
     "Nächste Erinnerung": "Prossimo promemoria",
-    "Großbritannien": "Regno Unito"
+    "Großbritannien": "Regno Unito",
+    "Italien": "Italia"
   },
   "nb": {
     "Alle Sender des eigenen Feeds": "Alle kanaler fra egen kilde",
@@ -1262,7 +1268,8 @@ export const translations = {
     "EPG-Aktualisierung läuft": "EPG-oppdatering pågår",
     "Letzte EPG-Aktualisierung": "Siste EPG-oppdatering",
     "Nächste Erinnerung": "Neste påminnelse",
-    "Großbritannien": "Storbritannia"
+    "Großbritannien": "Storbritannia",
+    "Italien": "Italia"
   },
   "sv": {
     "Alle Sender des eigenen Feeds": "Alla kanaler från ditt eget flöde",
@@ -1437,6 +1444,7 @@ export const translations = {
     "EPG-Aktualisierung läuft": "EPG-uppdatering pågår",
     "Letzte EPG-Aktualisierung": "Senaste EPG-uppdatering",
     "Nächste Erinnerung": "Nästa påminnelse",
-    "Großbritannien": "Storbritannien"
+    "Großbritannien": "Storbritannien",
+    "Italien": "Italien"
   }
 };
