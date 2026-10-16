@@ -1,10 +1,8 @@
 """TV Guide keeps its reminder language templates."""
-import importlib.util
-from pathlib import Path
 import unittest
-
-spec=importlib.util.spec_from_file_location('tv_guide_notification_text',Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'/'notification_text.py')
-module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+from native_support import module as native_module
+module=native_module('notification_text')
+LANGUAGES=native_module('languages').LANGUAGES
 
 
 class NotificationTextTests(unittest.TestCase):
@@ -24,7 +22,7 @@ class NotificationTextTests(unittest.TestCase):
                 self.assertEqual(automatic,explicit)
 
     def test_all_original_languages_have_translations(self):
-        for language in ['de','en','nl','fr','it','da','nb','sv']:
+        for language in LANGUAGES:
             result=module.reminder_text({'channel':'TV','title':'Programme','language':language},'18:00')
             self.assertIn('Programme',result['message'])
             self.assertIn('18:00',result['message'])

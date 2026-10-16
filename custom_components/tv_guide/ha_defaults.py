@@ -1,16 +1,12 @@
 """Automatic initial settings from the Home Assistant installation."""
 from .countries import COUNTRIES, COUNTRY_ALIASES, LANGUAGE_COUNTRIES
 
-LANGUAGES = {"de", "en", "da", "nl", "fr", "it", "nb", "sv"}
+from .languages import normalize_language
 
 
 def installation_defaults(config):
     """Use HA's country first; fall back for unsupported regions without a form."""
-    language = str(getattr(config, "language", "") or "en").lower().replace("_", "-").split("-")[0]
-    if language == "no":
-        language = "nb"
-    if language not in LANGUAGES:
-        language = "en"
+    language = normalize_language(getattr(config, "language", ""))
     country = str(getattr(config, "country", "") or "").lower()
     country = COUNTRY_ALIASES.get(country, country)
     if country not in COUNTRIES:

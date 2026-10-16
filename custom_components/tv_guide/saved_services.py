@@ -10,6 +10,7 @@ from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN
+from .languages import LANGUAGES
 from .saved_programmes import MAX_ITEMS, MAX_CHANNEL_ID_LENGTH, normalize_items, normalize_reminder_minutes
 
 SERVICE_BOOKMARK = "save_bookmark"
@@ -27,7 +28,7 @@ BASE = {
 }
 BOOKMARK_SCHEMA = vol.Schema(BASE)
 REMINDER_SCHEMA = vol.Schema({**BASE, vol.Optional("minutes", default=10): normalize_reminder_minutes,
-    vol.Optional("language"):vol.In(['auto','de','en','nl','fr','it','da','nb','sv'])})
+    vol.Optional("language"):vol.In(['auto',*LANGUAGES])})
 REMOVE_SCHEMA = vol.Schema({
     vol.Required("id"): vol.All(str, vol.Length(min=1, max=200)),
     vol.Required("kind"): vol.In(["bookmark", "reminder", "programme"]),

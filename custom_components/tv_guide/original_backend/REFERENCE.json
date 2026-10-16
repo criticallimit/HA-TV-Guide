@@ -36,6 +36,7 @@
     "Cooperatively stop obsolete country workers while retaining personal-list countries and restarting reselected countries",
     "Use the shared native country registry and catalogues for every country; keep only consumed logo metadata and notification catalogues in the archive",
     "Replace dynamic per-entry module execution and local HTTP emulation with an explicitly constructed native engine, authoritative HA settings, shared programme projections, priority workers and pooled cancellable provider IO",
-    "Read immutable logo metadata directly from the package, remove obsolete extracted assets and HA settings mirrors, and replace historical programme-cache migrations with current-schema rebuilds"
+    "Read immutable logo metadata directly from the package, remove obsolete extracted assets and HA settings mirrors, and replace historical programme-cache migrations with current-schema rebuilds",
+    "Use the shared language registry for settings and reminder schemas; reminder translations now use registered locale sources instead of archived standalone catalogues"
   ]
 }

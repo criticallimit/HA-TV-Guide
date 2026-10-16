@@ -120,3 +120,24 @@ Source adapters keep their verified parsing, source priorities and country regis
 Programme projections and stable IDs are prepared once per source revision and reused by both channel views. The card requests compact responses that transfer a shared sender timeline once, then uses the complete timelines locally for time navigation. Existing response consumers can continue requesting the original full shape. Presentation and logo changes invalidate their views without rebuilding the HA programme snapshot. Entry unload drains or cancels every owned request and worker while leaving HA's shared HTTP session open.
 
 Immutable logo matching metadata is read directly from the packaged archive; it is not extracted into each entry's storage directory. Startup removes the obsolete `reference/` copy and, for HA-managed entries, the superseded `options.json` mirror. User channel selections, ordering, bookmarks, downloaded logos and valid current programme caches are retained. Programme caches accept only the current schema; older derived snapshots and their catalogue indexes are discarded when opened and rebuilt in the background instead of running historical record migrations. No additional database or HA recorder migration is required.
+
+## Adding a language
+
+`languages.json` is the shared registry for card settings, Home Assistant defaults, settings validation and reminder actions. Add a canonical lowercase language code with its native `name` and optional lowercase `aliases`. Regional profiles resolve from the most specific registered code to the base language, then English; for example `fr_CA` uses `fr`, and the registered `no` alias uses `nb`.
+
+Copy `locales/en.json` to `locales/<code>.json` and translate the values in `messages` and `home_assistant`. Preserve the message keys and `{placeholders}`. This single source supplies the card, reminder notifications, Home Assistant entity names and setup texts. Programme titles remain in the source language. Do not edit generated `frontend/app/translations.js`, `frontend/app/language-registry.js`, `strings.json` or `translations/*.json` directly.
+
+Run:
+
+```sh
+python tools/validate_registrations.py
+python tools/build_locales.py
+python tools/build_frontend_view.py --check
+python -m unittest discover -s tests -v
+```
+
+CI rejects missing translations, changed placeholders, duplicate registrations, invalid country time zones, invalid source URLs, duplicate sender IDs/order values, unknown logo references and stale generated output. English fallback also protects the running card and reminders when a text is unavailable. Labels wrap within the existing responsive settings layout; verify especially long labels in browser checks.
+
+New countries using an existing source format require only a `countries.json` entry and a sender catalogue in `catalogs/`. Register an optional default `language` only when it is appropriate for the country; a user's explicit choice and HA profile take precedence. Keep published sender IDs stable. Logos may be omitted, but provided local logo references must exist in the indexed logo library. A genuinely new source format still needs a parser adapter.
+
+The real Home Assistant acceptance suite iterates all registered countries and languages. Browser tests iterate every registered language and exercise an injected additional language, regional resolution and English fallback. An isolated integration test adds both a country and language through data files and verifies saving, personal selection, restart and reminder translation without changing runtime code.

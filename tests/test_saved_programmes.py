@@ -37,6 +37,12 @@ class SavedProgrammeTests(unittest.TestCase):
             self.assertEqual(module.normalize_items([item]),[])
             self.assertEqual(module.normalize_items([item],reminders=True),[])
 
+    def test_regional_reminder_language_is_normalized_and_auto_is_preserved(self):
+        now=datetime.now(timezone.utc)+timedelta(hours=1)
+        item={'id':'locale','start':now.isoformat(),'end':(now+timedelta(hours=1)).isoformat()}
+        for code,expected in [('FR_ca','fr'),('no_NO','nb'),('auto','auto'),('unknown','en')]:
+            self.assertEqual(module.normalize_items([{**item,'language':code}],reminders=True)[0]['language'],expected)
+
     def test_long_country_qualified_channel_id_survives_storage(self):
         now=datetime.now(timezone.utc)+timedelta(hours=1)
         channel_id='de:'+'x'*160

@@ -1,17 +1,20 @@
-import {translations} from './translations.js?v=native-19';
+import {translations} from './translations.js?v=native-20';
+import {languageRegistry, normalizeLanguage} from './language-registry.js?v=native-1';
 export function createI18n(root, getHass) {
-  const supported = ['da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'];
+  const languageSelect = root.querySelector?.('#settingLanguage');
+  if (languageSelect) {
+    languageSelect.replaceChildren(new Option('Automatisch · Home Assistant', 'auto'));
+    languageSelect.options[0].dataset.i18n = 'Automatisch · Home Assistant';
+    for (const [code, item] of Object.entries(languageRegistry)) {
+      const option = new Option(item.name, code);
+      option.dataset.i18n = item.name;
+      languageSelect.append(option);
+    }
+  }
   let language = 'de';
   let translated = false;
   let countryLanguages = new Map();
-  function baseLanguage(value) {
-    const code = String(value || '').toLowerCase().replace('_', '-').split('-')[0];
-    return code === 'no' ? 'nb' : code;
-  }
-  function supportedLanguage(value) {
-    const code = baseLanguage(value);
-    return supported.includes(code) ? code : 'en';
-  }
+  function supportedLanguage(value) { return normalizeLanguage(value); }
   function homeAssistantLanguage() {
     const hass = getHass();
     return hass?.locale?.language || hass?.language || '';
