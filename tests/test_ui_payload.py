@@ -32,7 +32,7 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(first['programs'][0]['category'],'News')
         self.assertTrue(first['programs'][0]['id'].startswith('guide_'))
         self.assertEqual(result['channels'][1]['programs'],[])
-        self.assertTrue((ROOT/'frontend'/'app'/first['logo_normalized_light']).is_file())
+        self.assertTrue(first['logo_normalized_light'].startswith('/tv_guide/logo/logos/channels/de/ard-light.svg?v='))
 
     def test_requested_time_and_offsets_select_correct_rows(self):
         self.records[0]['start']=self.at.astimezone(timezone(timedelta(hours=3))).isoformat()
@@ -124,11 +124,11 @@ class UIPayloadTests(unittest.TestCase):
             original = (ROOT.parents[1]/'tests'/'reference-frontend'/name).read_bytes()
             self.assertEqual(hashlib.sha256(bundled).hexdigest(),provenance['bundled_sha256'][name],name)
             self.assertEqual(hashlib.sha256(original).hexdigest(),provenance['source_sha256'][name],name)
-        logos=json.loads((app/'logo_catalog.json').read_text(encoding='utf-8'))
-        self.assertTrue(logos)
-        self.assertLessEqual(set(logos),set(ui.COUNTRIES))
-        for country in logos.values():
-            for channel in country.values():
-                for asset in channel.values():self.assertTrue((app/asset).is_file(),asset)
+        library=ui.bundled_logo_library()
+        self.assertTrue(library.channels)
+        self.assertFalse((app/'logos').exists())
+        for key,themes in library.channels.items():
+            self.assertIn(key.split(':')[0],ui.COUNTRIES)
+            for source in themes.values():self.assertTrue(library.contains(source))
 
 if __name__=='__main__':unittest.main()

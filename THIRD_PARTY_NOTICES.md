@@ -96,12 +96,10 @@ are recorded per channel; embedded image hashes and preparation details are in
 grant trademark or copyright rights to broadcaster artwork. These additional
 third-party marks are not covered by this project's MIT licence.
 
-E4, Film4, More4 and 5USA now use bundled broadcaster artwork. The older neutral
-UK wordmarks remain compatibility assets, but are no longer used by the main
-channel catalogue. Channel names and marks belong to their respective owners.
+E4, Film4, More4 and 5USA now use broadcaster artwork from the downloaded database. The main channel catalogue resolves its artwork through the current logo database. Channel names and marks belong to their respective owners.
 
 ## Native integration import scope
 
-This native integration imports the original presentation code, Source Sans Pro fonts (licence in `custom_components/tv_guide/frontend/app/fonts/LICENSE.md`) and the normalized logo subset needed by its eleven main-channel catalogues. It does not import the whole add-on server or whole Europe logo pack. The original rights and attribution statements above apply to these reused third-party assets. Provenance for the reference code is recorded in `custom_components/tv_guide/frontend/app/REFERENCE.json`.
+This native integration imports the original presentation code, Source Sans Pro fonts (licence in `custom_components/tv_guide/frontend/app/fonts/LICENSE.md`) and metadata referencing the separately downloaded logo database for its eleven main-channel catalogues. Broadcaster image files are distributed in the independent logo database, outside the integration installation directory. It does not import the whole add-on server or whole Europe logo pack. The original rights and attribution statements above apply to these reused third-party assets. Provenance for the reference code is recorded in `custom_components/tv_guide/frontend/app/REFERENCE.json`.
 
 Italian main-channel artwork reuses the verified broadcaster images already indexed by the logo library. Source URLs and SHA-256 hashes are recorded in `custom_components/tv_guide/catalogs/italy_logo_sources.json`. Dark variants use transparency, preserve coloured brand panels and render designated wordmarks in white. These marks remain the property of their respective owners.

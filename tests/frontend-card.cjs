@@ -1,3 +1,4 @@
+const serveLogo=require('./logo-fixtures.cjs');
 /* Behaviour and pixel parity against the pinned, unchanged add-on frontend. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,10 +12,11 @@ const stations = [['ard','Das Erste'],['zdf','ZDF'],['arte','arte'],['3sat','3sa
 const fixture = {
   country:'de', ui:{language:'de',default_view:'now',columns_desktop:5,max_channels:0,theme_mode:'auto',refresh_minutes:180,notification_service:'persistent_notification.create'}, refresh_running:false,
   main_channel_ids:stations.map(item=>item[0]), custom_channel_ids:stations.map(item=>item[0]),
-  channels:stations.map(([id,name],index) => ({id,name,source_country:'de',available:true, logo_normalized_light:`/tv_guide/frontend/app/logos/de-${id}-light.svg`,logo_normalized_dark:`/tv_guide/frontend/app/logos/de-${id}-dark.svg`,programs:Array.from({length:7},(_,i)=>({id:`guide_${id}_${i}`,title:['Nachrichten','Film am Abend','Wissen und Kultur','Dokumentation','Spätprogramm','Nachtmagazin','Morgenprogramm'][i],start:new Date(Date.parse(fixed)+(i-1)*3600000).toISOString(),end:new Date(Date.parse(fixed)+i*3600000+1800000).toISOString(),desc:'Beschreibung der Sendung.',category:'Information',subtitle:''}))})),
+  channels:stations.map(([id,name],index) => ({id,name,source_country:'de',available:true, logo_normalized_light:`/tv_guide/logo/logos/channels/de/${id}-light.svg`,logo_normalized_dark:`/tv_guide/logo/logos/channels/de/${id}-dark.svg`,programs:Array.from({length:7},(_,i)=>({id:`guide_${id}_${i}`,title:['Nachrichten','Film am Abend','Wissen und Kultur','Dokumentation','Spätprogramm','Nachtmagazin','Morgenprogramm'][i],start:new Date(Date.parse(fixed)+(i-1)*3600000).toISOString(),end:new Date(Date.parse(fixed)+i*3600000+1800000).toISOString(),desc:'Beschreibung der Sendung.',category:'Information',subtitle:''}))})),
 };
 const server = http.createServer((req,res) => {
   const url = new URL(req.url,'http://localhost');
+  if(serveLogo(url,res))return;
   if (url.pathname === '/') {res.setHeader('Content-Type','text/html');res.end('<style>body{margin:0}</style>');return;}
   if (url.pathname.startsWith('/reference/api/')) {
     const endpoint=url.pathname.split('/').at(-1);
@@ -357,7 +359,7 @@ const server = http.createServer((req,res) => {
   for(const [country,language] of Object.entries(languageFor)){
     const catalogue=JSON.parse(fs.readFileSync(path.join(reference,'..','data',country==='de'?'channels.json':countryInfo[country].catalog),'utf8'));
     const rows=catalogue.channels.slice(0,5);
-    const data={...structuredClone(baseline),country,ui:{...baseline.ui,language,theme_mode:'light'},main_channel_ids:rows.map(ch=>ch.id),custom_channel_ids:rows.map(ch=>ch.id),channels:rows.map(ch=>({...ch,available:true,logo_normalized_light:`/tv_guide/frontend/app/logos/${country}-${ch.id}-light.svg`,logo_normalized_dark:`/tv_guide/frontend/app/logos/${country}-${ch.id}-dark.svg`,programs:structuredClone(baseline.channels[0].programs)}))};
+    const data={...structuredClone(baseline),country,ui:{...baseline.ui,language,theme_mode:'light'},main_channel_ids:rows.map(ch=>ch.id),custom_channel_ids:rows.map(ch=>ch.id),channels:rows.map(ch=>({...ch,available:true,logo_normalized_light:`/tv_guide/logo/logos/channels/${country}/${ch.id}-light.svg`,logo_normalized_dark:`/tv_guide/logo/logos/channels/${country}/${ch.id}-dark.svg`,programs:structuredClone(baseline.channels[0].programs)}))};
     Object.assign(fixture,data);
     const host=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
     const ref=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
@@ -379,7 +381,7 @@ const server = http.createServer((req,res) => {
   console.log('PASS pixel parity for all ten countries');
 
   // Delayed initial data must leave a usable native toolbar, never a hidden iframe.
-  for(const scenario of ['cached','expired','invalid-cache-time','cold','storage-blocked','error','empty']){
+  for(const scenario of ['cached','expired','invalid-cache-time','obsolete-cache','cold','storage-blocked','error','empty']){
     const page=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
     page.on('pageerror',error=>errors.push(error.message));await page.clock.setFixedTime(new Date(fixed));
     if(scenario==='storage-blocked')await page.addInitScript(()=>{Storage.prototype.getItem=Storage.prototype.setItem=()=>{throw Error('Storage disabled');};});
@@ -387,10 +389,10 @@ const server = http.createServer((req,res) => {
     await page.evaluate(({data,scenario})=>{
       const snapshot=structuredClone(data);
       for(const ch of snapshot.channels){ch.programs[0].end=new Date(Date.now()-60000).toISOString();ch.programs[1].start=new Date(Date.now()-60000).toISOString();}
-      if(['cached','expired','invalid-cache-time'].includes(scenario)){
+      if(['cached','expired','invalid-cache-time','obsolete-cache'].includes(scenario)){
         const cached=structuredClone(snapshot);
         if(scenario==='expired')for(const ch of cached.channels)for(const p of ch.programs){p.start=new Date(Date.parse(p.start)-86400000).toISOString();p.end=new Date(Date.parse(p.end)-86400000).toISOString();}
-        sessionStorage.setItem('tv-guide-first-paint-v1',JSON.stringify({version:1,at:scenario==='invalid-cache-time'?'invalid':Date.now()-5*60000,guide:cached}));
+        sessionStorage.setItem(scenario==='obsolete-cache'?'tv-guide-first-paint-v1':'tv-guide-first-paint-v2',JSON.stringify({version:scenario==='obsolete-cache'?1:2,at:scenario==='invalid-cache-time'?'invalid':Date.now()-5*60000,guide:cached}));
       }
       window.gate=new Promise(resolve=>window.release=resolve);
       window.hass={language:'de',themes:{darkMode:true,themes:{}},services:{tv_guide:{guide_request:{}}},async callWS(message){

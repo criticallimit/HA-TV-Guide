@@ -226,6 +226,21 @@ class LogoUpdateTests(unittest.TestCase):
         self.assertEqual(restored.revision, 'b'*16)
         self.assertEqual([url.rsplit('/',1)[-1] for url,_ in self.calls], ['updates.json'])
 
+    def test_new_application_baseline_keeps_a_newer_downloaded_database(self):
+        self.worker.check(lambda:False,self.opener,now=NOW)
+        index,_,descriptor,_=version('c'*16,self.old_bytes)
+        descriptor['generation']=1
+        (self.bundled/'index.json').write_text(json.dumps(index))
+        (self.bundled/'updates.json').write_text(json.dumps(descriptor))
+        restored=assets.LogoLibrary(self.bundled)
+        restored.configure_cache(self.cache)
+        worker=updates.LogoUpdates(restored,self.cache)
+        self.assertEqual(restored.revision,'b'*16)
+        self.assertEqual(restored.render('logos/library/0.svg')[0],self.new_bytes)
+        downloader=download.LogoDownload(restored)
+        downloader.run(lambda:False,lambda *args,**kwargs: self.fail('No package download expected'))
+        self.assertTrue(downloader.status()['ready'])
+
     def test_newer_bundled_installation_does_not_restore_an_older_update_pointer(self):
         self.assertIsNotNone(self.check())
         index = deepcopy(self.old[0])

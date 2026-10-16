@@ -2,3 +2,6 @@ __pycache__/
 *.py[cod]
 node_modules/
 reference-addon/
+
+/tests/fixtures/logo-samples/*.zip
+/tests/fixtures/logo-samples/*.part

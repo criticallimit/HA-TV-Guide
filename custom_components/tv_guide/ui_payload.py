@@ -1,19 +1,14 @@
 """Bounded TV Guide snapshots in the reference frontend's presentation model."""
 from datetime import datetime, timezone
-from functools import lru_cache
 import json
-from pathlib import Path
 from hashlib import sha256
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .countries import COUNTRIES, COUNTRY_NAMES
+from .logo_assets import bundled_logo_library
 from .languages import LANGUAGES
 UI_DEFAULTS={'language':'auto','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
 MAX_DISPLAY_CHANNELS=200
-
-@lru_cache(maxsize=1)
-def logo_catalog():
-    return json.loads((Path(__file__).parent/'frontend'/'app'/'logo_catalog.json').read_text(encoding='utf-8'))
 
 def ui_settings(options):
     return {**UI_DEFAULTS,**{key:options[key] for key in UI_DEFAULTS if key in options},'country':options.get('country',''),'country_language':COUNTRIES.get(options.get('country',''),{}).get('language')}
@@ -53,8 +48,8 @@ def presentation_channels(catalogue,feed_channels,country):
     # Canonical IDs reserve their namespace, even when a feed also uses that ID.
     mapped={item.get('xmltv_id') for item in main}|{item['id'] for item in main}
     extra=[{'id':item['id'],'name':item['name'],'xmltv_id':item['id'],'available':True} for item in feed_channels if item['id'] not in mapped]
-    logos=logo_catalog().get(country,{})
-    return [{**item,**logos.get(item['id'],{}),'source_country':country,'source_channel_id':item['id']} for item in main+extra]
+    library=bundled_logo_library()
+    return [{**item,**library.channel_urls(country,item['id']),'source_country':country,'source_channel_id':item['id']} for item in main+extra]
 
 def personal_payload(catalogue,feed_channels,options):
     country=options.get('country','')

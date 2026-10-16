@@ -50,6 +50,21 @@ async def exercise_acceptance(hass, entry, coordinator):
         async with session.get('http://127.0.0.1:8123/tv_guide/frontend/tv-guide-card.js') as response:
             assert response.status == 200
             assert 'tv-guide-card' in await response.text()
+        library=coordinator.backend._logos
+        previous=library.archive_root
+        library.archive_root=Path(__file__).resolve().parent/'fixtures/logo-samples'
+        try:
+            for theme in ('light','dark'):
+                source=library.channels['it:it_rai1'][theme]
+                async with session.get('http://127.0.0.1:8123/tv_guide/logo/'+source+'?v='+library.revision) as response:
+                    assert response.status==200
+                    assert sha256(await response.read()).hexdigest()==library.entries[source]['sha256']
+            async with session.get('http://127.0.0.1:8123/tv_guide/frontend/app/logos/it-it_rai1-dark.svg') as response:
+                assert response.status==404
+        finally:
+            library.archive_root=previous
+        print('PASS HA acceptance: downloaded main-channel logos use the public revisioned database endpoint; no installed image copy')
+
         async with session.ws_connect('http://127.0.0.1:8123/api/websocket') as socket:
             assert (await socket.receive_json())['type'] == 'auth_required'
             await socket.send_json({'type':'auth', 'access_token':token})
