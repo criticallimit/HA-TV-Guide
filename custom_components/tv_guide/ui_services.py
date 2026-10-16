@@ -50,14 +50,20 @@ def async_register_ui_services(hass):
     async def update_guide_settings(entry, coordinator, changes, *, partial=False):
         async def commit():
             values=changes
+            previous=ui_settings({**entry.data,**entry.options})
             if partial:
                 if set(changes)-set(PRESENTATION_OPTIONS):
                     raise ValueError('Unknown settings')
-                settings=await coordinator.async_guide_request('settings')
-                values={**settings,**changes}
+                previous=await coordinator.async_guide_request('settings')
+                values={**previous,**changes}
             normalize_ui_settings({'notification_service':values.get('notification_service','persistent_notification.create')})
             result=await coordinator.async_guide_request('settings','POST',values)
-            await persist_guide_settings(entry, coordinator, result.get("settings"))
+            try:
+                await persist_guide_settings(entry, coordinator, result.get("settings"))
+            except Exception:
+                # HA is authoritative; a rejected HA commit must not leave a new runtime state.
+                await coordinator.async_guide_request('settings','POST',previous)
+                raise
             return result
 
         # Executor writes can outlive a cancelled caller. Keep the transaction

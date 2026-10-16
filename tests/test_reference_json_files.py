@@ -1,4 +1,5 @@
 """User JSON files recover safely without losing an existing file on failed writes."""
+import importlib
 import importlib.util
 import json
 import tempfile
@@ -8,7 +9,7 @@ from unittest.mock import patch
 
 from reference_support import app
 import sys
-json_files = sys.modules[app.__package__ + ".json_files"]
+json_files = importlib.import_module(type(app).__module__.rsplit(".",1)[0] + ".json_files")
 read_json_file, write_json_file = json_files.read_json_file, json_files.write_json_file
 
 

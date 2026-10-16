@@ -527,24 +527,8 @@ class GuideStore(FrenchProgrammeSources, RegionalProgrammeSources, PublicProgram
             channel["logo_normalized_light"] = logo_light
             channel["logo_normalized_dark"] = logo_dark
 
-            # Final output guard: never expose overlapping/duplicate programme
-            # slots to the frontend, even when they came from an older cache
-            # or from a provider parser that produced inconsistent intervals.
-            programmes = self._validate_program_timeline(
-                channel.get("programs") or []
-            )
-            cleaned_programmes = []
-            for item in programmes:
-                public_item = {
-                    key: value
-                    for key, value in item.items()
-                    if not str(key).startswith("_")
-                }
-                public_item["source"] = item.get("_source_url") or item.get("_source")
-                public_item["source_kind"] = item.get("_source_kind") or "unknown"
-                cleaned_programmes.append(public_item)
-            channel["programs"] = cleaned_programmes
-            programmes = cleaned_programmes
+            programmes = self.runtime.public_programmes(self, channel)
+            channel["programs"] = programmes
             latest = None
             for item in programmes:
                 try:

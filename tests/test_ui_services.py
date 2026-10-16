@@ -155,6 +155,20 @@ class UIServicesTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.entry.options['refresh_minutes'],360)
         self.assertEqual(self.entry.options['language'],'en')
 
+    async def test_failed_ha_settings_commit_restores_previous_runtime_state(self):
+        settings={'country':'de','language':'auto','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
+        async def request(endpoint,method='GET',body=None):
+            if method=='POST':settings.update({key:body[key] for key in settings});return {'ok':True,'settings':dict(settings)}
+            return dict(settings)
+        self.hass.data['tv_guide']={'entry':types.SimpleNamespace(is_multi_source=True,async_guide_request=request)}
+        adapter.async_register_ui_services(self.hass)
+        with patch.object(self.hass.config_entries,'async_update_entry',side_effect=RuntimeError('HA commit failed')):
+            with self.assertRaisesRegex(exc.HomeAssistantError,'HA commit failed'):
+                await self.call('set_ui_settings',{'options':{'theme_mode':'light','country':'fr'}})
+        self.assertEqual(settings['theme_mode'],'auto')
+        self.assertEqual(settings['country'],'de')
+        self.assertEqual(self.entry.options,{})
+
     async def test_cancelled_settings_write_finishes_ha_persistence_before_releasing_lock(self):
         settings={'country':'de','language':'de','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
         entered, release=asyncio.Event(), asyncio.Event()

@@ -27,6 +27,7 @@ class OriginalCoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.imports.start();self.addCleanup(self.imports.stop)
         spec=importlib.util.spec_from_file_location(PKG+'.guide_coordinator',ROOT/'guide_coordinator.py')
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        module.create_provider_client = lambda *args:None
         self.module = module
         self.tasks=[]
         def create(coro):
