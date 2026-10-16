@@ -21,6 +21,9 @@ const server=http.createServer((req,res)=>{
     const page=await browser.newPage({viewport:{width:1100,height:1000},timezoneId:'Europe/Berlin'});
     page.on('pageerror',e=>errors.push(e.message));page.on('crash',()=>errors.push('Page crashed'));
     await page.goto(base);await page.clock.setFixedTime(new Date('2026-10-14T18:00:00Z'));
+    if(scenario==='new-language') {
+      await page.route('**/translations.js?*',route=>route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'app/translations.js'),'utf8').replace('export const translations = {','export const translations = {"es":{"Einstellungen":"Ajustes"},').replace('export const languageRegistry = {','export const languageRegistry = {"es":{"name":"Español"},')}));
+    }
     await page.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-card.js',type:'module'});
     await page.evaluate(({scenario,countryOptions})=>{
       if(scenario==='new-country')countryOptions.push({code:'zz',name:'New country',language:'en'});
@@ -332,10 +335,64 @@ const server=http.createServer((req,res)=>{
       assert.equal(await page.locator('#settingTheme').inputValue(),'auto');
     }finally{await page.close();}
   });
+  await check('every registered language is selectable and applies without navigation or reload',async()=>{
+    const registry=JSON.parse(fs.readFileSync(path.join(root,'../languages.json'),'utf8'));
+    const page=await mount('settings');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      for(const code of Object.keys(registry)) {
+        await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+        await page.locator('.settings-disclosure').first().evaluate(node=>node.open=true);
+        await page.locator('#settingLanguage').selectOption(code);
+        await page.locator('#saveAppSettings').click();
+        await page.waitForFunction(code=>card.shadowRoot.querySelector('.guide-root').lang===code,code);
+        assert.equal(await page.evaluate(()=>settings.language),code);
+      }
+      const values=await page.evaluate(async()=>{
+        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-20');
+        return ['FR_ca','no_NO','nb-no','EN-us','unknown'].map(value=>normalizeLanguage(value));
+      });
+      assert.deepEqual(values,['fr','nb','nb','en','en']);
+    }finally{await page.close();}
+  });
+  await check('new registered language populates the menu and supports regional and English fallback',async()=>{
+    const page=await mount('new-language');try{
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      assert.equal(await page.locator('#settingLanguage option[value="es"]').textContent(),'Español');
+      await page.locator('.settings-disclosure').first().evaluate(node=>node.open=true);
+      await page.locator('#settingLanguage').selectOption('es');await page.locator('#saveAppSettings').click();
+      await page.waitForFunction(()=>card.shadowRoot.querySelector('.guide-root').lang==='es');
+      const values=await page.evaluate(async()=>{
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-20');
+        const locale=createI18n({},()=>({locale:{language:'es_MX'}}));
+        return {language:locale.language,translated:locale.t('Einstellungen'),fallback:locale.t('Speichern')};
+      });
+      assert.deepEqual(values,{language:'es',translated:'Ajustes',fallback:'Save'});
+    }finally{await page.close();}
+  });
+  await check('long translated settings labels fit a narrow viewport',async()=>{
+    const page=await mount('new-language');try{
+      await page.setViewportSize({width:360,height:800});
+      await page.waitForFunction(()=>card._app?.lastGuideLoadedAt>0);
+      await page.locator('#showAppSettings').click();await page.locator('#saveAppSettings:not([disabled])').waitFor();
+      await page.evaluate(()=>{
+        const root=card.shadowRoot;
+        root.querySelector('#settingLanguage option[value="es"]').textContent='Español con una descripción regional muy larga';
+        root.querySelector('#settingLanguage').closest('label').querySelector('small').textContent='Esta es una descripción más larga de la configuración del idioma. '.repeat(5);
+        root.querySelector('.settings-disclosure').open=true;
+      });
+      assert.equal(await page.evaluate(()=>{
+        const dialog=card.shadowRoot.querySelector('.app-settings-dialog');
+        return dialog.scrollWidth<=dialog.clientWidth+1;
+      }),true);
+      await page.locator('#settingLanguage').selectOption('es');
+      assert.equal(await page.locator('#settingLanguage').inputValue(),'es');
+    }finally{await page.close();}
+  });
   await check('registered country language fallback works without country branches and respects HA profile',async()=>{
     const page=await mount('settings');try{
       const values=await page.evaluate(async()=>{
-        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-19');
+        const {createI18n}=await import('/tv_guide/frontend/app/i18n.js?v=native-20');
         const profile={locale:{}};
         const locale=createI18n({},()=>profile);
         locale.configure({language:'auto',country:'zz',countries:[{code:'zz',language:'fr'}]});

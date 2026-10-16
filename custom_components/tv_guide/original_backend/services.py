@@ -18,6 +18,7 @@ from .providers import SR_PROGRAM_URL as SR_PROGRAM_URL
 from .providers import SWR_PROGRAM_URL as SWR_PROGRAM_URL
 from .providers import ZDF_PROGRAM_URL as ZDF_PROGRAM_URL
 from .store import GuideStore
+from ..languages import LANGUAGES
 from .bundled_metadata import load_logo_metadata
 from .cache_catalogue import CACHE_SCHEMA_VERSION
 
@@ -48,7 +49,7 @@ class ProgrammeEngine:
         self.PARSED_CACHE_SCHEMA_VERSION = CACHE_SCHEMA_VERSION
         self.CHANNEL_PREFS_FILE = storage / 'tv_guide_channel_order.json'
         self.DEFAULT_REFRESH_MINUTES = 180
-        self.LANGUAGES = {'da', 'de', 'en', 'nl', 'fr', 'it', 'nb', 'sv'}
+        self.LANGUAGES = set(LANGUAGES)
         owner = self
 
         class EPGStore(GuideStore):

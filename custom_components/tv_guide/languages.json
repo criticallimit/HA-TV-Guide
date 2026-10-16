@@ -1,0 +1,29 @@
+{
+  "da": {
+    "name": "Dansk"
+  },
+  "de": {
+    "name": "Deutsch"
+  },
+  "en": {
+    "name": "English"
+  },
+  "nl": {
+    "name": "Nederlands"
+  },
+  "fr": {
+    "name": "Français"
+  },
+  "it": {
+    "name": "Italiano"
+  },
+  "nb": {
+    "name": "Norsk (bokmål)",
+    "aliases": [
+      "no"
+    ]
+  },
+  "sv": {
+    "name": "Svenska"
+  }
+}

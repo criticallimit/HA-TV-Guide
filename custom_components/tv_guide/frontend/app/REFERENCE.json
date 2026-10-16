@@ -14,9 +14,9 @@
     "styles.css": "db26363d711e1ed5cb166196f03d1545561bb90f86b6285983dbc7a52f92d0d1",
     "guide-core.js": "e41eb278c07ad228c1c9c2dd8a22c6ba69de9a4cae796f553512194400b310a0",
     "channel-picker.js": "2a097d99c627653514deac7d5ebc3e6f5b30e2df42e83735b6880e58f0543ea8",
-    "translations.js": "2a4d93e494f9f8bc4ebd124d7485c82fc15408a6609d378df0e71b51375fa5a1",
-    "i18n.js": "ad767408b92444ef54080b029ec52e3653e0c5232793a11ef29538ba9834d207"
+    "translations.js": "74e5ea41e2a35c18301ec640abcea97c9eb29992a0cdba767eb7bc2c2b52b79e",
+    "i18n.js": "14d5e74cee1130cc8252c552fa22be6f0a36db8e948a523727e8222ef2e19194"
   },
   "line_endings": "Pinned source fixtures use LF; imported CSS and adapted helper modules retain CRLF bytes.",
-  "adaptation": "Rendering helpers are per-card ES module factories with direct authenticated HA requests. Native styles.css and view.html generate view-template.js; unused add-on setup styles/translations are removed. Source fixtures remain unchanged."
+  "adaptation": "Rendering helpers are per-card ES module factories with direct authenticated HA requests. Native styles.css and view.html generate view-template.js; unused add-on setup styles/translations are removed. Source fixtures remain unchanged. Language registration and locale source files generate preloaded translations and shared language choices; pinned source fixtures remain unchanged."
 }

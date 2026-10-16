@@ -11,6 +11,7 @@ import logging
 
 from homeassistant.helpers.storage import Store
 from .reminder_times import normalize_reminder_minutes
+from .languages import normalize_language
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ def normalize_items(items: object, *, reminders: bool = False) -> list[dict]:
         if reminders:
             result.update({
                 "minutes": minutes,
-                "language": str(item.get("language") or "de")[:16],
+                "language": "auto" if item.get("language")=="auto" else normalize_language(item.get("language") or "de"),
                 "sent": item.get("sent") is True,
             })
             if isinstance(item.get("sent_at"), str):

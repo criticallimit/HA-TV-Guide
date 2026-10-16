@@ -7,6 +7,7 @@ from hashlib import sha256
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .countries import COUNTRIES, COUNTRY_NAMES
+from .languages import LANGUAGES
 UI_DEFAULTS={'language':'auto','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
 MAX_DISPLAY_CHANNELS=200
 
@@ -22,7 +23,7 @@ def normalize_ui_settings(values):
     if not isinstance(values,dict):
         raise ValueError('Invalid settings')
     result={}
-    allowed={'country':set(COUNTRY_NAMES)|{''},'language':{'auto','de','en','da','nl','fr','it','nb','sv'},'default_view':{'now','1800','2015','2200'},'theme_mode':{'auto','light','dark'}}
+    allowed={'country':set(COUNTRY_NAMES)|{''},'language':set(LANGUAGES)|{'auto'},'default_view':{'now','1800','2015','2200'},'theme_mode':{'auto','light','dark'}}
     for key, choices in allowed.items():
         if key in values:
             if values[key] not in choices:

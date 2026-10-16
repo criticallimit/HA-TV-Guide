@@ -43,4 +43,5 @@ class CountryRegistrationTests(unittest.TestCase):
             self.assertEqual(module.CATALOG_FILES['zz'], 'channels_zz.json')
             self.assertEqual(module.COUNTRY_FEEDS['zz'], data['zz']['sources'][0])
             self.assertEqual(module.COUNTRY_FALLBACKS['zz'], tuple(data['zz']['sources'][1:]))
-            self.assertEqual(module.LANGUAGE_COUNTRIES['it'], 'zz')
+            first_italian_country=next(code for code,item in data.items() if item.get('language')=='it')
+            self.assertEqual(module.LANGUAGE_COUNTRIES['it'],first_italian_country)

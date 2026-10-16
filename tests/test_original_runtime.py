@@ -276,11 +276,11 @@ class GuideRuntimeTests(unittest.TestCase):
         finally:
             replacement.close()
 
-    def test_runtime_does_not_load_unused_backend_translation_catalogues(self):
+    def test_runtime_loads_no_locale_files_before_notifications_are_needed(self):
         reads = []
         original = Path.read_text
         def read(path, *args, **kwargs):
-            if 'www/locales/' in str(path):
+            if path.parent == ROOT / 'locales':
                 reads.append(str(path))
             return original(path, *args, **kwargs)
         with patch.object(Path, 'read_text', read):

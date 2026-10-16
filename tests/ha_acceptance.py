@@ -123,8 +123,23 @@ async def exercise_acceptance(hass, entry, coordinator):
                 assert len(channel['programs']) == 7
                 assert datetime.fromisoformat(channel['programs'][0]['end']) > target
                 country_count += 1
-            assert country_count == 10
-            print('PASS HA acceptance: 10 countries, 4 time views, 2 browser time zones and next-day selection over WebSocket', flush=True)
+            assert country_count == len(coordinator.backend.runtime.COUNTRIES)
+            print(f'PASS HA acceptance: {country_count} registered countries, 4 time views, 2 browser time zones and next-day selection over WebSocket', flush=True)
+
+            from custom_components.tv_guide.languages import LANGUAGES
+            for language in LANGUAGES:
+                await client.service('set_ui_settings', {'options':{'language':language}})
+                settings=await client.service('get_ui_settings')
+                assert settings['language']==language
+                assert entry.options['language']==language
+                guide=await client.service('get_guide')
+                assert guide['ui']['language']==language
+                reminder_id='registered-language-'+language
+                await client.service('save_reminder',{**valid,'id':reminder_id,'language':language},response=False)
+                saved_languages=await client.service('get_saved_programmes')
+                assert next(item for item in saved_languages['reminders'] if item['id']==reminder_id)['language']==language
+                await client.service('remove_saved_programme',{'id':reminder_id,'kind':'reminder'},response=False)
+            print(f'PASS HA acceptance: all {len(LANGUAGES)} registered languages save and render through authenticated actions',flush=True)
 
             # Restore the original acceptance fixture before saved-item and reload tests.
             await coordinator.async_guide_request('settings', 'POST', original_settings)
