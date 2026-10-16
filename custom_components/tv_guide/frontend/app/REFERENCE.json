@@ -14,8 +14,8 @@
     "styles.css": "ba95ec8b1e17c2250ea168197471b46cc9fccd697427021b09286fed09cfcdb1",
     "guide-core.js": "be90d13fe46f7c1f384106a29a9e65abadd531dc07034e6e42e37a492863b3c7",
     "channel-picker.js": "2a097d99c627653514deac7d5ebc3e6f5b30e2df42e83735b6880e58f0543ea8",
-    "translations.js": "8ffbc6262d28d4f812baa1b5a2ff3a35b261fbcde022833cab59f6c13d89abf5",
-    "i18n.js": "a22d1d999725c81b3dfa51123edf959de21577a4304c59caf4d9aa0d5b15b936"
+    "translations.js": "1e0a612d0bc23dea430d4852daf1b8fabfca7307b93614294fb4a54bd9426108",
+    "i18n.js": "ebc4e2e4d7fb0ba185d51e6b31b422884cbcebb495ec137f06529d44d19768d5"
   },
   "line_endings": "Pinned source fixtures use LF; imported CSS and adapted helper modules retain CRLF bytes.",
   "adaptation": "Rendering helpers are per-card ES module factories with direct authenticated HA requests. Native styles.css and view.html generate view-template.js; unused add-on setup styles/translations are removed. Source fixtures remain unchanged. Language registration and locale source files generate preloaded translations and shared language choices; pinned source fixtures remain unchanged."

@@ -101,10 +101,14 @@ E4, Film4, More4 and 5USA now use broadcaster artwork from the downloaded databa
 
 ## Native integration import scope
 
-This native integration imports the original presentation code, Source Sans Pro fonts (licence in `custom_components/tv_guide/frontend/app/fonts/LICENSE.md`) and metadata referencing the separately downloaded logo database for its eleven main-channel catalogues. Broadcaster image files are distributed in the independent logo database, outside the integration installation directory. It does not import the whole add-on server or whole Europe logo pack. The original rights and attribution statements above apply to these reused third-party assets. Provenance for the reference code is recorded in `custom_components/tv_guide/frontend/app/REFERENCE.json`.
+This native integration imports the original presentation code, Source Sans Pro fonts (licence in `custom_components/tv_guide/frontend/app/fonts/LICENSE.md`) and metadata referencing the separately downloaded logo database for its registered main-channel catalogues. Broadcaster image files are distributed in the independent logo database, outside the integration installation directory. It does not import the whole add-on server or whole Europe logo pack. The original rights and attribution statements above apply to these reused third-party assets. Provenance for the reference code is recorded in `custom_components/tv_guide/frontend/app/REFERENCE.json`.
 
 Italian main-channel artwork reuses the verified broadcaster images already indexed by the logo library. Source URLs and SHA-256 hashes are recorded in `custom_components/tv_guide/catalogs/italy_logo_sources.json`. Dark variants use transparency, preserve coloured brand panels and render designated wordmarks in white. These marks remain the property of their respective owners.
 
 ## Spanish channel artwork
 
 Spanish theme variants use verified original files from the pinned `tv-logo/tv-logos` collection and the official 3Cat and Squirrel broadcaster websites. URLs, original SHA-256 checksums and theme treatments are recorded in `custom_components/tv_guide/catalogs/spain_logo_sources.json`. Artwork is delivered through the separate logo database, not bundled in the integration. No rights in the broadcasters’ names or artwork are granted by this project.
+
+## Polish channel artwork
+
+Polish theme variants use original artwork from the pinned `tv-logo/tv-logos` collection and images supplied by the public XMLTV image service. Source URLs, original SHA-256 checksums and theme treatments are recorded in `custom_components/tv_guide/catalogs/poland_logo_sources.json`. Images are delivered through the independent logo database, outside the integration package. Broadcaster names and artwork remain the property of their respective owners.

@@ -1,6 +1,6 @@
 # TV Guide
 
-TV schedules, personal channel lists, saved programmes and reminders directly in Home Assistant. Includes twelve TV countries, a multilingual interface, light and dark themes, automatic sensors and a programme calendar.
+TV schedules, personal channel lists, saved programmes and reminders directly in Home Assistant. Includes thirteen TV countries, a multilingual interface, light and dark themes, automatic sensors and a programme calendar.
 
 ## Install with HACS
 
@@ -14,11 +14,13 @@ No feed URL, YAML, dashboard resource or manual card setup is required. An optio
 
 ## Countries
 
+<img src="https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/main/docs/flags/pl.svg" width="20" height="14" alt="Poland flag"> **Poland is included**, with 50 main channels, additional regional and subscription channels and a Polish interface.
+
 <img src="https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/main/docs/flags/es.svg" width="20" height="14" alt="Spain flag"> **Spain is now included**, with 48 national and regional main channels, additional available feed channels and a Spanish interface.
 
 <img src="https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/main/docs/flags/it.svg" width="20" height="14" alt="Italy flag"> **Italy is now included**, with 45 main channels and additional available feed channels.
 
-Austria, Belgium, Denmark, France, Germany, Italy, the Netherlands, Norway, Spain, Sweden, Switzerland and the United Kingdom. Programme availability depends on the channel and public data source.
+Austria, Belgium, Denmark, France, Germany, Italy, the Netherlands, Norway, Poland, Spain, Sweden, Switzerland and the United Kingdom. Programme availability depends on the channel and public data source.
 
 ## Updates and existing installations
 

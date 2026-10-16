@@ -1,0 +1,806 @@
+{
+  "country": "pl",
+  "source": "Pinned tv-logo/tv-logos collection and original artwork supplied by the XMLTV image service. Transparent theme wrappers preserve original artwork and provide readable wordmarks without background plates.",
+  "channels": {
+    "pl_tvp1": {
+      "light": {
+        "file": "tvp1-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp1-pl.png",
+        "sha256": "68df01661dfdff27ba7458c2ea4abc223d2f188b75bb4d89e51ad284f60b2eef",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp1-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp1-pl.png",
+        "sha256": "68df01661dfdff27ba7458c2ea4abc223d2f188b75bb4d89e51ad284f60b2eef",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvp2": {
+      "light": {
+        "file": "tvp2-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp2-pl.png",
+        "sha256": "cb971d1220be28de53c020e426ab2a984881c332745d034ab5566c576d8eda46",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp2-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp2-pl.png",
+        "sha256": "cb971d1220be28de53c020e426ab2a984881c332745d034ab5566c576d8eda46",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_polsat": {
+      "light": {
+        "file": "polsat-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-pl.png",
+        "sha256": "4eee4f1d7196d223c725088b59d8e0870a352b587c4f35fce0ea9a85b276281e",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "polsat-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-pl.png",
+        "sha256": "4eee4f1d7196d223c725088b59d8e0870a352b587c4f35fce0ea9a85b276281e",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvn": {
+      "light": {
+        "file": "tvn-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-pl.png",
+        "sha256": "1ca532c9db0f337246ed924a09a5fac9c2faf10b215605b0d5b0ea549277948d",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvn-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-pl.png",
+        "sha256": "1ca532c9db0f337246ed924a09a5fac9c2faf10b215605b0d5b0ea549277948d",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tv4": {
+      "light": {
+        "file": "tv4-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv4-pl.png",
+        "sha256": "81753e159699039c98751be59175b97fcc2df65c7948a0551cdf32cc8a0378ad",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tv4-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv4-pl.png",
+        "sha256": "81753e159699039c98751be59175b97fcc2df65c7948a0551cdf32cc8a0378ad",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvn7": {
+      "light": {
+        "file": "tvn7-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn7-pl.png",
+        "sha256": "929fb2c7618e2116374cf9438a08448f00f63bd774f8ef335792cd1f4d6c28fe",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvn7-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn7-pl.png",
+        "sha256": "929fb2c7618e2116374cf9438a08448f00f63bd774f8ef335792cd1f4d6c28fe",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpuls": {
+      "light": {
+        "file": "tv-puls-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv-puls-pl.png",
+        "sha256": "68304632cddacdaf30dfb528d180e3a5362c6c000f7531a3546cd2f438b9c87b",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tv-puls-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv-puls-pl.png",
+        "sha256": "68304632cddacdaf30dfb528d180e3a5362c6c000f7531a3546cd2f438b9c87b",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tv6": {
+      "light": {
+        "file": "tv6-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv6-pl.png",
+        "sha256": "7602c42b38515db113aaeb90158ea2453161de45dd0ea77b0b039445137df6ec",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tv6-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv6-pl.png",
+        "sha256": "7602c42b38515db113aaeb90158ea2453161de45dd0ea77b0b039445137df6ec",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_puls2": {
+      "light": {
+        "file": "puls2-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/puls2-pl.png",
+        "sha256": "66d260236f2d69e987493961206dab8e9e5d383cce291aef118e0ee10bf8bd19",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "puls2-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/puls2-pl.png",
+        "sha256": "66d260236f2d69e987493961206dab8e9e5d383cce291aef118e0ee10bf8bd19",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_ttv": {
+      "light": {
+        "file": "ttv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/ttv-pl.png",
+        "sha256": "3fe8fd25c8bd1a703d3fd8211adcd10c2f8a7fc41cb78a5b142e0c10031828a5",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "ttv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/ttv-pl.png",
+        "sha256": "3fe8fd25c8bd1a703d3fd8211adcd10c2f8a7fc41cb78a5b142e0c10031828a5",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvp3": {
+      "light": {
+        "file": "tvp3-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp3-pl.png",
+        "sha256": "365437efc5918ca61fd9c811bf41b79fbb527454e1084fea6c09063bf86108c7",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp3-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp3-pl.png",
+        "sha256": "365437efc5918ca61fd9c811bf41b79fbb527454e1084fea6c09063bf86108c7",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpinfo": {
+      "light": {
+        "file": "tvp-info-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-info-pl.png",
+        "sha256": "5715ee86ed4ea82e94c342352888210f14ba5a6ad23bf6fe8cc68343e2f4212c",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tvp-info-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-info-pl.png",
+        "sha256": "5715ee86ed4ea82e94c342352888210f14ba5a6ad23bf6fe8cc68343e2f4212c",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvn24": {
+      "light": {
+        "file": "tvn24-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn24-pl.png",
+        "sha256": "c7633f6e4fd2b6701622a39e7fc1f3ce1d5aeedbe445d2263995165359b10e07",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvn24-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn24-pl.png",
+        "sha256": "c7633f6e4fd2b6701622a39e7fc1f3ce1d5aeedbe445d2263995165359b10e07",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_polsatnews": {
+      "light": {
+        "file": "polsat-news-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-news-pl.png",
+        "sha256": "fc1667a3ce7bc543fc1c7b631d7a570e5e0617f065b316a760660220d0a069a5",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "polsat-news-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-news-pl.png",
+        "sha256": "fc1667a3ce7bc543fc1c7b631d7a570e5e0617f065b316a760660220d0a069a5",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvn24bis": {
+      "light": {
+        "file": "tvn24-bis-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn24-bis-pl.png",
+        "sha256": "a71c3220d2c2e6f4cae9bfe268c27698ec949e79d76255a3666b4883d53c020f",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tvn24-bis-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn24-bis-pl.png",
+        "sha256": "a71c3220d2c2e6f4cae9bfe268c27698ec949e79d76255a3666b4883d53c020f",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_republika": {
+      "light": {
+        "file": "tv-republika-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv-republika-pl.png",
+        "sha256": "7ffe62a26aed5de37691bc2fd6b88defffb05e021a74e4564c19fd8a1f0646b6",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tv-republika-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tv-republika-pl.png",
+        "sha256": "7ffe62a26aed5de37691bc2fd6b88defffb05e021a74e4564c19fd8a1f0646b6",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_superpolsat": {
+      "light": {
+        "file": "super-polsat-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/super-polsat-pl.png",
+        "sha256": "7338753318d43891fca92b8c1f34c0b4b289d17c8f42653e735764c7866c6d4d",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "super-polsat-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/super-polsat-pl.png",
+        "sha256": "7338753318d43891fca92b8c1f34c0b4b289d17c8f42653e735764c7866c6d4d",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_stopklatka": {
+      "light": {
+        "file": "stopklatka-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/stopklatka-pl.png",
+        "sha256": "0fb2bfdfb40d7ea356cede230d040679b68c9adf2c82b2ef302de6a7ee9235e6",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "stopklatka-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/stopklatka-pl.png",
+        "sha256": "0fb2bfdfb40d7ea356cede230d040679b68c9adf2c82b2ef302de6a7ee9235e6",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "pl_fokustv": {
+      "light": {
+        "file": "fokus-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/fokus-tv-pl.png",
+        "sha256": "f55235d61da8391c8b589d148acdb52722265c79ff6f331efc6b5f49e4f0749a",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "fokus-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/fokus-tv-pl.png",
+        "sha256": "f55235d61da8391c8b589d148acdb52722265c79ff6f331efc6b5f49e4f0749a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_metro": {
+      "light": {
+        "file": "metro-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/metro-pl.png",
+        "sha256": "85ff042098b78640625028ea39d9f9f06d4a9df4ffa1bc51c3395316e9f8754a",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "metro-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/metro-pl.png",
+        "sha256": "85ff042098b78640625028ea39d9f9f06d4a9df4ffa1bc51c3395316e9f8754a",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_zoomtv": {
+      "light": {
+        "file": "zoom-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/zoom-tv-pl.png",
+        "sha256": "9f4af57511935376e239e5ce74753d96b8a04736bd9a9b9986cdc0519f30ec5b",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "zoom-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/zoom-tv-pl.png",
+        "sha256": "9f4af57511935376e239e5ce74753d96b8a04736bd9a9b9986cdc0519f30ec5b",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_nowatv": {
+      "light": {
+        "file": "nowa-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/nowa-tv-pl.png",
+        "sha256": "0c504386fdba0abe0a10e7392990ba76ce0e0979ad79d542dcecf38d955ac9b7",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "nowa-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/nowa-tv-pl.png",
+        "sha256": "0c504386fdba0abe0a10e7392990ba76ce0e0979ad79d542dcecf38d955ac9b7",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_wp": {
+      "light": {
+        "file": "wp-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/wp-pl.png",
+        "sha256": "34f1f22728d99d393be5a5d74520bd3871b3b345a0e436420e466adbb78cbcee",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "wp-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/wp-pl.png",
+        "sha256": "34f1f22728d99d393be5a5d74520bd3871b3b345a0e436420e466adbb78cbcee",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_antena": {
+      "light": {
+        "file": "antena-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/antena-pl.png",
+        "sha256": "c22432a05670899a07b3b358bbe32f9068062b378061577fce896e3f2f5dd86b",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "antena-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/antena-pl.png",
+        "sha256": "c22432a05670899a07b3b358bbe32f9068062b378061577fce896e3f2f5dd86b",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpkultura": {
+      "light": {
+        "file": "tvp-kultura-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-kultura-pl.png",
+        "sha256": "b771bb1cb2711bf6d4b205d32cdfe13c4775e240318adb0908caa9ec39091f71",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tvp-kultura-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-kultura-pl.png",
+        "sha256": "b771bb1cb2711bf6d4b205d32cdfe13c4775e240318adb0908caa9ec39091f71",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvphistoria": {
+      "light": {
+        "file": "tvp-historia-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-historia-pl.png",
+        "sha256": "56346cee16a11bfd4d5dc308ddd34c7337e27ae5d8e9343e10a81e64c36b6a70",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-historia-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-historia-pl.png",
+        "sha256": "56346cee16a11bfd4d5dc308ddd34c7337e27ae5d8e9343e10a81e64c36b6a70",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpdokument": {
+      "light": {
+        "file": "tvp-dokument-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-dokument-pl.png",
+        "sha256": "4a856802f7d40c680573f7734894d0b5c657c2a5ab6eb01bb3d3495fbb7dac28",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-dokument-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-dokument-pl.png",
+        "sha256": "4a856802f7d40c680573f7734894d0b5c657c2a5ab6eb01bb3d3495fbb7dac28",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpkobieta": {
+      "light": {
+        "file": "tvp-kobieta-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-kobieta-pl.png",
+        "sha256": "12ed7e956b1fd1de8d40a2a28adad6bb98d5e1f4ef5923d5bf972b20f6592a85",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-kobieta-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-kobieta-pl.png",
+        "sha256": "12ed7e956b1fd1de8d40a2a28adad6bb98d5e1f4ef5923d5bf972b20f6592a85",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvprozrywka": {
+      "light": {
+        "file": "tvp-rozrywka-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-rozrywka-pl.png",
+        "sha256": "570d35b6521bb65c039a0669380264cb4573fe5da2040383c32da4f94d5776a8",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-rozrywka-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-rozrywka-pl.png",
+        "sha256": "570d35b6521bb65c039a0669380264cb4573fe5da2040383c32da4f94d5776a8",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpseriale": {
+      "light": {
+        "file": "tvp-seriale-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-seriale-pl.png",
+        "sha256": "ec411226320d5fdafa312b2dc13b96fa91658b00d30ebcff7accbf0fc0a602ed",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-seriale-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-seriale-pl.png",
+        "sha256": "ec411226320d5fdafa312b2dc13b96fa91658b00d30ebcff7accbf0fc0a602ed",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "pl_tvppolonia": {
+      "light": {
+        "file": "tvp-polonia-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-polonia-pl.png",
+        "sha256": "5c5de28f837c899e9ebddcb2a3e95ea759babc3141b88d1b8f4b158b08d0dd09",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-polonia-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-polonia-pl.png",
+        "sha256": "5c5de28f837c899e9ebddcb2a3e95ea759babc3141b88d1b8f4b158b08d0dd09",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpabc": {
+      "light": {
+        "file": "tvp-abc-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-abc-pl.png",
+        "sha256": "d026caa3455ab4e435e6241d1ef534245d26f5eb315c7a57e756a070660c129d",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvp-abc-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-abc-pl.png",
+        "sha256": "d026caa3455ab4e435e6241d1ef534245d26f5eb315c7a57e756a070660c129d",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvtrwam": {
+      "light": {
+        "file": "trwam-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/trwam-pl.png",
+        "sha256": "ce6e0de2b69ed94b00cbeaed8bbb2700d28bb581543a1f8fad538e25ca1ac57c",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "trwam-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/trwam-pl.png",
+        "sha256": "ce6e0de2b69ed94b00cbeaed8bbb2700d28bb581543a1f8fad538e25ca1ac57c",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "pl_tvnstyle": {
+      "light": {
+        "file": "tvn-style-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-style-pl.png",
+        "sha256": "48c532370c3f0eeb90cd214c99ac3c9150c7690ca812f5e534e2fa01915f1ca5",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvn-style-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-style-pl.png",
+        "sha256": "48c532370c3f0eeb90cd214c99ac3c9150c7690ca812f5e534e2fa01915f1ca5",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvnturbo": {
+      "light": {
+        "file": "tvn-turbo-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-turbo-pl.png",
+        "sha256": "f5e1757448844e85aa1e434bd129efd19133f214e86a29677ccbf6a1853e1336",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tvn-turbo-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-turbo-pl.png",
+        "sha256": "f5e1757448844e85aa1e434bd129efd19133f214e86a29677ccbf6a1853e1336",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvnfabula": {
+      "light": {
+        "file": "tvn-fabula-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-fabula-pl.png",
+        "sha256": "53cc374dfc548a104b450a93fb9ee98767c647e4ee8682adf90213462623ed05",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "tvn-fabula-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvn-fabula-pl.png",
+        "sha256": "53cc374dfc548a104b450a93fb9ee98767c647e4ee8682adf90213462623ed05",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_polsat2": {
+      "light": {
+        "file": "polsat-2-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-2-pl.png",
+        "sha256": "56ac19d1a262f453a127fea6ca2de87d7ae3092673e0133ad2cdd1c9c4e481f4",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "polsat-2-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-2-pl.png",
+        "sha256": "56ac19d1a262f453a127fea6ca2de87d7ae3092673e0133ad2cdd1c9c4e481f4",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_polsatfilm": {
+      "light": {
+        "file": "polsat-film-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-film-pl.png",
+        "sha256": "449a1256467c64be4d1ad2c19d12538759cfbe979d3d9ff899ebc989471daa88",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "polsat-film-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-film-pl.png",
+        "sha256": "449a1256467c64be4d1ad2c19d12538759cfbe979d3d9ff899ebc989471daa88",
+        "mime": "image/png",
+        "variant": "white"
+      }
+    },
+    "pl_polsatcafe": {
+      "light": {
+        "file": "polsat-cafe-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-cafe-pl.png",
+        "sha256": "a13fb19e93a8c64c2dcbea799277d0762ead549ab5679f7737da26738224648d",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "polsat-cafe-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-cafe-pl.png",
+        "sha256": "a13fb19e93a8c64c2dcbea799277d0762ead549ab5679f7737da26738224648d",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_polsatplay": {
+      "light": {
+        "file": "polsat-play-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-play-pl.png",
+        "sha256": "8c035c56cae276c5974e5001cfa2c5fef98a11b40499348faeff5123d5ee6b0b",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "polsat-play-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-play-pl.png",
+        "sha256": "8c035c56cae276c5974e5001cfa2c5fef98a11b40499348faeff5123d5ee6b0b",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_kinopolska": {
+      "light": {
+        "file": "kino-polska-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/kino-polska-pl.png",
+        "sha256": "f5c7a4f8ed7937325933461efb3847356b919bbad421bbba8b4af928216b737b",
+        "mime": "image/png",
+        "variant": "black"
+      },
+      "dark": {
+        "file": "kino-polska-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/kino-polska-pl.png",
+        "sha256": "f5c7a4f8ed7937325933461efb3847356b919bbad421bbba8b4af928216b737b",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_discovery": {
+      "light": {
+        "file": "discovery-channel-pl.png",
+        "url": "https://iptv-epg.org/images/odCp5sfIStw7Op_RDkDQhC6SckWi-jE1SSTRDPQw4uOiWLPqnIG5osvM1deZfsUSaSBtF63arHC9Ye1Bd8VltHOqjFx6I_MynmC4lXL0jDZnDder8njcQr8",
+        "sha256": "9ccba3a88aa35d9ceac41b3c09d5c07b762eb77050fd4b223ce4ef0e05f5f46b",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "discovery-channel-pl.png",
+        "url": "https://iptv-epg.org/images/odCp5sfIStw7Op_RDkDQhC6SckWi-jE1SSTRDPQw4uOiWLPqnIG5osvM1deZfsUSaSBtF63arHC9Ye1Bd8VltHOqjFx6I_MynmC4lXL0jDZnDder8njcQr8",
+        "sha256": "9ccba3a88aa35d9ceac41b3c09d5c07b762eb77050fd4b223ce4ef0e05f5f46b",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_nationalgeographic": {
+      "light": {
+        "file": "national-geographic-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/national-geographic-pl.png",
+        "sha256": "ef8285984b824aa7996fdc89ba51e67c43bab498e0ef046dd407300497ec722d",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "national-geographic-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/national-geographic-pl.png",
+        "sha256": "ef8285984b824aa7996fdc89ba51e67c43bab498e0ef046dd407300497ec722d",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_tvpsport": {
+      "light": {
+        "file": "tvp-sport-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-sport-pl.png",
+        "sha256": "a8af3a89c80edf9c3ba0e0ac6a5a0c92b3cf574666037510bf17c16c304d172e",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "tvp-sport-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/tvp-sport-pl.png",
+        "sha256": "a8af3a89c80edf9c3ba0e0ac6a5a0c92b3cf574666037510bf17c16c304d172e",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_polsatsport1": {
+      "light": {
+        "file": "polsat-sport-1-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-sport-1-pl.png",
+        "sha256": "b3c7a5cedc32b076a198416de66b55df6314e6a74c51a9788e6cac71994da35c",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "polsat-sport-1-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/polsat-sport-1-pl.png",
+        "sha256": "b3c7a5cedc32b076a198416de66b55df6314e6a74c51a9788e6cac71994da35c",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_eurosport1": {
+      "light": {
+        "file": "eurosport-1-pl.png",
+        "url": "https://iptv-epg.org/images/55_Ig1wLAQLzEInVw06c70kMdZjCY97mBreoFXitAFPwM5DMjo_DPQAtwMrPcCZuP7LozskjY6Ws7Qz6AM8DRSTJ_aiVVSttd3CN3NsuDLDbtqE",
+        "sha256": "4dc766a927198673e6241cf16b6bdd767ca2052096cc3420bbd6881b7893d037",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "eurosport-1-pl.png",
+        "url": "https://iptv-epg.org/images/55_Ig1wLAQLzEInVw06c70kMdZjCY97mBreoFXitAFPwM5DMjo_DPQAtwMrPcCZuP7LozskjY6Ws7Qz6AM8DRSTJ_aiVVSttd3CN3NsuDLDbtqE",
+        "sha256": "4dc766a927198673e6241cf16b6bdd767ca2052096cc3420bbd6881b7893d037",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_canalpremium": {
+      "light": {
+        "file": "canal-plus-premium-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/canal-plus-premium-pl.png",
+        "sha256": "e92853527041554d8bc2c9d0b4ebde615bc89356de21f5ee0861f270aeb794af",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "canal-plus-premium-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/canal-plus-premium-pl.png",
+        "sha256": "e92853527041554d8bc2c9d0b4ebde615bc89356de21f5ee0861f270aeb794af",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_hbo": {
+      "light": {
+        "file": "hbo-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/hbo-pl.png",
+        "sha256": "ebe6f8bf58cdefb4008bc9674b76e9e89267c1a9f79354c710939de9d5bcec15",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "hbo-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/hbo-pl.png",
+        "sha256": "ebe6f8bf58cdefb4008bc9674b76e9e89267c1a9f79354c710939de9d5bcec15",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_nickelodeon": {
+      "light": {
+        "file": "nickelodeon-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/nickelodeon-pl.png",
+        "sha256": "ced3e4bf88b234be3566be171a5af4b80e1717aedc8e8b55b77cc2ce7207ec6f",
+        "mime": "image/png",
+        "variant": "dark-wordmark"
+      },
+      "dark": {
+        "file": "nickelodeon-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/nickelodeon-pl.png",
+        "sha256": "ced3e4bf88b234be3566be171a5af4b80e1717aedc8e8b55b77cc2ce7207ec6f",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    },
+    "pl_eskatv": {
+      "light": {
+        "file": "eska-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/eska-tv-pl.png",
+        "sha256": "6d60e0ccf2dc90601c62ef77b78951e9e7f61e590e403c02bfcf185e93b5c440",
+        "mime": "image/png",
+        "variant": "original"
+      },
+      "dark": {
+        "file": "eska-tv-pl.png",
+        "url": "https://raw.githubusercontent.com/tv-logo/tv-logos/8355a5d15517ef378bd61b865a459f90249ee2b5/countries/poland/eska-tv-pl.png",
+        "sha256": "6d60e0ccf2dc90601c62ef77b78951e9e7f61e590e403c02bfcf185e93b5c440",
+        "mime": "image/png",
+        "variant": "original"
+      }
+    }
+  }
+}

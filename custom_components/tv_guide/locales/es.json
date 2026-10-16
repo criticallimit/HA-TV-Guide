@@ -189,7 +189,9 @@
     "Download fehlgeschlagen. Die Übersicht bleibt nutzbar.": "Error de descarga. Puedes seguir utilizando la guía.",
     "Vorbereitung abgeschlossen": "Preparación completada",
     "Quellen geprüft": "fuentes comprobadas",
-    "Ohne Titel": "Sin título"
+    "Ohne Titel": "Sin título",
+    "Polen": "Polonia",
+    "Polski": "Polaco"
   },
   "home_assistant": {
     "config": {

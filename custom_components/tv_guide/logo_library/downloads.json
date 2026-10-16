@@ -1,5 +1,5 @@
 {
-  "base_url": "https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/263596bf071111d420b35a004c8b51dc8bcefdb8/custom_components/tv_guide/logo_library/",
+  "base_url": "https://raw.githubusercontent.com/criticallimit/HA-TV-Guide/dc92e68da796de8ab367c1810df8667498c3cd43/custom_components/tv_guide/logo_library/",
   "archives": {
     "logos-000.zip": {
       "size": 4233432,
@@ -160,6 +160,10 @@
     "logos-039.zip": {
       "size": 668021,
       "sha256": "14f162969b808e72ae55eaed6789ab265165dc37f865ae06b2d52f4873f65bdf"
+    },
+    "logos-040.zip": {
+      "size": 1043280,
+      "sha256": "25029059b710950f2f0bc849f25f64dd1301f2a8e6c8dbf3f5ef6566a6f12c31"
     }
   }
 }
