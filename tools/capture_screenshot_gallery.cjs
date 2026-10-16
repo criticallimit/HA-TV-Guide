@@ -1,5 +1,6 @@
 /* Capture the real native card with example schedules and each registered UI language.
-   Run after tests/prepare_logo_fixtures.py; PNG output goes to work/gallery/captures. */
+   Run after tests/prepare_logo_fixtures.py; PNG output goes to work/gallery/captures.
+   Encode dashboard-card.png as WebP (quality 88) for docs/screenshots/<language>/. */
 const fs=require('fs'),path=require('path'),http=require('http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const serveLogo=require('../tests/logo-fixtures.cjs');
@@ -52,8 +53,21 @@ const server=http.createServer((req,res)=>{
    await page.locator('[data-mode="other"]').click();await page.locator('#customTimeDialog').waitFor();
    await page.screenshot({path:path.join(output,'other-times.png')});
    await page.locator('#cancelCustomTime').click();
+   await page.evaluate(()=>{card.style.cssText='max-width:1100px;margin:24px auto';});
+   await page.screenshot({path:path.join(output,'dashboard-card-dark.png')});
    await page.evaluate(()=>{document.body.style.background='#eef1f4';card.style.cssText='max-width:1100px;margin:24px auto';card.hass={...hass,themes:{darkMode:false,themes:{}}};});
-   await page.screenshot({path:path.join(output,'dashboard-card.png')});
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   await page.screenshot({path:path.join(output,'dashboard-card-light.png')});
+   // Capture the same real card in both themes through a 45° torn-paper window.
+   const light=fs.readFileSync(path.join(output,'dashboard-card-light.png')).toString('base64');
+   const dark=fs.readFileSync(path.join(output,'dashboard-card-dark.png')).toString('base64');
+   const composition=await browser.newPage({viewport:{width:1400,height:1050}});
+   const seam=[];for(let y=0;y<=1050;y+=5)seam.push([175+y+([0,2,-2,1,-1][(y/5)%5]),y]);
+   const polygon=seam.map(([x,y])=>x+'px '+y+'px').join(',');
+   await composition.setContent(`<style>body{margin:0}img{position:absolute;inset:0;width:1400px;height:1050px}.dark{clip-path:polygon(0 0,${polygon},0 1050px)}svg{position:absolute;inset:0}</style><img src="data:image/png;base64,${light}"><img class="dark" src="data:image/png;base64,${dark}"><svg width="1400" height="1050"><polyline points="${seam.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#f7f7f7" stroke-width="4"/></svg>`);
+   await composition.evaluate(()=>Promise.all([...document.images].map(image=>image.decode())));
+   await composition.screenshot({path:path.join(output,'dashboard-card.png')});
+   await composition.close();
    assert.deepEqual(errors,[]);await page.close();console.log('PASS captured native UI in',language);
   }
  }finally{await browser.close();server.close();}

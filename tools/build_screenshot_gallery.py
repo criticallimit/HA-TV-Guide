@@ -26,7 +26,7 @@ def build():
         t=locales[code];prefix='' if entry else '../';home=prefix+('index.html' if code=='de' else code+'.html')
         gallery_prefix='screenshots/' if entry else ''
         nav='\n'.join(f'<a href="{gallery_prefix}{lang}.html" lang="{lang}"'+(' aria-current="page"' if lang==code else '')+f'><span class="flagwrap"><img src="{prefix}flags/{flags.get(lang,lang)}.svg" alt=""></span><span>{escape(names[lang])}</span></a>' for lang in order)
-        shots='\n'.join(f'<article class="shot"><a class="shot-link" href="{gallery_prefix}{code}/{image}.webp" target="_blank" rel="noopener"><img src="{gallery_prefix}{code}/{image}.webp" alt="{escape(t[key],quote=True)}" width="1400" height="1050" loading="'+('eager' if image=='program-overview' else 'lazy')+f'"></a><h2>{escape(t[key])}</h2><p>{escape(t[key+"_text"])}</p></article>' for image,key in IMAGES)
+        shots='\n'.join(f'<article class="shot"><a class="shot-link" href="{gallery_prefix}{code}/{image}.webp" target="_blank" rel="noopener"><img src="{gallery_prefix}{code}/{image}.webp" alt="{escape(t[key+'_text'] if key=='card' else t[key],quote=True)}" width="1400" height="1050" loading="'+('eager' if image=='program-overview' else 'lazy')+f'"></a><h2>{escape(t[key])}</h2><p>{escape(t[key+"_text"])}</p></article>' for image,key in IMAGES)
         alternatives='\n'.join(f'<link rel="alternate" hreflang="{lang}" href="{URL}screenshots/{lang}.html">' for lang in order)
         canonical=URL+('screenshots.html' if entry else 'screenshots/'+code+'.html')
         redirect='<script src="site-language.js" data-gallery-entry data-languages="'+' '.join(order)+'"></script>' if entry else '<script src="../site-language.js" defer></script>'
