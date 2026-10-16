@@ -76,7 +76,7 @@ class RegistrationTests(unittest.TestCase):
             {'id':'zz_station','order':1,'name':'New station','xmltv_ids':['Station.zz']}]}))
         self.assertEqual(validator.validate(self.root),[])
         for path,data in builder.build(self.root).items():path.write_bytes(data)
-        self.assertIn('"es"', (self.root/'frontend/app/language-registry.js').read_text())
+        self.assertIn('export const languageRegistry', (self.root/'frontend/app/translations.js').read_text())
         self.assertIn('Ajustes',(self.root/'frontend/app/translations.js').read_text())
         self.assertTrue((self.root/'translations/es.json').exists())
         name='_tvguide_extended_locale_test';pkg=types.ModuleType(name);pkg.__path__=[str(self.root)]

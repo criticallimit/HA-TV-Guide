@@ -1,5 +1,4 @@
-import {translations} from './translations.js?v=native-20';
-import {languageRegistry, normalizeLanguage} from './language-registry.js?v=native-1';
+import {translations, languageRegistry, normalizeLanguage} from './translations.js?v=native-20';
 export function createI18n(root, getHass) {
   const languageSelect = root.querySelector?.('#settingLanguage');
   if (languageSelect) {

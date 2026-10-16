@@ -22,8 +22,7 @@ const server=http.createServer((req,res)=>{
     page.on('pageerror',e=>errors.push(e.message));page.on('crash',()=>errors.push('Page crashed'));
     await page.goto(base);await page.clock.setFixedTime(new Date('2026-10-14T18:00:00Z'));
     if(scenario==='new-language') {
-      await page.route('**/language-registry.js?*',route=>route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'app/language-registry.js'),'utf8').replace('export const languageRegistry = {','export const languageRegistry = {"es":{"name":"Español"},')}));
-      await page.route('**/translations.js?*',route=>route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'app/translations.js'),'utf8').replace('export const translations = {','export const translations = {"es":{"Einstellungen":"Ajustes"},')}));
+      await page.route('**/translations.js?*',route=>route.fulfill({contentType:'application/javascript',body:fs.readFileSync(path.join(root,'app/translations.js'),'utf8').replace('export const translations = {','export const translations = {"es":{"Einstellungen":"Ajustes"},').replace('export const languageRegistry = {','export const languageRegistry = {"es":{"name":"Español"},')}));
     }
     await page.addScriptTag({url:base+'/tv_guide/frontend/tv-guide-card.js',type:'module'});
     await page.evaluate(({scenario,countryOptions})=>{
@@ -349,7 +348,7 @@ const server=http.createServer((req,res)=>{
         assert.equal(await page.evaluate(()=>settings.language),code);
       }
       const values=await page.evaluate(async()=>{
-        const {normalizeLanguage}=await import('/tv_guide/frontend/app/language-registry.js?v=native-1');
+        const {normalizeLanguage}=await import('/tv_guide/frontend/app/translations.js?v=native-20');
         return ['FR_ca','no_NO','nb-no','EN-us','unknown'].map(value=>normalizeLanguage(value));
       });
       assert.deepEqual(values,['fr','nb','nb','en','en']);

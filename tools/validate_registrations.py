@@ -63,7 +63,7 @@ def validate(root=ROOT):
     view=root/'frontend/app/view.html'
     if view.exists():MarkupMessages().feed(view.read_text(encoding='utf-8'))
     for path in (root/'frontend/app').glob('*.js'):
-        if path.name in {'translations.js','view-template.js','language-registry.js'}:continue
+        if path.name in {'translations.js','view-template.js'}:continue
         for token in re.findall(r"\bt\(\s*(\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*')",path.read_text(encoding='utf-8')):
             key=ast.literal_eval(token)
             if key not in english:fail(path.name,'missing English UI text: '+key)

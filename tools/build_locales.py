@@ -22,9 +22,8 @@ export function normalizeLanguage(value, fallback = 'en') {
   return fallback;
 }
 '''
-    translations=header+'export const translations = '+json.dumps({code:item['messages'] for code,item in locales.items()},ensure_ascii=False,indent=2)+';\n'
-    outputs={root/'frontend/app/language-registry.js':registry_js.encode(),
-             root/'frontend/app/translations.js':translations.replace('\n','\r\n').encode()}
+    translations=registry_js+'export const translations = '+json.dumps({code:item['messages'] for code,item in locales.items()},ensure_ascii=False,indent=2)+';\n'
+    outputs={root/'frontend/app/translations.js':translations.replace('\n','\r\n').encode()}
     outputs[root/'strings.json']=(json.dumps(locales['en']['home_assistant'],ensure_ascii=False,indent=2)+'\n').encode()
     outputs.update({root/'translations'/f'{code}.json':(json.dumps(item['home_assistant'],ensure_ascii=False,indent=2)+'\n').encode() for code,item in locales.items()})
     provenance_path=root/'frontend/app/REFERENCE.json'

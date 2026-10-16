@@ -125,7 +125,7 @@ Immutable logo matching metadata is read directly from the packaged archive; it 
 
 `languages.json` is the shared registry for card settings, Home Assistant defaults, settings validation and reminder actions. Add a canonical lowercase language code with its native `name` and optional lowercase `aliases`. Regional profiles resolve from the most specific registered code to the base language, then English; for example `fr_CA` uses `fr`, and the registered `no` alias uses `nb`.
 
-Copy `locales/en.json` to `locales/<code>.json` and translate the values in `messages` and `home_assistant`. Preserve the message keys and `{placeholders}`. This single source supplies the card, reminder notifications, Home Assistant entity names and setup texts. Programme titles remain in the source language. Do not edit generated `frontend/app/translations.js`, `frontend/app/language-registry.js`, `strings.json` or `translations/*.json` directly.
+Copy `locales/en.json` to `locales/<code>.json` and translate the values in `messages` and `home_assistant`. Preserve the message keys and `{placeholders}`. This single source supplies the card, reminder notifications, Home Assistant entity names and setup texts. Programme titles remain in the source language. Do not edit generated `frontend/app/translations.js`, `strings.json` or `translations/*.json` directly.
 
 Run:
 
