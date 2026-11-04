@@ -47,6 +47,12 @@ event.async_track_point_in_utc_time = schedule
 sys.modules.setdefault("homeassistant", homeassistant)
 sys.modules.setdefault("homeassistant.helpers", helpers)
 sys.modules.setdefault("homeassistant.helpers.event", event)
+util = sys.modules.setdefault("homeassistant.util", types.ModuleType("homeassistant.util"))
+dt_util = sys.modules.setdefault("homeassistant.util.dt", types.ModuleType("homeassistant.util.dt"))
+async def async_get_time_zone(name):
+    return ZoneInfo(name)
+dt_util.async_get_time_zone = async_get_time_zone
+util.dt = dt_util
 
 for name in ("reminder_times", "reminder_scheduler"):
     spec = importlib.util.spec_from_file_location(f"{PKG}.{name}", ROOT / f"{name}.py")
