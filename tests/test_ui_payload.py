@@ -34,6 +34,26 @@ class UIPayloadTests(unittest.TestCase):
         self.assertEqual(result['channels'][1]['programs'],[])
         self.assertTrue(first['logo_normalized_light'].startswith('/tv_guide/logo/logos/channels/de/ard-light.svg?v='))
 
+    def test_escaped_epg_line_breaks_only_affect_descriptions(self):
+        from _tvguide_ui_payload_tests.programme_repository import normalize_description
+        examples = [
+            ("First\\n\\nSecond", "First\n\nSecond"),
+            ("First/n/nSecond", "First\n\nSecond"),
+            ("First\\r\\nSecond", "First\nSecond"),
+            ("First\r\nSecond", "First\nSecond"),
+            ("Ordinary text / next", "Ordinary text / next"),
+        ]
+        for source, expected in examples:
+            with self.subTest(source=source):
+                self.assertEqual(normalize_description(source), expected)
+                self.records[0]['description'] = source
+                view = ui.build_guide(self.records, self.catalogue, self.feed, {'country': 'de'}, self.at)
+                row = view['channels'][0]['programs'][0]
+                self.assertEqual(row['desc'], expected)
+                self.assertEqual(row['title'], '0')
+                self.assertEqual(row['category'], 'News')
+                self.assertEqual(self.records[0]['description'], source)
+
     def test_requested_time_and_offsets_select_correct_rows(self):
         self.records[0]['start']=self.at.astimezone(timezone(timedelta(hours=3))).isoformat()
         result=ui.build_guide(self.records,self.catalogue,self.feed,{'country':'de'},self.at+timedelta(hours=9))
