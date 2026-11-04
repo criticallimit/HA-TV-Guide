@@ -21,18 +21,24 @@ See what is on now, plan your evening and get reminders for programmes you want 
 
 The interface is available in ten languages. Programme availability depends on the channel and its data source.
 
+<!-- ha-marketplace:exclude-start -->
 ## Get started
 
 Requires **Home Assistant 2026.10.1 or newer**.
 
-1. Download **TV Guide** in HACS and restart Home Assistant.
-2. Open **Settings → Devices & services → Add integration → TV Guide**.
-3. Open **TV Guide** in the sidebar.
+**Home Assistant 2026.11.0 or newer:** Open **Settings → Marketplace**, search for **TV Guide** and install it. If it is not listed in the catalog yet, choose **Add from link**, connect your GitHub account if requested, and add `https://github.com/criticallimit/HA-TV-Guide`.
+
+**Home Assistant 2026.10.x:** Use HACS to install TV Guide, adding the repository as a custom integration if necessary.
+
+After installation, go to **Settings → Devices & services → Add integration → TV Guide**, then open **TV Guide** in the sidebar. Restart Home Assistant if prompted.
+
+[Open TV Guide in Home Assistant](https://my.home-assistant.io/redirect/hacs_repository/?owner=criticallimit&repository=HA-TV-Guide&category=integration) (opens Marketplace on 2026.11+, HACS on older versions).
+<!-- ha-marketplace:exclude-end -->
 
 Your country and language are selected automatically. The first programme and logo downloads may take a few minutes; a progress window shows what is happening.
 
 ## Updates
 
-Install updates through HACS and restart Home Assistant when prompted. Keep your existing TV Guide integration — your settings, channel lists and saved programmes stay in place.
+Install updates through Marketplace (or HACS on Home Assistant 2026.10.x) and restart when prompted. Existing installations are migrated automatically; keep your TV Guide integration to preserve settings, channel lists and saved programmes.
 
 [Help & feedback](https://github.com/criticallimit/HA-TV-Guide/issues) · [Third-party notices](https://github.com/criticallimit/HA-TV-Guide/blob/main/THIRD_PARTY_NOTICES.md)
