@@ -1,8 +1,19 @@
 """Shared public programme projections, rebuilt only when source data change."""
 from datetime import datetime, timezone
 from hashlib import sha256
+import re
 import threading
 from weakref import WeakKeyDictionary
+
+
+_DESCRIPTION_BREAKS = re.compile(r'\\r\\n|\\n|/n|\r\n|\r|\n')
+
+
+def normalize_description(value):
+    """Decode EPG line-break markers without altering other programme fields."""
+    if not isinstance(value, str):
+        return value
+    return _DESCRIPTION_BREAKS.sub('\n', value)
 
 
 class ProgrammeRepository:
@@ -29,6 +40,8 @@ class ProgrammeRepository:
         public = []
         for item in store._validate_program_timeline(raw):
             value = {name: data for name, data in item.items() if not str(name).startswith('_')}
+            if 'desc' in value:
+                value['desc'] = normalize_description(value['desc'])
             value['source'] = item.get('_source_url') or item.get('_source')
             value['source_kind'] = item.get('_source_kind') or 'unknown'
             start = datetime.fromisoformat(item['start']).astimezone(timezone.utc)
