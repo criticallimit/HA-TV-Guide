@@ -1,3 +1,5 @@
+> **Home Assistant 2026.11.0+:** Der integrierte **Marketplace** ersetzt die separate HACS-Integration. Die technische Veröffentlichungsinfrastruktur (`hacs.json`, `hacs/default`, HACS-Validator und Actions) bleibt bestehen. Die folgenden HACS-Angaben zur Benutzeroberfläche gelten für Home Assistant 2026.10.x; auf 2026.11+ ist stattdessen **Einstellungen → Marketplace → Aus Link hinzufügen** (mit GitHub-Verbindung für benutzerdefinierte Repositories) zu verwenden. Bestehende Installationen werden automatisch übernommen. Der My-Home-Assistant-Link `hacs_repository` funktioniert mit beiden Versionen; `marketplace_repository` ist erst ab 2026.11 verfügbar. Siehe https://contributors.home-assistant.io/marketplace/how-it-works/ und https://contributors.home-assistant.io/marketplace/guides/catalog/.
+
 # HACS-Veröffentlichung vorbereiten und abschließen
 
 Stand: 15. Oktober 2026. Repository: `criticallimit/HA-TV-Guide`, Kategorie **Integration**, Domain `tv_guide`, Version `1.0.0`.
@@ -34,7 +36,7 @@ Unter [Actions](https://github.com/criticallimit/HA-TV-Guide/actions) müssen **
 
 Ein Tag allein genügt nicht für die HACS-Versionsauswahl: Dazu muss das GitHub-Release veröffentlicht sein. Zusätzliche ZIP-Anhänge sind bei dieser Konfiguration optional. Bei späteren Versionen zuerst die Manifest-Version erhöhen, prüfen und danach das passende Release erstellen.
 
-## 4. Installation über HACS testen
+## 4. Installation über Marketplace (2026.11+) und HACS (2026.10.x) testen
 
 Schon vor Aufnahme in den Standardkatalog kann das Repository benutzerdefiniert hinzugefügt werden:
 
