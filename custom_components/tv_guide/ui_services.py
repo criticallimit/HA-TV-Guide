@@ -2,7 +2,7 @@
 import asyncio
 from .countries import COUNTRY_NAMES
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
+from homeassistant.util import dt as dt_util
 import voluptuous as vol
 from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
@@ -142,7 +142,7 @@ def async_register_ui_services(hass):
         except (TypeError,ValueError,OverflowError) as exc:
             raise HomeAssistantError('Invalid guide timestamp') from exc
         if not raw and options.get('default_view','now')!='now':
-            view=options['default_view'];at=at.astimezone(ZoneInfo(hass.config.time_zone)).replace(hour=int(view[:2]),minute=int(view[2:]),second=0,microsecond=0)
+            view=options['default_view'];at=at.astimezone(await dt_util.async_get_time_zone(hass.config.time_zone)).replace(hour=int(view[:2]),minute=int(view[2:]),second=0,microsecond=0)
         return await hass.async_add_executor_job(build_guide,data,catalogue,channels,options,at,busy)
 
     for service in SERVICES:
