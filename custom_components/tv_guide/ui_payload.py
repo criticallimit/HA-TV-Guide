@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from .countries import COUNTRIES, COUNTRY_NAMES
 from .logo_assets import bundled_logo_library
 from .languages import LANGUAGES
+from .programme_repository import normalize_description
 UI_DEFAULTS={'language':'auto','default_view':'now','columns_desktop':5,'max_channels':0,'theme_mode':'auto','refresh_minutes':180,'notification_service':'persistent_notification.create'}
 MAX_DISPLAY_CHANNELS=200
 
@@ -127,7 +128,7 @@ def build_guide(programmes,catalogue,feed_channels,options,at,refresh_running=Fa
         if end<=at:
             continue
         key=f"{item['channel']}\n{start.astimezone(timezone.utc).isoformat()}"
-        grouped[item['channel']].append({'id':'guide_'+sha256(key.encode()).hexdigest(),'title':item['title'],'start':item['start'],'end':item['stop'],'desc':item.get('description',''),'subtitle':item.get('subtitle',''),'category':item.get('category','')})
+        grouped[item['channel']].append({'id':'guide_'+sha256(key.encode()).hexdigest(),'title':item['title'],'start':item['start'],'end':item['stop'],'desc':normalize_description(item.get('description','')),'subtitle':item.get('subtitle',''),'category':item.get('category','')})
     for records in grouped.values():
         records.sort(key=lambda item:datetime.fromisoformat(item['start']).timestamp())
     for channel in visible.values():
