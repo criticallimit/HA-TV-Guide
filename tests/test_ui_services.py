@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import types
 import unittest
+from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]/'custom_components'/'tv_guide'
@@ -15,7 +16,11 @@ core=types.ModuleType('homeassistant.core');core.SupportsResponse=types.SimpleNa
 exc=types.ModuleType('homeassistant.exceptions');exc.HomeAssistantError=type('HomeAssistantError',(Exception,),{})
 vol=types.ModuleType('voluptuous');vol.Schema=lambda value:value;vol.Required=vol.Optional=lambda key,**kwargs:key
 vol.In=lambda choices:choices
-with patch.dict(sys.modules,{PKG:pkg,'homeassistant.core':core,'homeassistant.exceptions':exc,'voluptuous':vol}):
+dt_util=types.ModuleType('homeassistant.util.dt')
+async def async_get_time_zone(name):return ZoneInfo(name)
+dt_util.async_get_time_zone=async_get_time_zone
+util=types.ModuleType('homeassistant.util');util.dt=dt_util
+with patch.dict(sys.modules,{PKG:pkg,'homeassistant.core':core,'homeassistant.exceptions':exc,'homeassistant.util':util,'homeassistant.util.dt':dt_util,'voluptuous':vol}):
     for name in ('const','catalogs','ui_payload','ui_services'):
         spec=importlib.util.spec_from_file_location(PKG+'.'+name,ROOT/(name+'.py'))
         module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)
