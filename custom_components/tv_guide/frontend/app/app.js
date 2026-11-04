@@ -364,7 +364,12 @@ function showDetail(channel, program) {
   activeDetail = {channel, program};
   const subtitle = program.subtitle ? '<p class="detail-subtitle">' + escapeHtml(program.subtitle) + '</p>' : "";
   const category = program.category ? '<p><strong>Genre:</strong> ' + escapeHtml(program.category) + '</p>' : "";
-  const description = program.desc ? '<p>' + escapeHtml(program.desc) + '</p>' : ("<p>" + escapeHtml(t("Keine Beschreibung verfügbar.")) + "</p>");
+  // EPG sources sometimes contain escaped newlines or malformed /n delimiters.
+  // Clean them at display time so existing cached programme descriptions work too.
+  const cleanedDescription = String(program.desc || "").replace(/(?:\\r\\n|\\n|\/n|\r\n|\r|\n)+/g, "\n").trim();
+  const description = cleanedDescription
+    ? '<p>' + escapeHtml(cleanedDescription).replace(/\n/g, '<br>') + '</p>'
+    : '<p>' + escapeHtml(t("Keine Beschreibung verfügbar.")) + '</p>';
 
   detailBody.innerHTML =
     '<div class="detail-channel">' + escapeHtml(channel.name) + '</div>' +
