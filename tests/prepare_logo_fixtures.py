@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 from urllib.request import Request,urlopen
+from time import sleep
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -21,7 +22,15 @@ def prepare():
         item=manifest['archives'][name];target=folder/name
         if target.is_file() and target.stat().st_size==item['size'] and sha256(target.read_bytes()).hexdigest()==item['sha256']:continue
         request=Request(manifest['base_url']+name,headers={'User-Agent':'HA-TV-Guide-tests','Accept-Encoding':'identity'})
-        with urlopen(request,timeout=30) as response:data=response.read(item['size']+1)
+        for attempt in range(3):
+            try:
+                with urlopen(request,timeout=60) as response:
+                    data=response.read(item['size']+1)
+                break
+            except (TimeoutError, OSError):
+                if attempt == 2:
+                    raise
+                sleep(2 * (attempt + 1))
         if len(data)!=item['size'] or sha256(data).hexdigest()!=item['sha256']:raise ValueError('Invalid test logo package: '+name)
         temporary=target.with_suffix('.part');temporary.write_bytes(data);temporary.replace(target)
     print(f'Verified {len(names)} immutable logo sample packages; tests run offline from here')
