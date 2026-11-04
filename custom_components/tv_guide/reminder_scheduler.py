@@ -6,7 +6,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 import logging
 from hashlib import sha256
-from zoneinfo import ZoneInfo
+from homeassistant.util import dt as dt_util
 
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import callback
@@ -163,7 +163,7 @@ class TVGuideReminderScheduler:
             if due is None or due > now:
                 return
             try:
-                time_text = start.astimezone(ZoneInfo(self.hass.config.time_zone)).strftime("%H:%M")
+                time_text = start.astimezone(await dt_util.async_get_time_zone(self.hass.config.time_zone)).strftime("%H:%M")
                 domain, service = self.notification_service.split(".", 1)
                 payload = await self.hass.async_add_executor_job(reminder_text, dict(item), time_text, getattr(self.hass.config,'language','de'))
                 if domain == "persistent_notification":
